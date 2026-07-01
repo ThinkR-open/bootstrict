@@ -1,0 +1,21 @@
+/* bootstrict supporting styles -------------------------------------------
+ * Bootstrap 5 (via bslib) already supplies the full stylesheet; this file
+ * only carries small affordances bootstrict adds on top.
+ * ----------------------------------------------------------------------- */
+
+/* Clickable list-group / card helpers driven by bootstrict bindings. */
+.bootstrict-clickable {
+  cursor: pointer;
+}
+
+/* Ensure offcanvas/modal triggers built without an href look like buttons. */
+.bootstrict-trigger {
+  cursor: pointer;
+}
+
+/* bs_file_input(): contain the overlaid file <input> on the browse button so a
+   click lands on it directly (no page scroll-to-top). See R/forms-controls.R. */
+.btn-file {
+  position: relative;
+  overflow: hidden;
+}

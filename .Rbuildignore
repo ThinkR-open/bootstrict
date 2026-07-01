@@ -1,0 +1,8 @@
+^dev$
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^todo\.md$
+^README\.Rmd$
+^\.vscode$
+^air\.toml$

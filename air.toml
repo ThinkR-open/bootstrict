@@ -1,0 +1,6 @@
+# Fully-exploded formatting: a line break after every "(" so each argument sits
+# on its own line. Achieved by forcing the smallest possible line width.
+[format]
+line-width = 1
+indent-width = 2
+indent-style = "space"
