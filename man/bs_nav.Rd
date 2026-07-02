@@ -30,7 +30,8 @@ bs_nav_link(
 \item{...}{Navigation items (\code{\link[=bs_nav_item]{bs_nav_item()}} / \code{\link[=bs_nav_link]{bs_nav_link()}}) and named
 HTML attributes.}
 
-\item{type}{Visual style: \code{"tabs"} or \code{"pills"} (default \code{NULL} for a plain
+\item{type}{Visual style: \code{"tabs"}, \code{"pills"} or \code{"underline"}
+(Bootstrap 5.3) — default \code{NULL} for a plain
 nav).}
 
 \item{fill}{If \code{TRUE}, items expand to fill available width (\code{.nav-fill}).}

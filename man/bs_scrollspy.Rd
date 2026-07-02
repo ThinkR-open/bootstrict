@@ -4,12 +4,24 @@
 \alias{bs_scrollspy}
 \title{Bootstrap scrollspy container}
 \usage{
-bs_scrollspy(target, ..., offset = NULL, smooth = TRUE, class = NULL)
+bs_scrollspy(
+  target,
+  ...,
+  id = NULL,
+  offset = NULL,
+  smooth = TRUE,
+  class = NULL
+)
 }
 \arguments{
 \item{target}{Id (without \verb{#}) of the nav / list-group that scrollspy drives.}
 
 \item{...}{Scrollable content and named HTML attributes.}
+
+\item{id}{Optional container id. The href of the currently active nav link
+is reported as \code{input$id}. Defaults to a unique auto-generated id (an id
+is required for bootstrict to initialise scrollspy, including inside
+\code{renderUI()} — Bootstrap only auto-initialises on full page load).}
 
 \item{offset}{Pixels from the top to offset link activation
 (\code{data-bs-offset}).}

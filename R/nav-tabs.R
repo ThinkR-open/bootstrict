@@ -8,7 +8,8 @@
 #'
 #' @param ... Navigation items ([bs_nav_item()] / [bs_nav_link()]) and named
 #'   HTML attributes.
-#' @param type Visual style: `"tabs"` or `"pills"` (default `NULL` for a plain
+#' @param type Visual style: `"tabs"`, `"pills"` or `"underline"`
+#'   (Bootstrap 5.3) — default `NULL` for a plain
 #'   nav).
 #' @param fill If `TRUE`, items expand to fill available width (`.nav-fill`).
 #' @param justified If `TRUE`, items get equal width (`.nav-justified`).
@@ -36,7 +37,8 @@ bs_nav <- function(
     type,
     c(
       "tabs",
-      "pills"
+      "pills",
+      "underline"
     )
   )
   attach_deps(htmltools::tags$ul(
@@ -145,7 +147,8 @@ bs_nav_link <- function(
 #'
 #' @param id Tabset id; the active panel value is available as `input$id`.
 #' @param ... Panels built with [bs_tab_panel()].
-#' @param type Visual style: `"tabs"` (default) or `"pills"`.
+#' @param type Visual style: `"tabs"` (default), `"pills"` or `"underline"`
+#'   (Bootstrap 5.3).
 #' @param selected Value of the panel shown initially (defaults to the first).
 #' @param fill If `TRUE`, tabs expand to fill available width (`.nav-fill`).
 #' @param justified If `TRUE`, tabs get equal width (`.nav-justified`).
@@ -176,7 +179,8 @@ bs_tabset <- function(
     type,
     c(
       "tabs",
-      "pills"
+      "pills",
+      "underline"
     ),
     allow_null = FALSE
   )
@@ -246,6 +250,24 @@ bs_tabset <- function(
       selected
     )
   }
+  if (
+    !is.null(
+      selected
+    ) &&
+      !selected %in%
+        values
+  ) {
+    rlang::abort(sprintf(
+      "`selected` (\"%s\") does not match any `bs_tab_panel()` value. Values: %s.",
+      selected,
+      paste0(
+        '"',
+        values,
+        '"',
+        collapse = ", "
+      )
+    ))
+  }
 
   tab_id <- function(
     i
@@ -293,12 +315,9 @@ bs_tabset <- function(
             i
           ),
           `data-bs-toggle` = "tab",
-          `data-bs-target` = paste0(
-            "#",
-            pane_id(
-              i
-            )
-          ),
+          `data-bs-target` = css_id_selector(pane_id(
+            i
+          )),
           type = "button",
           role = "tab",
           `aria-controls` = pane_id(
@@ -344,6 +363,12 @@ bs_tabset <- function(
         "flex-column"
     ),
     role = "tablist",
+    `aria-orientation` = if (
+      isTRUE(
+        vertical
+      )
+    )
+      "vertical",
     id = id,
     `data-bootstrict` = "tabset",
     nav_items
@@ -383,6 +408,8 @@ bs_tabset <- function(
         `aria-labelledby` = tab_id(
           i
         ),
+        # Focusable pane, per the Bootstrap 5.3 reference markup.
+        tabindex = "0",
         `data-value` = p$value,
         p$body
       )

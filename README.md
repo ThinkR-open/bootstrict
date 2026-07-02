@@ -1,8 +1,8 @@
 # bootstrict
 
-> Strict, faithful Bootstrap 5.2 widgets for Shiny — with minimum deviation from Shiny itself.
+> Strict, faithful Bootstrap 5.3 widgets for Shiny — with minimum deviation from Shiny itself.
 
-`bootstrict` re-implements the **Bootstrap 5.2** layout, content, forms and component library as Shiny UI functions.
+`bootstrict` re-implements the **Bootstrap 5.3** layout, content, forms and component library as Shiny UI functions.
 
 ## Why
 
@@ -11,7 +11,7 @@ Working with an external designer that doesn't know `{shiny}` can be complex bec
 - some Shiny components are _not_ plain Bootstrap;
 - some Bootstrap components are _missing_ from Shiny.
 
-`bootstrict` tries to fix this gap by giving you the whole Bootstrap 5 surface, and **nothing more**, meaning that you can tell a designer: "you can use anything from Boostrap 5.2. But nothing more".
+`bootstrict` tries to fix this gap by giving you the whole Bootstrap 5 surface, and **nothing more**, meaning that you can tell a designer: "you can use anything from Bootstrap 5.3. But nothing more".
 
 ## Installation
 
@@ -20,13 +20,13 @@ Working with an external designer that doesn't know `{shiny}` can be complex bec
 pak::pak("thinkr-open/bootstrict")
 ```
 
-Bootstrap 5.3 (runtime) and SASS compilation are provided by [`bslib`](https://rstudio.github.io/bslib/) — there is nothing else to vendor.
+The Bootstrap 5.3 runtime and SASS compilation are provided by [`bslib`](https://rstudio.github.io/bslib/) — there is nothing else to vendor, and the markup bootstrict emits matches the runtime it runs on.
 
 ## The designer hand-off
 
-Every widget mirrors the Bootstrap 5 HTML structure **one-to-one**, so a designer's mockup (for example in Figma) and exported SASS variables drop straight into a Shiny app. Interactive components report their state to the server and can be driven from the server with `update_*()` helpers.
+Every widget mirrors the Bootstrap 5.3 HTML structure **one-to-one**, so a designer's mockup (for example in Figma) and exported SASS variables drop straight into a Shiny app. Interactive components report their state to the server and can be driven from the server with `update_*()` helpers.
 
-The motivating workflow: a designer works in Figma, stays strictly within [the Bootstrap 5.2 docs](https://getbootstrap.com/docs/5.2), and exports a `_variables.scss` sheet.
+The motivating workflow: a designer works in Figma, stays strictly within [the Bootstrap 5.3 docs](https://getbootstrap.com/docs/5.3), and exports a `_variables.scss` sheet.
 
 You received a Figma mockup and the variables, and can implement this directly into shiny.
 
@@ -71,7 +71,7 @@ ui <- bs_page(
 server <- function(input, output, session) {
   observeEvent(input$go, {
     print(input$email)
-    print(input$pw )
+    print(input$pw)
     show_bs_modal("info")
    })
 }
@@ -243,13 +243,19 @@ offsets, order, gutters, alignment), `bs_hstack()` / `bs_vstack()` stacks.
 **Forms** — text / textarea / number / password / select / checkbox / switch /
 radio / checkbox-group / range / color / file / date / date-range inputs, plus
 `bs_input_group()`, `bs_floating_label()`, `bs_form()`, validation feedback, and
-`.form-check-reverse` (5.2) via `reverse = TRUE`.
+`.form-check-reverse` via `reverse = TRUE`.
 
 **Components** — accordion, alert, badge, breadcrumb, buttons & button groups,
 card, carousel, close button, collapse, dropdown, list group, modal, nav &
-tabs, navbar, offcanvas, pagination, placeholder, popover, progress, spinner,
+tabs (including `.nav-underline`, 5.3), navbar, offcanvas, pagination,
+placeholder, popover, progress (including `.progress-stacked`, 5.3), spinner,
 toast, tooltip, scrollspy, plus helpers (`bs_ratio()`, `bs_visually_hidden()`,
-`bs_vr()`).
+`bs_vr()`, `bs_icon_link()`).
+
+**Colour modes (5.3)** — set the initial mode with
+`bs_page(color_mode = "dark")` and switch it from the server with
+`set_bs_color_mode("light")`; component-level `dark = TRUE` / `theme = "dark"`
+arguments emit `data-bs-theme` per the 5.3 idiom.
 
 See `?bootstrict` and run the demo:
 

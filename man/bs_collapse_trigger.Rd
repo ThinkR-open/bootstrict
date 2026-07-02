@@ -4,7 +4,7 @@
 \alias{bs_collapse_trigger}
 \title{Trigger a collapse from the UI}
 \usage{
-bs_collapse_trigger(target, ..., button = TRUE, class = NULL)
+bs_collapse_trigger(target, ..., button = TRUE, expanded = FALSE, class = NULL)
 }
 \arguments{
 \item{target}{Id of the \code{\link[=bs_collapse]{bs_collapse()}} to toggle.}
@@ -13,6 +13,10 @@ bs_collapse_trigger(target, ..., button = TRUE, class = NULL)
 
 \item{button}{If \code{TRUE} (default), render a \verb{<button class="btn">};
 otherwise render an \verb{<a role="button">}.}
+
+\item{expanded}{Initial expanded state of the trigger. Set to \code{TRUE} when
+the target is a \code{bs_collapse(open = TRUE)} so the initial \code{aria-expanded}
+/ \code{.collapsed} state is correct.}
 
 \item{class}{Extra classes.}
 }

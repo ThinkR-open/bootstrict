@@ -14,6 +14,13 @@
 #' @param size Control size: `"sm"` or `"lg"`.
 #' @param class Extra classes.
 #'
+#' @details When a full `bs_*_input()` is passed, only its bare control is kept
+#'   so it sits flush with the add-ons: the input's label and `help` text are
+#'   dropped (compose them outside the group). Inputs whose Shiny binding lives
+#'   on their container — [bs_date_input()], [bs_date_range_input()],
+#'   [bs_file_input()], [bs_radio_input()], [bs_checkbox_group_input()] —
+#'   cannot be unwrapped this way and raise an error.
+#'
 #' @return An input-group tag.
 #' @export
 #'
@@ -96,6 +103,10 @@ ig_unwrap_control <- function(
       x
     )
   }
+  check_control_extractable(
+    x,
+    "bs_input_group()"
+  )
   ctrl <- find_first_tag(
     x,
     function(
@@ -299,6 +310,10 @@ bs_floating_label <- function(
   # Locate the inner control (.form-control or .form-select) and pull it out so
   # it can become a *direct* child of the floating wrapper (a requirement of
   # Bootstrap floating labels).
+  check_control_extractable(
+    input,
+    "bs_floating_label()"
+  )
   ctrl <- find_form_control(
     input
   )
@@ -353,6 +368,76 @@ bs_floating_label <- function(
 }
 
 # --- private helpers (unique to this file) ---------------------------------
+
+#' Abort when an input's Shiny binding lives on its container.
+#'
+#' Extracting the bare control out of a date / date-range / file / radio /
+#' checkbox-group input discards the element carrying the input's id, binding
+#' and dependencies, leaving a dead control. Fail loudly instead.
+#' @noRd
+check_control_extractable <- function(
+  x,
+  what
+) {
+  container <- find_first_tag(
+    x,
+    function(
+      t
+    )
+      has_class(
+        t,
+        "shiny-input-container"
+      )
+  )
+  container_id <- if (
+    !is.null(
+      container
+    )
+  ) {
+    htmltools::tagGetAttribute(
+      container,
+      "id"
+    )
+  } else {
+    NULL
+  }
+  has_file_input <- tag_contains(
+    x,
+    function(
+      t
+    )
+      identical(
+        t$name,
+        "input"
+      ) &&
+        identical(
+          htmltools::tagGetAttribute(
+            t,
+            "type"
+          ),
+          "file"
+        )
+  )
+  if (
+    !is.null(
+      container_id
+    ) ||
+      has_file_input
+  ) {
+    rlang::abort(sprintf(
+      paste0(
+        "%s cannot extract this input's control: its Shiny binding lives on ",
+        "the input's container. This applies to bs_date_input(), ",
+        "bs_date_range_input(), bs_file_input(), bs_radio_input() and ",
+        "bs_checkbox_group_input(). Place the input outside instead."
+      ),
+      what
+    ))
+  }
+  invisible(
+    x
+  )
+}
 
 #' Find the first `.form-control`/`.form-select` element in a tag tree.
 #' @noRd

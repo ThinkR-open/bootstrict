@@ -11,6 +11,7 @@ bs_date_input(
   ...,
   min = NULL,
   max = NULL,
+  help = NULL,
   width = NULL
 )
 }
@@ -24,6 +25,8 @@ bs_date_input(
 \item{...}{Extra attributes applied to each radio \verb{<input>}.}
 
 \item{min, max}{Minimum / maximum selectable date.}
+
+\item{help}{Help text rendered below the control (\code{.form-text}).}
 
 \item{width}{CSS width (e.g. \code{"100\%"}, \code{"200px"}).}
 }

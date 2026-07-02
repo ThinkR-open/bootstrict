@@ -117,10 +117,17 @@ bs_list_group <- function(
     class
   )
 
-  # Choose the container element: numbered groups must be an <ol>; groups
-  # containing actionable (<a>/<button>) items or that are selectable must be a
-  # <div> (you cannot nest interactive elements directly in <ul>/<ol>);
-  # otherwise a plain <ul>.
+  # Flatten top-level bare lists of items so the container/element decisions
+  # below see every item (htmltools would flatten them at render anyway).
+  children <- flatten_bare_lists(
+    children
+  )
+
+  # Choose the container element: groups containing actionable (<a>/<button>)
+  # items or that are selectable must be a <div> (you cannot nest interactive
+  # elements directly in <ul>/<ol>); numbered groups use an <ol> (numbering
+  # still renders on a <div> via Bootstrap's CSS counters when the group is
+  # also actionable/selectable); otherwise a plain <ul>.
   has_action_child <- any(vapply(
     children,
     function(
@@ -140,20 +147,50 @@ bs_list_group <- function(
     )
   ))
   tag_name <- if (
-    isTRUE(
-      numbered
-    )
-  ) {
-    "ol"
-  } else if (
     has_action_child ||
       !is.null(
         id
       )
   ) {
     "div"
+  } else if (
+    isTRUE(
+      numbered
+    )
+  ) {
+    "ol"
   } else {
     "ul"
+  }
+
+  # A <div> container cannot hold <li> items: swap them to <div>s with the
+  # same attributes/children (visually identical, valid HTML).
+  if (
+    identical(
+      tag_name,
+      "div"
+    )
+  ) {
+    children <- lapply(
+      children,
+      function(
+        ch
+      ) {
+        if (
+          inherits(
+            ch,
+            "shiny.tag"
+          ) &&
+            identical(
+              ch$name,
+              "li"
+            )
+        ) {
+          ch$name <- "div"
+        }
+        ch
+      }
+    )
   }
 
   group_attribs <- list(
@@ -273,6 +310,14 @@ bs_list_group_item <- function(
         )
       )
         "true",
+      # `.disabled` only removes pointer events; keyboard activation must be
+      # blocked too.
+      tabindex = if (
+        isTRUE(
+          disabled
+        )
+      )
+        "-1",
       ...
     )
   } else if (
@@ -353,6 +398,39 @@ update_bs_list_group <- function(
       NULL,
     session = session
   )
+}
+
+#' Flatten bare (unclassed) lists one level deep, recursively.
+#' @noRd
+flatten_bare_lists <- function(
+  x
+) {
+  out <- list()
+  for (ch in x) {
+    if (
+      is.list(
+        ch
+      ) &&
+        !is.object(
+          ch
+        )
+    ) {
+      out <- c(
+        out,
+        flatten_bare_lists(
+          ch
+        )
+      )
+    } else {
+      out <- c(
+        out,
+        list(
+          ch
+        )
+      )
+    }
+  }
+  out
 }
 
 #' Best-effort tag name of a list group child.

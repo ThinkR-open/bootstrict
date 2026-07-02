@@ -23,7 +23,8 @@ bs_tab_panel(title, ..., value = NULL, icon = NULL, class = NULL)
 
 \item{...}{Panels built with \code{\link[=bs_tab_panel]{bs_tab_panel()}}.}
 
-\item{type}{Visual style: \code{"tabs"} (default) or \code{"pills"}.}
+\item{type}{Visual style: \code{"tabs"} (default), \code{"pills"} or \code{"underline"}
+(Bootstrap 5.3).}
 
 \item{selected}{Value of the panel shown initially (defaults to the first).}
 

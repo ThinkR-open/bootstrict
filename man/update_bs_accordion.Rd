@@ -14,9 +14,11 @@ update_bs_accordion(
 \arguments{
 \item{id}{Accordion id (namespaced automatically inside modules).}
 
-\item{open}{Panel value(s) to open.}
+\item{open}{Panel value(s) to open. Use \code{TRUE} to open all (sensible with
+\code{multiple = TRUE}); \code{FALSE}/\code{NULL} is a no-op.}
 
-\item{close}{Panel value(s) to close. Use \code{TRUE} to close all.}
+\item{close}{Panel value(s) to close. Use \code{TRUE} to close all;
+\code{FALSE}/\code{NULL} is a no-op.}
 
 \item{session}{The Shiny session.}
 }

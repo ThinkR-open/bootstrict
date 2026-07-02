@@ -55,9 +55,15 @@ test_that("title produces a header with title and close button", {
     html,
     "class=\"modal-header\""
   )
+  # Bootstrap 5.3 pattern: <h1 class="modal-title fs-5">, wired to the root
+  # via aria-labelledby.
   expect_match(
     html,
-    "modal-title fs-5"
+    "<h1 class=\"modal-title fs-5\" id=\"m-title\""
+  )
+  expect_match(
+    html,
+    "aria-labelledby=\"m-title\""
   )
   expect_match(
     html,
@@ -180,6 +186,8 @@ test_that("static backdrop and disabled keyboard set data attributes", {
     "data-bs-backdrop=\"static\""
   )
 
+  # FALSE means *no backdrop at all* — distinct from "static" (a backdrop
+  # that does not dismiss), matching Bootstrap and bs_offcanvas().
   false_bd <- as.character(bs_modal(
     "m",
     "x",
@@ -187,7 +195,7 @@ test_that("static backdrop and disabled keyboard set data attributes", {
   ))
   expect_match(
     false_bd,
-    "data-bs-backdrop=\"static\""
+    "data-bs-backdrop=\"false\""
   )
 
   no_kbd <- as.character(bs_modal(
@@ -251,7 +259,7 @@ test_that("modal sub-piece helpers render their containers", {
   )
   expect_match(
     title,
-    "modal-title fs-5"
+    "class=\"modal-title fs-5\""
   )
 })
 

@@ -477,18 +477,27 @@ test_that("parse_scss_variables errors on a missing file; use_bootstrict returns
 
 # --- deps: stylesheet absent ----------------------------------------------
 
-test_that("bootstrict_dep tolerates a missing stylesheet", {
-  css <- system.file("assets", "css", "bootstrict.css", package = "bootstrict")
-  skip_if(!nzchar(css) || !file.exists(css))
-  # Temporarily hide the stylesheet so the `css <- NULL` branch runs, then
-  # restore it whatever happens.
-  hidden <- paste0(css, ".bak")
-  file.rename(css, hidden)
-  on.exit(file.rename(hidden, css), add = TRUE)
+test_that("build_bootstrict_dep tolerates a missing stylesheet", {
+  # Exercise the css-missing branch against a synthetic assets directory —
+  # never by mutating the installed package (which breaks under parallel
+  # testing / read-only libraries).
+  assets <- tempfile("bootstrict-assets-")
+  dir.create(file.path(assets, "js"), recursive = TRUE)
+  on.exit(unlink(assets, recursive = TRUE), add = TRUE)
+  writeLines("// core", file.path(assets, "js", "bootstrict-core.js"))
+  writeLines("// one", file.path(assets, "js", "binding-one.js"))
 
-  dep <- bootstrict_dep()
+  dep <- bootstrict:::build_bootstrict_dep(assets)
   expect_s3_class(dep, "html_dependency")
   expect_null(dep$stylesheet)
+  # bootstrict-core.js must always load first.
+  expect_identical(basename(dep$script[[1]]), "bootstrict-core.js")
+})
+
+test_that("bootstrict_dep is cached after the first call", {
+  first <- bootstrict_dep()
+  expect_s3_class(first, "html_dependency")
+  expect_identical(bootstrict_dep(), first)
 })
 
 # --- internal utils -------------------------------------------------------
@@ -557,7 +566,7 @@ test_that("use_bootstrict_golem scaffolds a bootstrict app_ui and variables shee
 
   use_bootstrict_golem(path = ".", package_name = "my.app")
 
-  expect_true(file.exists(file.path("inst", "app", "www", "_variables.sass")))
+  expect_true(file.exists(file.path("inst", "app", "www", "_variables.scss")))
   ui <- paste(readLines(file.path("R", "app_ui.R")), collapse = "\n")
   expect_match(ui, "bootstrict::bs_page")
   expect_match(ui, 'title = "my.app"')
@@ -565,5 +574,5 @@ test_that("use_bootstrict_golem scaffolds a bootstrict app_ui and variables shee
 
   # Second run: the variables sheet already exists, so creation is skipped.
   use_bootstrict_golem(path = ".", package_name = "my.app")
-  expect_true(file.exists(file.path("inst", "app", "www", "_variables.sass")))
+  expect_true(file.exists(file.path("inst", "app", "www", "_variables.scss")))
 })

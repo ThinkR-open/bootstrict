@@ -137,9 +137,14 @@ test_that("dark and align modifiers reach the menu", {
     "M",
     dark = TRUE
   ))
+  # Bootstrap 5.3 colour modes (.dropdown-menu-dark is deprecated).
   expect_match(
     dark,
-    "dropdown-menu dropdown-menu-dark"
+    "data-bs-theme=\"dark\""
+  )
+  expect_no_match(
+    dark,
+    "dropdown-menu-dark"
   )
 
   end <- as.character(bs_dropdown(

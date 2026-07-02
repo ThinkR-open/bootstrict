@@ -97,7 +97,7 @@ ui <- bs_page(
       ))
     ),
     bs_navbar_text(
-      "Bootstrap 5.2 widgets for Shiny"
+      "Bootstrap 5.3 widgets for Shiny"
     ),
     bg = "dark",
     theme = "dark",

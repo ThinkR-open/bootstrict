@@ -60,7 +60,8 @@ bs_radio_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -111,10 +112,61 @@ bs_checkbox_group_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
+  )
+}
+
+#' Validate a `#rrggbb` colour value.
+#'
+#' `<input type="color">` only accepts 6-digit hex; anything else is silently
+#' coerced to `#000000` by the browser, making `input$id` disagree with the R
+#' code. Fail loudly instead.
+#' @noRd
+check_hex_color <- function(
+  value,
+  arg_nm = rlang::caller_arg(
+    value
+  )
+) {
+  if (
+    is.null(
+      value
+    )
+  ) {
+    return(
+      invisible(
+        NULL
+      )
+    )
+  }
+  ok <- is.character(
+    value
+  ) &&
+    length(
+      value
+    ) ==
+      1L &&
+    grepl(
+      "^#[0-9a-fA-F]{6}$",
+      value
+    )
+  if (
+    !ok
+  ) {
+    rlang::abort(sprintf(
+      "`%s` must be a 6-digit hex colour string such as \"#0d6efd\" (got %s).",
+      arg_nm,
+      deparse1(
+        value
+      )
+    ))
+  }
+  invisible(
+    value
   )
 }
 
@@ -232,6 +284,25 @@ form_check_enhance <- function(
         class = "form-check-input"
       )
   )
+  # Group label: promote shiny's `.control-label` to also be a Bootstrap
+  # `.form-label`, as every other delegated input does.
+  tag <- tag_modify_where(
+    tag,
+    function(
+      t
+    )
+      has_class(
+        t,
+        "control-label"
+      ),
+    function(
+      t
+    )
+      htmltools::tagAppendAttributes(
+        t,
+        class = "form-label"
+      )
+  )
   # Per-option labels -> .form-check-label. Skip the group's .control-label and
   # any `<label>` that has already become an inline `.form-check` wrapper (shiny
   # renders inline options as a bare `<label class="*-inline">` with no inner
@@ -276,7 +347,8 @@ form_check_enhance <- function(
 #'
 #' @param id Input id; value available as `input$id`.
 #' @param label Input label.
-#' @param value Initial value.
+#' @param value Initial value. If `NULL`, the browser initializes the control
+#'   at its midpoint (`(min + max) / 2`), which is what `input$id` reports.
 #' @param min,max,step Numeric bounds and step.
 #' @param ... Extra attributes applied to the `<input>` element.
 #' @param help Help text rendered below the control (`.form-text`).
@@ -298,6 +370,10 @@ bs_range_input <- function(
   help = NULL,
   width = NULL
 ) {
+  value <- shiny::restoreInput(
+    id = id,
+    default = value
+  )
   input <- htmltools::tags$input(
     id = id,
     type = "range",
@@ -343,7 +419,8 @@ bs_range_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -372,6 +449,13 @@ bs_color_input <- function(
   help = NULL,
   width = NULL
 ) {
+  value <- shiny::restoreInput(
+    id = id,
+    default = value
+  )
+  check_hex_color(
+    value
+  )
   input <- htmltools::tags$input(
     id = id,
     type = "color",
@@ -414,7 +498,8 @@ bs_color_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -434,6 +519,8 @@ bs_color_input <- function(
 #' button.
 #'
 #' @inheritParams bs_radio_input
+#' @param ... Extra attributes applied to the `<input type="file">` element
+#'   itself (e.g. `capture`, `webkitdirectory`).
 #' @param multiple Allow selecting more than one file.
 #' @param accept Character vector of accepted MIME types / extensions.
 #' @param button_label Label shown on the browse button.
@@ -561,10 +648,131 @@ bs_file_input <- function(
         class = "form-label"
       )
   )
-  ctrl <- add_control_attribs(
+
+  # shiny wraps the browse button in a BS3/BS4 `<label class="input-group-btn
+  # input-group-prepend">`; those classes have no styles under Bootstrap 5 and
+  # add-ons must be *direct* children of `.input-group` for the corner-rounding
+  # rules to apply. Unwrap the button.
+  ctrl <- tag_modify_where(
     ctrl,
+    function(
+      t
+    )
+      identical(
+        t$name,
+        "label"
+      ) &&
+        (has_class(
+          t,
+          "input-group-btn"
+        ) ||
+          has_class(
+            t,
+            "input-group-prepend"
+          )),
+    function(
+      t
+    ) {
+      inner <- Filter(
+        function(
+          ch
+        )
+          inherits(
+            ch,
+            "shiny.tag"
+          ),
+        t$children
+      )
+      if (
+        length(
+          inner
+        ) ==
+          1L
+      ) {
+        inner[[
+          1
+        ]]
+      } else {
+        t
+      }
+    }
+  )
+
+  # shiny's upload progress bar uses the BS3 animation classes; Bootstrap 5
+  # puts stripes/animation on the bar itself (invisible while idle, so the
+  # classes can be set unconditionally).
+  ctrl <- tag_modify_where(
+    ctrl,
+    function(
+      t
+    )
+      has_class(
+        t,
+        "progress-bar"
+      ),
+    function(
+      t
+    )
+      htmltools::tagAppendAttributes(
+        t,
+        class = "progress-bar-striped progress-bar-animated"
+      )
+  )
+
+  # `...` goes to the real `<input type="file">` (not the readonly display
+  # box, which is the `.form-control` here).
+  dots <- rlang::list2(
     ...
   )
+  if (
+    length(
+      dots
+    ) >
+      0L
+  ) {
+    ctrl <- tag_modify_where(
+      ctrl,
+      function(
+        t
+      )
+        identical(
+          t$name,
+          "input"
+        ) &&
+          identical(
+            htmltools::tagGetAttribute(
+              t,
+              "type"
+            ),
+            "file"
+          ),
+      function(
+        t
+      ) {
+        replace_nms <- setdiff(
+          names(
+            dots
+          ),
+          "class"
+        )
+        t$attribs[
+          names(
+            t$attribs
+          ) %in%
+            replace_nms
+        ] <- NULL
+        do.call(
+          htmltools::tagAppendAttributes,
+          c(
+            list(
+              t
+            ),
+            dots
+          )
+        )
+      }
+    )
+  }
   attach_deps(
     ctrl
   )
@@ -592,6 +800,7 @@ bs_date_input <- function(
   ...,
   min = NULL,
   max = NULL,
+  help = NULL,
   width = NULL
 ) {
   ctrl <- shiny::dateInput(
@@ -608,6 +817,11 @@ bs_date_input <- function(
   ctrl <- add_control_attribs(
     ctrl,
     ...
+  )
+  ctrl <- add_form_help(
+    ctrl,
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -636,6 +850,7 @@ bs_date_range_input <- function(
   ...,
   min = NULL,
   max = NULL,
+  help = NULL,
   width = NULL
 ) {
   ctrl <- shiny::dateRangeInput(
@@ -653,6 +868,11 @@ bs_date_range_input <- function(
   ctrl <- add_control_attribs(
     ctrl,
     ...
+  )
+  ctrl <- add_form_help(
+    ctrl,
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -724,6 +944,9 @@ update_bs_color <- function(
       "This function must be called from within a Shiny session."
     )
   }
+  check_hex_color(
+    value
+  )
   session$sendInputMessage(
     id,
     list(

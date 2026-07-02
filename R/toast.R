@@ -232,10 +232,15 @@ hide_bs_toast <- function(
 #' `placement` if one is not already present, and the toast removes itself from
 #' the DOM once hidden.
 #'
-#' @param body Notification body content.
-#' @param ... Reserved for future extensions.
-#' @param title Optional header title.
+#' @param body Notification body text. Plain text only (it is inserted with
+#'   `textContent` client-side, so markup is not interpreted); tags raise an
+#'   error.
+#' @param ... Reserved for future extensions; must be empty.
+#' @param title Optional header title. Plain text only, like `body`.
 #' @param color Optional theme colour applied as a `.text-bg-*` background.
+#' @param autohide If `TRUE` (default), hide the toast automatically after
+#'   `delay` milliseconds. Use `FALSE` for a persistent notification the user
+#'   must dismiss.
 #' @param delay Delay in milliseconds before the toast auto-hides.
 #' @param placement Container placement (see [bs_toast_container()]).
 #' @param session The Shiny session.
@@ -250,10 +255,12 @@ bs_notify_toast <- function(
   ...,
   title = NULL,
   color = NULL,
+  autohide = TRUE,
   delay = 5000,
   placement = "top-end",
   session = shiny::getDefaultReactiveDomain()
 ) {
+  rlang::check_dots_empty()
   color <- check_color(
     color
   )
@@ -274,13 +281,62 @@ bs_notify_toast <- function(
   )
   bs_send(
     "toast.notify",
-    body = as.character(
+    body = as_scalar_text(
       body
     ),
-    title = title,
+    title = as_scalar_text(
+      title
+    ),
     color = color,
+    autohide = isTRUE(
+      autohide
+    ),
     delay = delay,
     placement = placement,
     session = session
+  )
+}
+
+#' Coerce a notification field to a single text string (or NULL).
+#'
+#' The client inserts these with `textContent`, so tags would be displayed as
+#' literal markup (body) or serialize to `[object Object]` (title) — reject
+#' them with an actionable message instead.
+#' @noRd
+as_scalar_text <- function(
+  x,
+  arg_nm = rlang::caller_arg(
+    x
+  )
+) {
+  if (
+    is.null(
+      x
+    )
+  ) {
+    return(
+      NULL
+    )
+  }
+  if (
+    !is.atomic(
+      x
+    ) ||
+      length(
+        x
+      ) !=
+        1L
+  ) {
+    rlang::abort(sprintf(
+      paste0(
+        "`%s` must be a single plain-text string (it is rendered as text, ",
+        "not HTML). For rich content, declare a bs_toast() in the UI and ",
+        "show it with show_bs_toast()."
+      ),
+      arg_nm
+    ))
+  }
+  as.character(
+    x
   )
 }

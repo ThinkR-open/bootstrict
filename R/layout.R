@@ -80,6 +80,31 @@ bs_row <- function(
   align = NULL,
   class = NULL
 ) {
+  cols <- check_scale_responsive(
+    cols,
+    "cols",
+    lo = 1,
+    hi = 6,
+    extra = "auto"
+  )
+  gutters <- check_scale(
+    gutters,
+    "gutters",
+    lo = 0,
+    hi = 5
+  )
+  gx <- check_scale(
+    gx,
+    "gx",
+    lo = 0,
+    hi = 5
+  )
+  gy <- check_scale(
+    gy,
+    "gy",
+    lo = 0,
+    hi = 5
+  )
   justify <- match_arg(
     justify,
     c(
@@ -171,6 +196,23 @@ bs_col <- function(
     )
   )
 
+  offset <- check_scale_responsive(
+    offset,
+    "offset",
+    lo = 0,
+    hi = 11
+  )
+  order <- check_scale_responsive(
+    order,
+    "order",
+    lo = 0,
+    hi = 5,
+    extra = c(
+      "first",
+      "last"
+    )
+  )
+
   col_class <- function(
     bp,
     val
@@ -182,6 +224,21 @@ bs_col <- function(
     ) {
       return(
         NULL
+      )
+    }
+    arg_nm <- bp %||%
+      "width"
+    if (
+      !isTRUE(
+        val
+      )
+    ) {
+      val <- check_scale(
+        val,
+        arg_nm,
+        lo = 1,
+        hi = 12,
+        extra = "auto"
       )
     }
     base <- if (
@@ -298,6 +355,12 @@ bs_hstack <- function(
   gap = NULL,
   class = NULL
 ) {
+  gap <- check_scale(
+    gap,
+    "gap",
+    lo = 0,
+    hi = 5
+  )
   attach_deps(htmltools::div(
     class = bs_classes(
       "hstack",
@@ -318,6 +381,12 @@ bs_vstack <- function(
   gap = NULL,
   class = NULL
 ) {
+  gap <- check_scale(
+    gap,
+    "gap",
+    lo = 0,
+    hi = 5
+  )
   attach_deps(htmltools::div(
     class = bs_classes(
       "vstack",
@@ -329,6 +398,142 @@ bs_vstack <- function(
     ),
     ...
   ))
+}
+
+#' Validate a scalar utility value against an integer range (plus keywords).
+#'
+#' Bootstrap only ships classes for a bounded scale (e.g. `gap-0`..`gap-5`,
+#' `col-1`..`col-12`); out-of-range values would silently produce classes that
+#' do not exist.
+#' @noRd
+check_scale <- function(
+  val,
+  arg_nm,
+  lo,
+  hi,
+  extra = character(
+    0
+  )
+) {
+  if (
+    is.null(
+      val
+    )
+  ) {
+    return(
+      NULL
+    )
+  }
+  if (
+    is.character(
+      val
+    ) &&
+      length(
+        val
+      ) ==
+        1L &&
+      val %in%
+        extra
+  ) {
+    return(
+      val
+    )
+  }
+  ok <- is.numeric(
+    val
+  ) &&
+    length(
+      val
+    ) ==
+      1L &&
+    !is.na(
+      val
+    ) &&
+    val ==
+      as.integer(
+        val
+      ) &&
+    val >=
+      lo &&
+    val <=
+      hi
+  if (
+    !ok
+  ) {
+    rlang::abort(sprintf(
+      "`%s` must be an integer between %d and %d%s.",
+      arg_nm,
+      as.integer(
+        lo
+      ),
+      as.integer(
+        hi
+      ),
+      if (
+        length(
+          extra
+        )
+      ) {
+        paste0(
+          ", or one of ",
+          paste0(
+            '"',
+            extra,
+            '"',
+            collapse = ", "
+          )
+        )
+      } else {
+        ""
+      }
+    ))
+  }
+  as.integer(
+    val
+  )
+}
+
+#' Validate a scalar-or-per-breakpoint-list utility value (see check_scale).
+#' @noRd
+check_scale_responsive <- function(
+  value,
+  arg_nm,
+  lo,
+  hi,
+  extra = character(
+    0
+  )
+) {
+  if (
+    is.null(
+      value
+    )
+  ) {
+    return(
+      NULL
+    )
+  }
+  if (
+    !is.list(
+      value
+    )
+  ) {
+    return(check_scale(
+      value,
+      arg_nm,
+      lo,
+      hi,
+      extra
+    ))
+  }
+  lapply(
+    value,
+    check_scale,
+    arg_nm = arg_nm,
+    lo = lo,
+    hi = hi,
+    extra = extra
+  )
 }
 
 #' Build responsive utility classes from a scalar or named per-breakpoint list.

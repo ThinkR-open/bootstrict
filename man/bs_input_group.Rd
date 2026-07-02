@@ -24,6 +24,14 @@ An input-group tag.
 Groups one or more form controls together with add-ons (text, buttons,
 dropdowns) on a single line.
 }
+\details{
+When a full \verb{bs_*_input()} is passed, only its bare control is kept
+so it sits flush with the add-ons: the input's label and \code{help} text are
+dropped (compose them outside the group). Inputs whose Shiny binding lives
+on their container — \code{\link[=bs_date_input]{bs_date_input()}}, \code{\link[=bs_date_range_input]{bs_date_range_input()}},
+\code{\link[=bs_file_input]{bs_file_input()}}, \code{\link[=bs_radio_input]{bs_radio_input()}}, \code{\link[=bs_checkbox_group_input]{bs_checkbox_group_input()}} —
+cannot be unwrapped this way and raise an error.
+}
 \examples{
 bs_input_group(
   bs_input_group_text("@"),

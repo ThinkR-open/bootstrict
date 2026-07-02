@@ -17,10 +17,12 @@
 #' @param expand Breakpoint at which the navbar expands: one of
 #'   `"sm"`, `"md"`, `"lg"`, `"xl"`, `"xxl"`, or `TRUE` to always expand
 #'   (`.navbar-expand`). Use `FALSE`/`NULL` to never expand (always collapsed).
-#' @param bg Background theme colour (`.bg-*`), one of the Bootstrap theme
-#'   colours.
-#' @param theme Colour scheme applied via `data-bs-theme`: `"light"` or
-#'   `"dark"`.
+#' @param bg Background colour (`.bg-*`): one of the Bootstrap theme colours,
+#'   or `"body"`, `"body-secondary"`, `"body-tertiary"` (the Bootstrap 5.3
+#'   navbar default), `"white"`, `"black"`, `"transparent"`.
+#' @param theme Colour scheme applied via `data-bs-theme` (the Bootstrap 5.3
+#'   colour-modes idiom; `.navbar-light`/`.navbar-dark` are deprecated):
+#'   `"light"` or `"dark"`.
 #' @param placement Fixed/sticky placement: one of `"fixed-top"`,
 #'   `"fixed-bottom"`, `"sticky-top"`, `"sticky-bottom"`.
 #' @param fluid If `TRUE` (default) use a full-width `.container-fluid`,
@@ -54,8 +56,17 @@ bs_navbar <- function(
       "navbar"
     )
   }
-  bg <- check_color(
-    bg
+  bg <- match_arg(
+    bg,
+    c(
+      bs_theme_colors,
+      "body",
+      "body-secondary",
+      "body-tertiary",
+      "white",
+      "black",
+      "transparent"
+    )
   )
   theme <- match_arg(
     theme,
@@ -106,12 +117,16 @@ bs_navbar <- function(
     "-collapse"
   )
 
+  # Named `...` decorate the <nav>; unnamed `...` fill the collapsible region.
+  dots <- split_dots(
+    ...
+  )
+
   toggler <- htmltools::tags$button(
     class = "navbar-toggler",
     type = "button",
     `data-bs-toggle` = "collapse",
-    `data-bs-target` = paste0(
-      "#",
+    `data-bs-target` = css_id_selector(
       collapse_id
     ),
     `aria-controls` = collapse_id,
@@ -125,7 +140,7 @@ bs_navbar <- function(
   collapse <- htmltools::div(
     class = "collapse navbar-collapse",
     id = collapse_id,
-    ...
+    dots$children
   )
 
   container <- htmltools::div(
@@ -143,7 +158,7 @@ bs_navbar <- function(
     collapse
   )
 
-  attach_deps(htmltools::tags$nav(
+  root <- htmltools::tags$nav(
     id = id,
     class = bs_classes(
       "navbar",
@@ -155,9 +170,29 @@ bs_navbar <- function(
       placement,
       class
     ),
+    # Bootstrap 5.3 colour modes (.navbar-light/.navbar-dark are deprecated).
     `data-bs-theme` = theme,
     container
-  ))
+  )
+  if (
+    length(
+      dots$attribs
+    ) >
+      0L
+  ) {
+    root <- do.call(
+      htmltools::tagAppendAttributes,
+      c(
+        list(
+          root
+        ),
+        dots$attribs
+      )
+    )
+  }
+  attach_deps(
+    root
+  )
 }
 
 #' @rdname bs_navbar

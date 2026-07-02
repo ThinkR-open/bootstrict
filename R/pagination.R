@@ -190,6 +190,24 @@ bs_pagination_numbered <- function(
       "`n` must be a single positive integer."
     )
   }
+  if (
+    length(
+      current
+    ) !=
+      1L ||
+      is.na(
+        current
+      ) ||
+      current <
+        1L ||
+      current >
+        n
+  ) {
+    rlang::abort(sprintf(
+      "`current` must be a single integer between 1 and `n` (%d).",
+      n
+    ))
+  }
 
   page_href <- function(
     page

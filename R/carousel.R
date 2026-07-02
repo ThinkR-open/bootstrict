@@ -13,10 +13,13 @@
 #' @param controls If `TRUE`, render the previous / next control buttons.
 #' @param fade If `TRUE`, crossfade between slides instead of sliding
 #'   (`.carousel-fade`).
-#' @param autoplay If `TRUE` (default), start cycling on load. When `FALSE`, the
-#'   carousel only advances on user interaction (Bootstrap `data-bs-ride="true"`).
+#' @param autoplay If `TRUE` (default), start cycling on load
+#'   (`data-bs-ride="carousel"`). When `FALSE`, the attribute is omitted so the
+#'   carousel only ever advances on user interaction (Bootstrap's
+#'   `data-bs-ride="true"` would resume autoplay after the first interaction).
 #' @param interval Cycling interval in milliseconds (sets `data-bs-interval`).
-#' @param dark If `TRUE`, use the dark variant (`.carousel-dark`).
+#' @param dark If `TRUE`, the dark variant via `data-bs-theme="dark"` (the
+#'   Bootstrap 5.3 idiom; `.carousel-dark` is deprecated).
 #' @param class Extra classes.
 #'
 #' @return A carousel tag.
@@ -162,8 +165,7 @@ bs_carousel <- function(
         ])
         htmltools::tags$button(
           type = "button",
-          `data-bs-target` = paste0(
-            "#",
+          `data-bs-target` = css_id_selector(
             id
           ),
           `data-bs-slide-to` = as.character(
@@ -205,8 +207,7 @@ bs_carousel <- function(
       htmltools::tags$button(
         class = "carousel-control-prev",
         type = "button",
-        `data-bs-target` = paste0(
-          "#",
+        `data-bs-target` = css_id_selector(
           id
         ),
         `data-bs-slide` = "prev",
@@ -222,8 +223,7 @@ bs_carousel <- function(
       htmltools::tags$button(
         class = "carousel-control-next",
         type = "button",
-        `data-bs-target` = paste0(
-          "#",
+        `data-bs-target` = css_id_selector(
           id
         ),
         `data-bs-slide` = "next",
@@ -250,22 +250,22 @@ bs_carousel <- function(
         )
       )
         "carousel-fade",
-      if (
-        isTRUE(
-          dark
-        )
-      )
-        "carousel-dark",
       class
     ),
+    # Bootstrap 5.3 colour modes (.carousel-dark is deprecated).
+    `data-bs-theme` = if (
+      isTRUE(
+        dark
+      )
+    )
+      "dark",
     `data-bootstrict` = "carousel",
     `data-bs-ride` = if (
       isTRUE(
         autoplay
       )
     )
-      "carousel" else
-      "true",
+      "carousel",
     `data-bs-interval` = if (
       !is.null(
         interval

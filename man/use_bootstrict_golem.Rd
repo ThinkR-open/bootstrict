@@ -25,9 +25,10 @@ skeleton into a minimal bootstrict application:
 \itemize{
 \item \code{R/app_ui.R} is rewritten to use \code{\link[=bs_page]{bs_page()}} and shows a "Hello world"
 inside a \code{\link[=bs_container]{bs_container()}}.
-\item An (empty by default) \verb{inst/app/www/_variables.sass} designer variable
+\item An (empty by default) \verb{inst/app/www/_variables.scss} designer variable
 sheet is created and wired into \code{\link[=bootstrict_theme]{bootstrict_theme()}}, so a designer can
-drop Sass variables in and have them picked up automatically.
+drop SCSS variables (\verb{$name: value;}) in and have them picked up
+automatically.
 }
 
 golem sets the working directory to the new project before calling the hook,

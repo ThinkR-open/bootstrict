@@ -1,18 +1,24 @@
 # Component: progress -------------------------------------------------------
 #
 # A progress bar is not a Shiny input (it reports no value): it is purely a
-# server-updatable display. Build faithful Bootstrap 5 markup and drive it with
+# server-updatable display. Build faithful Bootstrap 5.3 markup — the
+# `role="progressbar"` and `aria-value*` attributes live on the `.progress`
+# wrapper, the inner `.progress-bar` is purely visual, and several bars
+# compose into a `.progress-stacked` group — and drive it with
 # update_bs_progress(), which dispatches to the `progress.update` handler in
 # binding-progress.js.
 
 #' Bootstrap progress
 #'
-#' A progress container wrapping one or more [bs_progress_bar()]s. Progress is
+#' A progress display. [bs_progress_bar()] builds one bar (a `.progress`
+#' track with its `.progress-bar`); [bs_progress()] finalises it, or stacks
+#' several bars into a Bootstrap 5.3 `.progress-stacked` group. Progress is
 #' display-only (it reports no value to the server); drive it from the server
 #' with [update_bs_progress()].
 #'
 #' @param ... One or more [bs_progress_bar()]s and named HTML attributes.
-#' @param height CSS height of the progress track (e.g. `"20px"`, `"1rem"`).
+#'   With two or more bars, the group renders as `.progress-stacked`.
+#' @param height CSS height of the progress track(s) (e.g. `"20px"`, `"1rem"`).
 #' @param class Extra classes.
 #'
 #' @return A progress tag.
@@ -20,12 +26,44 @@
 #'
 #' @examples
 #' bs_progress(bs_progress_bar(value = 25, id = "load"))
+#' # stacked (Bootstrap 5.3):
+#' bs_progress(
+#'   bs_progress_bar(value = 15, color = "success"),
+#'   bs_progress_bar(value = 30, color = "danger")
+#' )
 bs_progress <- function(
   ...,
   height = NULL,
   class = NULL
 ) {
-  style <- if (
+  dots <- split_dots(
+    ...
+  )
+  bars <- Filter(
+    Negate(
+      is.null
+    ),
+    dots$children
+  )
+  ok <- vapply(
+    bars,
+    has_class,
+    logical(
+      1
+    ),
+    cls = "progress"
+  )
+  if (
+    !all(
+      ok
+    )
+  ) {
+    rlang::abort(
+      "All unnamed `...` arguments to `bs_progress()` must be `bs_progress_bar()`s."
+    )
+  }
+
+  height_style <- if (
     !is.null(
       height
     )
@@ -37,15 +75,188 @@ bs_progress <- function(
       )
     )
   }
-  attach_deps(htmltools::div(
+
+  if (
+    length(
+      bars
+    ) <=
+      1L
+  ) {
+    root <- if (
+      length(
+        bars
+      ) ==
+        1L
+    ) {
+      bars[[
+        1
+      ]]
+    } else {
+      htmltools::div(
+        class = "progress",
+        role = "progressbar",
+        `aria-valuenow` = 0,
+        `aria-valuemin` = 0,
+        `aria-valuemax` = 100
+      )
+    }
+    root <- htmltools::tagAppendAttributes(
+      root,
+      class = class,
+      style = height_style
+    )
+    if (
+      length(
+        dots$attribs
+      ) >
+        0L
+    ) {
+      root <- do.call(
+        htmltools::tagAppendAttributes,
+        c(
+          list(
+            root
+          ),
+          dots$attribs
+        )
+      )
+    }
+    return(attach_deps(
+      root
+    ))
+  }
+
+  # Stacked (Bootstrap 5.3): the width moves from the inner bar to each
+  # `.progress` segment; Bootstrap's CSS makes the inner bar fill it.
+  bars <- lapply(
+    bars,
+    function(
+      w
+    ) {
+      pct <- bs_progress_pct(
+        as.numeric(
+          htmltools::tagGetAttribute(
+            w,
+            "aria-valuenow"
+          ) %||%
+            0
+        ),
+        as.numeric(
+          htmltools::tagGetAttribute(
+            w,
+            "aria-valuemin"
+          ) %||%
+            0
+        ),
+        as.numeric(
+          htmltools::tagGetAttribute(
+            w,
+            "aria-valuemax"
+          ) %||%
+            100
+        )
+      )
+      w <- htmltools::tagAppendAttributes(
+        w,
+        style = paste0(
+          "width: ",
+          pct,
+          "%"
+        ),
+        style = height_style
+      )
+      w$children <- lapply(
+        w$children,
+        strip_bar_width
+      )
+      w
+    }
+  )
+
+  root <- htmltools::div(
     class = bs_classes(
-      "progress",
+      "progress-stacked",
       class
     ),
-    role = "progressbar",
-    style = style,
-    ...
-  ))
+    bars
+  )
+  if (
+    length(
+      dots$attribs
+    ) >
+      0L
+  ) {
+    root <- do.call(
+      htmltools::tagAppendAttributes,
+      c(
+        list(
+          root
+        ),
+        dots$attribs
+      )
+    )
+  }
+  attach_deps(
+    root
+  )
+}
+
+#' Remove the inline width from a `.progress-bar` (stacked layout).
+#' @noRd
+strip_bar_width <- function(
+  x
+) {
+  if (
+    !inherits(
+      x,
+      "shiny.tag"
+    ) ||
+      !has_class(
+        x,
+        "progress-bar"
+      )
+  ) {
+    return(
+      x
+    )
+  }
+  styles <- unlist(
+    x$attribs[
+      names(
+        x$attribs
+      ) ==
+        "style"
+    ],
+    use.names = FALSE
+  )
+  x$attribs[
+    names(
+      x$attribs
+    ) ==
+      "style"
+  ] <- NULL
+  styles <- sub(
+    "width:[^;]*;?",
+    "",
+    styles
+  )
+  styles <- styles[nzchar(trimws(
+    styles
+  ))]
+  if (
+    length(
+      styles
+    )
+  ) {
+    x <- htmltools::tagAppendAttributes(
+      x,
+      style = paste(
+        styles,
+        collapse = "; "
+      )
+    )
+  }
+  x
 }
 
 #' @rdname bs_progress
@@ -55,7 +266,9 @@ bs_progress <- function(
 #' @param striped If `TRUE`, apply the striped variant (`.progress-bar-striped`).
 #' @param animated If `TRUE`, animate the stripes (`.progress-bar-animated`).
 #' @param label Text shown inside the bar.
-#' @param id Bar id; required to target it with [update_bs_progress()].
+#' @param aria_label Accessible name of the progress track (`aria-label`).
+#' @param id Id of the `.progress` track; required to target it with
+#'   [update_bs_progress()].
 #' @export
 #'
 #' @examples
@@ -69,6 +282,7 @@ bs_progress_bar <- function(
   striped = FALSE,
   animated = FALSE,
   label = NULL,
+  aria_label = NULL,
   id = NULL,
   class = NULL
 ) {
@@ -80,8 +294,7 @@ bs_progress_bar <- function(
     min,
     max
   )
-  htmltools::div(
-    id = id,
+  bar <- htmltools::div(
     class = bs_classes(
       "progress-bar",
       mod(
@@ -105,17 +318,25 @@ bs_progress_bar <- function(
         "progress-bar-animated",
       class
     ),
-    role = "progressbar",
     style = paste0(
       "width: ",
       pct,
       "%"
     ),
+    ...,
+    label
+  )
+  # Bootstrap 5.3 markup: role and aria-value* live on the `.progress`
+  # wrapper; the inner `.progress-bar` is purely visual.
+  htmltools::div(
+    id = id,
+    class = "progress",
+    role = "progressbar",
+    `aria-label` = aria_label,
     `aria-valuenow` = value,
     `aria-valuemin` = min,
     `aria-valuemax` = max,
-    ...,
-    label
+    bar
   )
 }
 
@@ -136,6 +357,9 @@ bs_progress_pct <- function(
         span
       ) ==
         0L ||
+      is.na(
+        span
+      ) ||
       span ==
         0
   ) {
@@ -143,18 +367,26 @@ bs_progress_pct <- function(
       0
     )
   }
-  round(
+  pct <- round(
     100 *
       (value -
         min) /
       span
   )
+  # NB: pmin/pmax, as the min/max *parameters* shadow the base functions here.
+  pmin(
+    100,
+    pmax(
+      0,
+      pct
+    )
+  )
 }
 
 #' Update a progress bar from the server
 #'
-#' @param id Id of the [bs_progress_bar()] to update (namespaced automatically
-#'   inside modules).
+#' @param id Id of the [bs_progress_bar()] track to update (namespaced
+#'   automatically inside modules).
 #' @param value New value.
 #' @param label New text shown inside the bar.
 #' @param color New theme colour (`.bg-*`).

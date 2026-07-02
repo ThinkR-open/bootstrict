@@ -49,7 +49,8 @@ bs_text_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -95,7 +96,8 @@ bs_textarea_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -146,7 +148,8 @@ bs_numeric_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -185,7 +188,8 @@ bs_password_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -239,7 +243,8 @@ bs_select_input <- function(
   )
   ctrl <- add_form_help(
     ctrl,
-    help
+    help,
+    id = id
   )
   attach_deps(
     ctrl
@@ -268,6 +273,7 @@ bs_checkbox_input <- function(
   ...,
   switch = FALSE,
   reverse = FALSE,
+  help = NULL,
   width = NULL
 ) {
   ctrl <- shiny::checkboxInput(
@@ -277,7 +283,8 @@ bs_checkbox_input <- function(
     width = width
   )
 
-  # Promote shiny's BS3-style checkbox to Bootstrap 5 `.form-check` markup.
+  # Promote shiny's BS3-style checkbox to Bootstrap 5 `.form-check` markup,
+  # preserving any other class shiny put on the wrapper.
   ctrl <- tag_modify_where(
     ctrl,
     function(
@@ -290,23 +297,61 @@ bs_checkbox_input <- function(
     function(
       t
     ) {
-      t$attribs$class <- bs_classes(
-        "form-check",
-        if (
-          isTRUE(
-            switch
-          )
-        )
-          "form-switch",
-        if (
-          isTRUE(
-            reverse
-          )
-        )
-          "form-check-reverse"
+      cls <- setdiff(
+        unlist(strsplit(
+          htmltools::tagGetAttribute(
+            t,
+            "class"
+          ) %||%
+            "",
+          "\\s+"
+        )),
+        "checkbox"
       )
-      t
+      t$attribs[
+        names(
+          t$attribs
+        ) ==
+          "class"
+      ] <- NULL
+      htmltools::tagAppendAttributes(
+        t,
+        class = bs_classes(
+          cls,
+          "form-check",
+          if (
+            isTRUE(
+              switch
+            )
+          )
+            "form-switch",
+          if (
+            isTRUE(
+              reverse
+            )
+          )
+            "form-check-reverse"
+        )
+      )
     }
+  )
+  # Bootstrap 5 hangs disabled-state styling off `.form-check-label`.
+  ctrl <- tag_modify_where(
+    ctrl,
+    function(
+      t
+    )
+      identical(
+        t$name,
+        "label"
+      ),
+    function(
+      t
+    )
+      htmltools::tagAppendAttributes(
+        t,
+        class = "form-check-label"
+      )
   )
   ctrl <- tag_modify_where(
     ctrl,
@@ -341,6 +386,11 @@ bs_checkbox_input <- function(
     ctrl,
     ...
   )
+  ctrl <- add_form_help(
+    ctrl,
+    help,
+    id = id
+  )
   attach_deps(
     ctrl
   )
@@ -354,6 +404,7 @@ bs_switch_input <- function(
   value = FALSE,
   ...,
   reverse = FALSE,
+  help = NULL,
   width = NULL
 ) {
   bs_checkbox_input(
@@ -363,6 +414,7 @@ bs_switch_input <- function(
     ...,
     switch = TRUE,
     reverse = reverse,
+    help = help,
     width = width
   )
 }

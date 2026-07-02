@@ -10,9 +10,15 @@ test_that("bs_tooltip decorates a tag with the right data attributes", {
     out,
     "data-bs-toggle=\"tooltip\""
   )
+  # Bootstrap 5.3 idiom: data-bs-title, and no bare `title` attribute (which
+  # would flash the native browser tooltip).
   expect_match(
     out,
-    "title=\"Tooltip text\""
+    "data-bs-title=\"Tooltip text\""
+  )
+  expect_no_match(
+    out,
+    " title=\"Tooltip text\""
   )
   expect_match(
     out,
@@ -86,7 +92,7 @@ test_that("bs_popover decorates a tag with the right data attributes", {
   )
   expect_match(
     out,
-    "title=\"Heads up\""
+    "data-bs-title=\"Heads up\""
   )
   expect_match(
     out,

@@ -10,6 +10,9 @@
 #' @param title Page title (browser tab).
 #' @param theme A [bootstrict_theme()] / [bslib::bs_theme()] object. Defaults to
 #'   a stock Bootstrap 5 theme.
+#' @param color_mode Initial Bootstrap colour mode (`data-bs-theme` on the
+#'   page body): `"light"` or `"dark"`. Switch it from the server with
+#'   [set_bs_color_mode()].
 #' @param lang Document language (`<html lang>`).
 #'
 #' @return A UI definition.
@@ -26,11 +29,20 @@ bs_page <- function(
   ...,
   title = NULL,
   theme = bootstrict_theme(),
+  color_mode = NULL,
   lang = "en"
 ) {
+  color_mode <- match_arg(
+    color_mode,
+    c(
+      "light",
+      "dark"
+    )
+  )
   attach_deps(
     bslib::page(
       ...,
+      `data-bs-theme` = color_mode,
       title = title,
       theme = theme,
       lang = lang
@@ -44,11 +56,20 @@ bs_page_fluid <- function(
   ...,
   title = NULL,
   theme = bootstrict_theme(),
+  color_mode = NULL,
   lang = "en"
 ) {
+  color_mode <- match_arg(
+    color_mode,
+    c(
+      "light",
+      "dark"
+    )
+  )
   attach_deps(
     bslib::page_fluid(
       ...,
+      `data-bs-theme` = color_mode,
       title = title,
       theme = theme,
       lang = lang
@@ -57,21 +78,27 @@ bs_page_fluid <- function(
 }
 
 #' @rdname bs_page
-#' @param fillable Whether the page body should grow to fill the viewport.
 #' @export
 bs_page_fillable <- function(
   ...,
   title = NULL,
   theme = bootstrict_theme(),
-  fillable = TRUE,
+  color_mode = NULL,
   lang = "en"
 ) {
+  color_mode <- match_arg(
+    color_mode,
+    c(
+      "light",
+      "dark"
+    )
+  )
   attach_deps(
     bslib::page_fillable(
       ...,
+      `data-bs-theme` = color_mode,
       title = title,
       theme = theme,
-      fillable = fillable,
       lang = lang
     )
   )

@@ -23,7 +23,8 @@
 #'   separate toggle caret).
 #' @param direction Menu drop direction: `"down"`, `"up"`, `"end"` or
 #'   `"start"`.
-#' @param dark If `TRUE`, a dark dropdown menu (`.dropdown-menu-dark`).
+#' @param dark If `TRUE`, a dark dropdown via `data-bs-theme="dark"` on the
+#'   wrapper (the Bootstrap 5.3 idiom; `.dropdown-menu-dark` is deprecated).
 #' @param align Menu alignment. `"end"` right-aligns the menu
 #'   (`.dropdown-menu-end`); a named list such as `list(lg = "end")` produces a
 #'   responsive alignment (`.dropdown-menu-lg-end`).
@@ -76,6 +77,12 @@ bs_dropdown <- function(
     ...
   )
 
+  # Responsive alignment classes only take effect when Popper's dynamic
+  # positioning is disabled on the toggle (Bootstrap requirement).
+  responsive_align <- is.list(
+    align
+  )
+
   variant <- if (
     isTRUE(
       outline
@@ -115,6 +122,10 @@ bs_dropdown <- function(
         "dropdown-toggle-split"
     ),
     `data-bs-toggle` = "dropdown",
+    `data-bs-display` = if (
+      responsive_align
+    )
+      "static",
     `aria-expanded` = "false",
     if (
       isTRUE(
@@ -173,12 +184,6 @@ bs_dropdown <- function(
   menu <- htmltools::tags$ul(
     class = bs_classes(
       "dropdown-menu",
-      if (
-        isTRUE(
-          dark
-        )
-      )
-        "dropdown-menu-dark",
       align
     ),
     dots$children
@@ -192,7 +197,7 @@ bs_dropdown <- function(
     start = "dropstart"
   )
 
-  attach_deps(htmltools::div(
+  root <- htmltools::div(
     class = bs_classes(
       wrapper_base,
       if (
@@ -203,10 +208,37 @@ bs_dropdown <- function(
         "btn-group",
       class
     ),
-    dots$attribs,
+    # Bootstrap 5.3 colour modes (.dropdown-menu-dark is deprecated).
+    `data-bs-theme` = if (
+      isTRUE(
+        dark
+      )
+    )
+      "dark",
     buttons,
     menu
-  ))
+  )
+  # Named `...` become attributes of the wrapper (passing the list
+  # positionally would render the values as children).
+  if (
+    length(
+      dots$attribs
+    ) >
+      0L
+  ) {
+    root <- do.call(
+      htmltools::tagAppendAttributes,
+      c(
+        list(
+          root
+        ),
+        dots$attribs
+      )
+    )
+  }
+  attach_deps(
+    root
+  )
 }
 
 #' @rdname bs_dropdown
@@ -290,6 +322,9 @@ bs_dropdown_header <- function(
   level = 6,
   class = NULL
 ) {
+  level <- check_heading_level(
+    level
+  )
   htmltools::tags$li(
     htmltools::tag(
       paste0(

@@ -88,9 +88,11 @@ test_that("bs_collapse_trigger renders a toggle button by default", {
     html,
     "^<button"
   )
+  # Initial collapsed state: `.collapsed` + aria-expanded="false" (matching
+  # what Bootstrap's JS sets after a hide).
   expect_match(
     html,
-    "class=\"btn\""
+    "class=\"btn collapsed\""
   )
   expect_match(
     html,

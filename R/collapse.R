@@ -59,6 +59,9 @@ bs_collapse <- function(
 #' @param ... Content (label) and named HTML attributes.
 #' @param button If `TRUE` (default), render a `<button class="btn">`;
 #'   otherwise render an `<a role="button">`.
+#' @param expanded Initial expanded state of the trigger. Set to `TRUE` when
+#'   the target is a `bs_collapse(open = TRUE)` so the initial `aria-expanded`
+#'   / `.collapsed` state is correct.
 #' @param class Extra classes.
 #'
 #' @return A button (or anchor) tag.
@@ -70,8 +73,12 @@ bs_collapse_trigger <- function(
   target,
   ...,
   button = TRUE,
+  expanded = FALSE,
   class = NULL
 ) {
+  expanded <- isTRUE(
+    expanded
+  )
   if (
     isTRUE(
       button
@@ -80,30 +87,44 @@ bs_collapse_trigger <- function(
     htmltools::tags$button(
       class = bs_classes(
         "btn",
+        if (
+          !expanded
+        )
+          "collapsed",
         class
       ),
       type = "button",
       `data-bs-toggle` = "collapse",
-      `data-bs-target` = paste0(
-        "#",
+      `data-bs-target` = css_id_selector(
         target
       ),
-      `aria-expanded` = "false",
+      `aria-expanded` = if (
+        expanded
+      )
+        "true" else
+        "false",
       `aria-controls` = target,
       ...
     )
   } else {
     htmltools::tags$a(
       class = bs_classes(
+        if (
+          !expanded
+        )
+          "collapsed",
         class
       ),
       `data-bs-toggle` = "collapse",
-      href = paste0(
-        "#",
+      href = css_id_selector(
         target
       ),
       role = "button",
-      `aria-expanded` = "false",
+      `aria-expanded` = if (
+        expanded
+      )
+        "true" else
+        "false",
       `aria-controls` = target,
       ...
     )

@@ -53,8 +53,9 @@ title and a close button is rendered.}
 (\code{"sm"}/\code{"md"}/\code{"lg"}/\code{"xl"}/\code{"xxl"}) for fullscreen below that breakpoint
 (\code{.modal-fullscreen-{bp}-down}).}
 
-\item{backdrop}{Backdrop behaviour: \code{TRUE} (dismiss on outside click),
-\code{FALSE} or \code{"static"} (do not dismiss on outside click).}
+\item{backdrop}{Backdrop behaviour: \code{TRUE} (backdrop shown, dismiss on
+outside click), \code{"static"} (backdrop shown, do not dismiss on outside
+click) or \code{FALSE} (no backdrop at all).}
 
 \item{keyboard}{If \code{FALSE}, the modal cannot be closed with the Escape key.}
 

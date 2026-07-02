@@ -15,8 +15,8 @@ update_bs_progress(
 )
 }
 \arguments{
-\item{id}{Id of the \code{\link[=bs_progress_bar]{bs_progress_bar()}} to update (namespaced automatically
-inside modules).}
+\item{id}{Id of the \code{\link[=bs_progress_bar]{bs_progress_bar()}} track to update (namespaced
+automatically inside modules).}
 
 \item{value}{New value.}
 

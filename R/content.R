@@ -115,10 +115,15 @@ bs_table <- function(
     parts <- split_dots(
       ...
     )
-    contents <- drop_nulls(list(
-      caption_tag,
-      body$head,
-      body$body
+    # Unnamed `...` (e.g. a <tfoot>) are appended after the generated body
+    # rather than silently dropped.
+    contents <- drop_nulls(c(
+      list(
+        caption_tag,
+        body$head,
+        body$body
+      ),
+      parts$children
     ))
     table <- do.call(
       htmltools::tags$table,
@@ -293,6 +298,9 @@ format_cell <- function(
 #' @param fluid Make the image responsive (`.img-fluid`).
 #' @param thumbnail Render with a rounded thumbnail border (`.img-thumbnail`).
 #' @param rounded Add rounded corners (`.rounded`).
+#' @param object_fit How the image fills its box (Bootstrap 5.3
+#'   `.object-fit-*` utility): `"contain"`, `"cover"`, `"fill"`, `"scale"`
+#'   (scale-down) or `"none"`.
 #' @param alt Alternative text.
 #' @param class Extra classes.
 #'
@@ -307,13 +315,28 @@ bs_img <- function(
   fluid = FALSE,
   thumbnail = FALSE,
   rounded = FALSE,
+  object_fit = NULL,
   alt = NULL,
   class = NULL
 ) {
+  object_fit <- match_arg(
+    object_fit,
+    c(
+      "contain",
+      "cover",
+      "fill",
+      "scale",
+      "none"
+    )
+  )
   attach_deps(htmltools::tags$img(
     src = src,
     alt = alt,
     class = bs_classes(
+      mod(
+        "object-fit",
+        object_fit
+      ),
       if (
         isTRUE(
           fluid
@@ -464,6 +487,9 @@ bs_display_heading <- function(
   level = 1,
   class = NULL
 ) {
+  level <- check_heading_level(
+    level
+  )
   attach_deps(htmltools::tag(
     paste0(
       "h",
@@ -587,5 +613,43 @@ bs_list_inline <- function(
       parts$attribs,
       items
     )
+  ))
+}
+
+#' Bootstrap icon link
+#'
+#' The Bootstrap 5.3 icon-link helper: an inline flex `<a>` that pairs an
+#' icon (e.g. an SVG) with text, with an optional hover translation of the
+#' icon (`.icon-link-hover`).
+#'
+#' @param ... Link content (icon and text) and named HTML attributes.
+#' @param href Link target.
+#' @param hover If `TRUE`, translate the icon on hover (`.icon-link-hover`).
+#' @param class Extra classes.
+#'
+#' @return An anchor tag.
+#' @export
+#'
+#' @examples
+#' bs_icon_link("Icon link", href = "#")
+bs_icon_link <- function(
+  ...,
+  href = "#",
+  hover = FALSE,
+  class = NULL
+) {
+  attach_deps(htmltools::tags$a(
+    class = bs_classes(
+      "icon-link",
+      if (
+        isTRUE(
+          hover
+        )
+      )
+        "icon-link-hover",
+      class
+    ),
+    href = href,
+    ...
   ))
 }

@@ -9,19 +9,26 @@ bs_notify_toast(
   ...,
   title = NULL,
   color = NULL,
+  autohide = TRUE,
   delay = 5000,
   placement = "top-end",
   session = shiny::getDefaultReactiveDomain()
 )
 }
 \arguments{
-\item{body}{Notification body content.}
+\item{body}{Notification body text. Plain text only (it is inserted with
+\code{textContent} client-side, so markup is not interpreted); tags raise an
+error.}
 
-\item{...}{Reserved for future extensions.}
+\item{...}{Reserved for future extensions; must be empty.}
 
-\item{title}{Optional header title.}
+\item{title}{Optional header title. Plain text only, like \code{body}.}
 
 \item{color}{Optional theme colour applied as a \verb{.text-bg-*} background.}
+
+\item{autohide}{If \code{TRUE} (default), hide the toast automatically after
+\code{delay} milliseconds. Use \code{FALSE} for a persistent notification the user
+must dismiss.}
 
 \item{delay}{Delay in milliseconds before the toast auto-hides.}
 

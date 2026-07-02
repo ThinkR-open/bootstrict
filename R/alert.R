@@ -105,7 +105,9 @@ bs_alert_link <- function(
 #'
 #' @param ... Named HTML attributes (e.g. `data-bs-dismiss`).
 #' @param label Accessible label.
-#' @param white If `TRUE`, white variant for dark backgrounds.
+#' @param white If `TRUE`, the variant for dark backgrounds
+#'   (`data-bs-theme="dark"` on the button — the Bootstrap 5.3 idiom;
+#'   `.btn-close-white` is deprecated).
 #' @param class Extra classes.
 #'
 #' @return A button tag.
@@ -120,14 +122,14 @@ bs_close_button <- function(
     type = "button",
     class = bs_classes(
       "btn-close",
-      if (
-        isTRUE(
-          white
-        )
-      )
-        "btn-close-white",
       class
     ),
+    `data-bs-theme` = if (
+      isTRUE(
+        white
+      )
+    )
+      "dark",
     `aria-label` = label,
     ...
   )

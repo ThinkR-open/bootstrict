@@ -6,15 +6,27 @@
 \alias{bs_page_fillable}
 \title{A Bootstrap 5 page}
 \usage{
-bs_page(..., title = NULL, theme = bootstrict_theme(), lang = "en")
+bs_page(
+  ...,
+  title = NULL,
+  theme = bootstrict_theme(),
+  color_mode = NULL,
+  lang = "en"
+)
 
-bs_page_fluid(..., title = NULL, theme = bootstrict_theme(), lang = "en")
+bs_page_fluid(
+  ...,
+  title = NULL,
+  theme = bootstrict_theme(),
+  color_mode = NULL,
+  lang = "en"
+)
 
 bs_page_fillable(
   ...,
   title = NULL,
   theme = bootstrict_theme(),
-  fillable = TRUE,
+  color_mode = NULL,
   lang = "en"
 )
 }
@@ -26,9 +38,11 @@ bs_page_fillable(
 \item{theme}{A \code{\link[=bootstrict_theme]{bootstrict_theme()}} / \code{\link[bslib:bs_theme]{bslib::bs_theme()}} object. Defaults to
 a stock Bootstrap 5 theme.}
 
-\item{lang}{Document language (\verb{<html lang>}).}
+\item{color_mode}{Initial Bootstrap colour mode (\code{data-bs-theme} on the
+page body): \code{"light"} or \code{"dark"}. Switch it from the server with
+\code{\link[=set_bs_color_mode]{set_bs_color_mode()}}.}
 
-\item{fillable}{Whether the page body should grow to fill the viewport.}
+\item{lang}{Document language (\verb{<html lang>}).}
 }
 \value{
 A UI definition.

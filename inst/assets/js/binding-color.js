@@ -4,10 +4,11 @@
   var bootstrict = window.bootstrict;
   if (!bootstrict) return;
 
-  // Report the picked colour as a "#rrggbb" string.
+  // Report the picked colour as a "#rrggbb" string. Scoped to bootstrict's
+  // own marker so a hand-written .form-control-color is not hijacked.
   bootstrict.eventBinding({
     name: "bootstrict.color",
-    selector: "input[type='color'].form-control-color",
+    selector: "input[type='color'].form-control-color[data-bootstrict='color']",
     events: ["input", "change"],
     getValue: function (el) {
       return el.value;

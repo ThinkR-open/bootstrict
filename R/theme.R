@@ -9,7 +9,8 @@
 #' are returned verbatim as strings (Sass resolves them at compile time), so
 #' maps, functions and colour expressions all pass straight through.
 #'
-#' @param path Path to a `.scss`/`.sass` file.
+#' @param path Path to a `.scss` file (SCSS syntax, `$name: value;` — the
+#'   indented `.sass` syntax has no semicolons and cannot be parsed).
 #'
 #' @return A named list of Sass variable values. Names use the Bootstrap
 #'   convention without the leading `$` (e.g. `primary`, `font-family-base`).
@@ -39,9 +40,10 @@ parse_scss_variables <- function(
     ),
     collapse = "\n"
   )
-  # strip block comments /* ... */ and line comments // ...
+  # strip block comments /* ... */ (with (?s) so multi-line comments — the
+  # usual exported-file header — are removed too) and line comments // ...
   txt <- gsub(
-    "/\\*.*?\\*/",
+    "(?s)/\\*.*?\\*/",
     "",
     txt,
     perl = TRUE
@@ -56,19 +58,14 @@ parse_scss_variables <- function(
     "",
     lines
   )
+  # gregexpr: capture every declaration on a line, not just the first.
   decls <- regmatches(
     lines,
-    regexpr(
+    gregexpr(
       "\\$[A-Za-z0-9_-]+\\s*:\\s*[^;]+;",
       lines
     )
   )
-  decls <- decls[
-    lengths(
-      decls
-    ) >
-      0
-  ]
   decls <- unlist(
     decls
   )
@@ -229,4 +226,37 @@ bootstrict_theme <- function(
 #' @export
 use_bootstrict <- function() {
   bootstrict_dep()
+}
+
+#' Switch the Bootstrap colour mode from the server
+#'
+#' Sets the Bootstrap 5.3 colour mode (`data-bs-theme`) on the page body,
+#' switching every component between light and dark. Set the initial mode
+#' with the `color_mode` argument of [bs_page()].
+#'
+#' @param mode `"light"` or `"dark"`.
+#' @param session The Shiny session.
+#'
+#' @return Invisibly `NULL`, called for its side effect.
+#' @export
+#'
+#' @examples
+#' if (interactive()) set_bs_color_mode("dark")
+set_bs_color_mode <- function(
+  mode,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  mode <- match_arg(
+    mode,
+    c(
+      "light",
+      "dark"
+    ),
+    allow_null = FALSE
+  )
+  bs_send(
+    "colormode.set",
+    mode = mode,
+    session = session
+  )
 }

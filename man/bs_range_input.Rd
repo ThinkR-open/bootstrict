@@ -21,7 +21,8 @@ bs_range_input(
 
 \item{label}{Input label.}
 
-\item{value}{Initial value.}
+\item{value}{Initial value. If \code{NULL}, the browser initializes the control
+at its midpoint (\code{(min + max) / 2}), which is what \code{input$id} reports.}
 
 \item{min, max, step}{Numeric bounds and step.}
 

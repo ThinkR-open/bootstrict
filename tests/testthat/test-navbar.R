@@ -140,9 +140,14 @@ test_that("bs_navbar applies bg, theme and placement", {
     html,
     "fixed-top"
   )
+  # Bootstrap 5.3 colour modes (.navbar-dark is deprecated).
   expect_match(
     html,
     "data-bs-theme=\"dark\""
+  )
+  expect_no_match(
+    html,
+    "navbar-dark"
   )
 })
 
@@ -182,12 +187,32 @@ test_that("bs_navbar forwards named ... as attributes and extra class to nav", {
     class = "shadow",
     `aria-label` = "Main"
   ))
-  expect_match(
+  # Assert on the <nav> tag itself — matching "anywhere in the HTML" would
+  # not catch the attribute landing on the collapse <div> instead.
+  nav_tag <- regmatches(
     html,
+    regexpr(
+      "<nav[^>]*>",
+      html
+    )
+  )
+  expect_match(
+    nav_tag,
     "shadow"
   )
   expect_match(
-    html,
+    nav_tag,
+    "aria-label=\"Main\""
+  )
+  # The toggler's own aria-label lives on the button, not the collapse div.
+  expect_no_match(
+    regmatches(
+      html,
+      regexpr(
+        "<div class=\"collapse navbar-collapse\"[^>]*>",
+        html
+      )
+    ),
     "aria-label=\"Main\""
   )
 })

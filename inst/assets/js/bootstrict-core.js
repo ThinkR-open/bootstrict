@@ -16,8 +16,6 @@
   var bootstrict = window.bootstrict || {};
   window.bootstrict = bootstrict;
 
-  bootstrict.version = "0.0.0.9000";
-
   // --- Bootstrap instance helper -----------------------------------------
   // bootstrict.bs("Collapse", el, opts) -> bootstrap.Collapse instance.
   bootstrict.bs = function (component, el, options) {
@@ -25,7 +23,23 @@
       console.warn("bootstrict: bootstrap." + component + " is unavailable.");
       return null;
     }
+    // Collapse's constructor default is {toggle: true}, which *toggles the
+    // panel inside the constructor* the first time an instance is created —
+    // a server "hide" on a hidden panel would show it. Bootstrap's own data
+    // API always instantiates with {toggle: false}; so do we.
+    if (component === "Collapse" && !(options && "toggle" in options)) {
+      options = Object.assign({ toggle: false }, options);
+    }
     return window.bootstrap[component].getOrCreateInstance(el, options || {});
+  };
+
+  // Warn (once per call) when a server message targets a missing element —
+  // typically a namespacing mistake inside a Shiny module.
+  bootstrict.missing = function (method, id) {
+    console.warn(
+      "bootstrict: " + method + " targets #" + id + ", which is not in the DOM. " +
+      "Check the id (inside a module, ids are namespaced automatically)."
+    );
   };
 
   // --- Input binding factory ---------------------------------------------
@@ -33,10 +47,20 @@
   //   name:        unique binding name (required)
   //   selector:    CSS selector used by find() (required)
   //   getValue:    function(el) -> value (required)
-  //   events:      array of (bubbling) DOM/Bootstrap event names to resubmit on
+  //   events:      array of (bubbling) DOM/Bootstrap event names to resubmit
+  //                on. Each entry is either a string (immediate submit) or
+  //                {name, deferred: true} to route through getRatePolicy().
+  //   eventFilter: optional function(el, event) -> boolean; when false the
+  //                event is ignored (e.g. events bubbling from a nested copy
+  //                of the same component).
   //   getType:     optional function(el) -> Shiny output type string
   //   initialize:  optional function(el)
-  //   subscribe:   optional function(el, callback) for custom wiring
+  //   subscribe:   optional function(el, callback, ns) for custom wiring; use
+  //                the provided jQuery namespace (`$(el).on("click" + ns, …)`)
+  //                so the generic unsubscribe can remove the handlers.
+  //   unsubscribe: optional function(el) for extra teardown (e.g. disposing
+  //                the Bootstrap instance); jQuery handlers registered under
+  //                the binding namespace are removed automatically.
   //   receiveMessage: optional function(el, data) for update_*()
   //   ratePolicy:  optional { policy, delay }
   // }
@@ -62,16 +86,20 @@
       subscribe: function (el, callback) {
         var ns = "." + opts.name.replace(/[^A-Za-z0-9]/g, "");
         if (opts.subscribe) {
-          opts.subscribe(el, callback);
+          opts.subscribe(el, callback, ns);
         }
         (opts.events || []).forEach(function (ev) {
-          $(el).on(ev + ns, function () {
-            callback(opts.allowDeferred === true);
+          var name = typeof ev === "string" ? ev : ev.name;
+          var deferred = typeof ev === "string" ? false : ev.deferred === true;
+          $(el).on(name + ns, function (e) {
+            if (opts.eventFilter && !opts.eventFilter(el, e)) return;
+            callback(deferred);
           });
         });
       },
       unsubscribe: function (el) {
         var ns = "." + opts.name.replace(/[^A-Za-z0-9]/g, "");
+        if (opts.unsubscribe) opts.unsubscribe(el);
         $(el).off(ns);
       },
       receiveMessage: function (el, data) {

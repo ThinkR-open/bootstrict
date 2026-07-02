@@ -12,6 +12,7 @@ bs_checkbox_input(
   ...,
   switch = FALSE,
   reverse = FALSE,
+  help = NULL,
   width = NULL
 )
 
@@ -21,6 +22,7 @@ bs_switch_input(
   value = FALSE,
   ...,
   reverse = FALSE,
+  help = NULL,
   width = NULL
 )
 }
@@ -37,6 +39,8 @@ bs_switch_input(
 
 \item{reverse}{If \code{TRUE}, put the label before the control
 (\code{.form-check-reverse}, Bootstrap 5.2).}
+
+\item{help}{Help text rendered below the control (\code{.form-text}).}
 
 \item{width}{CSS width (e.g. \code{"100\%"}, \code{"200px"}).}
 }

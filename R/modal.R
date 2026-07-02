@@ -24,8 +24,9 @@
 #' @param fullscreen `TRUE` for an always-fullscreen modal, or a breakpoint
 #'   (`"sm"`/`"md"`/`"lg"`/`"xl"`/`"xxl"`) for fullscreen below that breakpoint
 #'   (`.modal-fullscreen-{bp}-down`).
-#' @param backdrop Backdrop behaviour: `TRUE` (dismiss on outside click),
-#'   `FALSE` or `"static"` (do not dismiss on outside click).
+#' @param backdrop Backdrop behaviour: `TRUE` (backdrop shown, dismiss on
+#'   outside click), `"static"` (backdrop shown, do not dismiss on outside
+#'   click) or `FALSE` (no backdrop at all).
 #' @param keyboard If `FALSE`, the modal cannot be closed with the Escape key.
 #' @param class Extra classes.
 #'
@@ -82,6 +83,20 @@ bs_modal <- function(
     )
   }
 
+  dots <- split_dots(
+    ...
+  )
+  title_id <- if (
+    !is.null(
+      title
+    )
+  ) {
+    paste0(
+      id,
+      "-title"
+    )
+  }
+
   dialog <- htmltools::div(
     class = bs_classes(
       "modal-dialog",
@@ -111,10 +126,11 @@ bs_modal <- function(
         )
       )
         bs_modal_header(bs_modal_title(
-          title
+          title,
+          id = title_id
         )),
       bs_modal_body(
-        ...
+        dots$children
       ),
       if (
         !is.null(
@@ -127,15 +143,24 @@ bs_modal <- function(
     )
   )
 
-  static_backdrop <- isFALSE(
-    backdrop
-  ) ||
+  # Bootstrap distinguishes "static" (backdrop shown, click outside does not
+  # dismiss) from "false" (no backdrop at all).
+  backdrop_attr <- if (
     identical(
       backdrop,
       "static"
     )
+  ) {
+    "static"
+  } else if (
+    isFALSE(
+      backdrop
+    )
+  ) {
+    "false"
+  }
 
-  attach_deps(htmltools::div(
+  root <- htmltools::div(
     id = id,
     class = bs_classes(
       "modal",
@@ -144,11 +169,9 @@ bs_modal <- function(
     ),
     tabindex = "-1",
     `aria-hidden` = "true",
+    `aria-labelledby` = title_id,
     `data-bootstrict` = "modal",
-    `data-bs-backdrop` = if (
-      static_backdrop
-    )
-      "static",
+    `data-bs-backdrop` = backdrop_attr,
     `data-bs-keyboard` = if (
       !isTRUE(
         keyboard
@@ -156,7 +179,27 @@ bs_modal <- function(
     )
       "false",
     dialog
-  ))
+  )
+  # Named `...` become attributes of the modal root (e.g. `data-bs-focus`).
+  if (
+    length(
+      dots$attribs
+    ) >
+      0L
+  ) {
+    root <- do.call(
+      htmltools::tagAppendAttributes,
+      c(
+        list(
+          root
+        ),
+        dots$attribs
+      )
+    )
+  }
+  attach_deps(
+    root
+  )
 }
 
 #' @rdname bs_modal
@@ -185,6 +228,11 @@ bs_modal_title <- function(
   level = 1,
   class = NULL
 ) {
+  level <- check_heading_level(
+    level
+  )
+  # Bootstrap 5.3 reference markup: <h1 class="modal-title fs-5"> (semantic
+  # heading level decoupled from the visual size).
   htmltools::tag(
     paste0(
       "h",
@@ -256,8 +304,7 @@ bs_modal_trigger <- function(
     id = NULL,
     ...,
     `data-bs-toggle` = "modal",
-    `data-bs-target` = paste0(
-      "#",
+    `data-bs-target` = css_id_selector(
       target
     ),
     class = class

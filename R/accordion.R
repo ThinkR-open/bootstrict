@@ -131,8 +131,7 @@ bs_accordion <- function(
         ),
         type = "button",
         `data-bs-toggle` = "collapse",
-        `data-bs-target` = paste0(
-          "#",
+        `data-bs-target` = css_id_selector(
           panel_id
         ),
         `aria-expanded` = if (
@@ -161,8 +160,7 @@ bs_accordion <- function(
             multiple
           )
         )
-          paste0(
-            "#",
+          css_id_selector(
             id
           ),
         htmltools::div(
@@ -240,8 +238,10 @@ bs_accordion_panel <- function(
 #' Control an accordion from the server
 #'
 #' @param id Accordion id (namespaced automatically inside modules).
-#' @param open Panel value(s) to open.
-#' @param close Panel value(s) to close. Use `TRUE` to close all.
+#' @param open Panel value(s) to open. Use `TRUE` to open all (sensible with
+#'   `multiple = TRUE`); `FALSE`/`NULL` is a no-op.
+#' @param close Panel value(s) to close. Use `TRUE` to close all;
+#'   `FALSE`/`NULL` is a no-op.
 #' @param session The Shiny session.
 #'
 #' @return Invisibly `NULL`, called for its side effect.
@@ -258,19 +258,41 @@ update_bs_accordion <- function(
       id,
       session
     ),
-    open = as_msg_list(
+    open = as_msg_flag_list(
       open
     ),
-    close = if (
-      isTRUE(
-        close
-      )
-    )
-      "__all__" else
-      as_msg_list(
-        close
-      ),
+    close = as_msg_flag_list(
+      close
+    ),
     session = session
+  )
+}
+
+#' `TRUE` -> the "__all__" sentinel, `FALSE` -> no-op, else a JSON array.
+#' @noRd
+as_msg_flag_list <- function(
+  x
+) {
+  if (
+    isTRUE(
+      x
+    )
+  ) {
+    return(
+      "__all__"
+    )
+  }
+  if (
+    isFALSE(
+      x
+    )
+  ) {
+    return(
+      NULL
+    )
+  }
+  as_msg_list(
+    x
   )
 }
 

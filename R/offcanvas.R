@@ -88,6 +88,16 @@ bs_offcanvas <- function(
     ...
   )
 
+  title_id <- if (
+    !is.null(
+      title
+    )
+  ) {
+    paste0(
+      id,
+      "-title"
+    )
+  }
   header <- if (
     !is.null(
       title
@@ -97,6 +107,7 @@ bs_offcanvas <- function(
       class = "offcanvas-header",
       htmltools::tags$h5(
         class = "offcanvas-title",
+        id = title_id,
         title
       ),
       bs_close_button(
@@ -116,6 +127,7 @@ bs_offcanvas <- function(
     ),
     tabindex = "-1",
     id = id,
+    `aria-labelledby` = title_id,
     `data-bootstrict` = "offcanvas",
     `data-bs-backdrop` = backdrop_attr,
     `data-bs-scroll` = if (
@@ -152,7 +164,8 @@ bs_offcanvas <- function(
 #' round trip required).
 #'
 #' @param target Id of the [bs_offcanvas()] to open.
-#' @param ... Content (label) and named HTML attributes applied to the button.
+#' @param ... Content (label) and named HTML attributes, forwarded to
+#'   [bs_button()].
 #' @param class Extra classes.
 #'
 #' @return A button tag.
@@ -165,19 +178,15 @@ bs_offcanvas_trigger <- function(
   ...,
   class = NULL
 ) {
-  htmltools::tags$button(
-    class = bs_classes(
-      "btn",
-      class
-    ),
-    type = "button",
+  bs_button(
+    id = NULL,
+    ...,
     `data-bs-toggle` = "offcanvas",
-    `data-bs-target` = paste0(
-      "#",
+    `data-bs-target` = css_id_selector(
       target
     ),
     `aria-controls` = target,
-    ...
+    class = class
   )
 }
 

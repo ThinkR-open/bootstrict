@@ -16,14 +16,16 @@ bs_progress_bar(
   striped = FALSE,
   animated = FALSE,
   label = NULL,
+  aria_label = NULL,
   id = NULL,
   class = NULL
 )
 }
 \arguments{
-\item{...}{One or more \code{\link[=bs_progress_bar]{bs_progress_bar()}}s and named HTML attributes.}
+\item{...}{One or more \code{\link[=bs_progress_bar]{bs_progress_bar()}}s and named HTML attributes.
+With two or more bars, the group renders as \code{.progress-stacked}.}
 
-\item{height}{CSS height of the progress track (e.g. \code{"20px"}, \code{"1rem"}).}
+\item{height}{CSS height of the progress track(s) (e.g. \code{"20px"}, \code{"1rem"}).}
 
 \item{class}{Extra classes.}
 
@@ -39,17 +41,27 @@ bs_progress_bar(
 
 \item{label}{Text shown inside the bar.}
 
-\item{id}{Bar id; required to target it with \code{\link[=update_bs_progress]{update_bs_progress()}}.}
+\item{aria_label}{Accessible name of the progress track (\code{aria-label}).}
+
+\item{id}{Id of the \code{.progress} track; required to target it with
+\code{\link[=update_bs_progress]{update_bs_progress()}}.}
 }
 \value{
 A progress tag.
 }
 \description{
-A progress container wrapping one or more \code{\link[=bs_progress_bar]{bs_progress_bar()}}s. Progress is
+A progress display. \code{\link[=bs_progress_bar]{bs_progress_bar()}} builds one bar (a \code{.progress}
+track with its \code{.progress-bar}); \code{\link[=bs_progress]{bs_progress()}} finalises it, or stacks
+several bars into a Bootstrap 5.3 \code{.progress-stacked} group. Progress is
 display-only (it reports no value to the server); drive it from the server
 with \code{\link[=update_bs_progress]{update_bs_progress()}}.
 }
 \examples{
 bs_progress(bs_progress_bar(value = 25, id = "load"))
+# stacked (Bootstrap 5.3):
+bs_progress(
+  bs_progress_bar(value = 15, color = "success"),
+  bs_progress_bar(value = 30, color = "danger")
+)
 bs_progress_bar(value = 75, color = "success", striped = TRUE)
 }

@@ -40,11 +40,13 @@ navbars on a page never collide.}
 \code{"sm"}, \code{"md"}, \code{"lg"}, \code{"xl"}, \code{"xxl"}, or \code{TRUE} to always expand
 (\code{.navbar-expand}). Use \code{FALSE}/\code{NULL} to never expand (always collapsed).}
 
-\item{bg}{Background theme colour (\verb{.bg-*}), one of the Bootstrap theme
-colours.}
+\item{bg}{Background colour (\verb{.bg-*}): one of the Bootstrap theme colours,
+or \code{"body"}, \code{"body-secondary"}, \code{"body-tertiary"} (the Bootstrap 5.3
+navbar default), \code{"white"}, \code{"black"}, \code{"transparent"}.}
 
-\item{theme}{Colour scheme applied via \code{data-bs-theme}: \code{"light"} or
-\code{"dark"}.}
+\item{theme}{Colour scheme applied via \code{data-bs-theme} (the Bootstrap 5.3
+colour-modes idiom; \code{.navbar-light}/\code{.navbar-dark} are deprecated):
+\code{"light"} or \code{"dark"}.}
 
 \item{placement}{Fixed/sticky placement: one of \code{"fixed-top"},
 \code{"fixed-bottom"}, \code{"sticky-top"}, \code{"sticky-bottom"}.}

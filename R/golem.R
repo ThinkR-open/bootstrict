@@ -7,9 +7,10 @@
 #'
 #' * `R/app_ui.R` is rewritten to use [bs_page()] and shows a "Hello world"
 #'   inside a [bs_container()].
-#' * An (empty by default) `inst/app/www/_variables.sass` designer variable
+#' * An (empty by default) `inst/app/www/_variables.scss` designer variable
 #'   sheet is created and wired into [bootstrict_theme()], so a designer can
-#'   drop Sass variables in and have them picked up automatically.
+#'   drop SCSS variables (`$name: value;`) in and have them picked up
+#'   automatically.
 #'
 #' golem sets the working directory to the new project before calling the hook,
 #' so every path below is relative to the application root.
@@ -45,10 +46,12 @@ use_bootstrict_golem <- function(
     showWarnings = FALSE
   )
 
-  # 1. An empty-by-default designer SASS variable sheet.
+  # 1. An empty-by-default designer variable sheet. `.scss` (not `.sass`):
+  # parse_scss_variables() reads the `$name: value;` SCSS syntax — the
+  # indented, semicolon-less .sass syntax would silently parse to nothing.
   variables_file <- file.path(
     www,
-    "_variables.sass"
+    "_variables.scss"
   )
   if (
     !file.exists(
@@ -72,11 +75,11 @@ use_bootstrict_golem <- function(
     "  tagList(",
     "    # Leave this function for adding external resources",
     "    golem_add_external_resources(),",
-    "    # bootstrict page: theme reads the designer's _variables.sass sheet",
+    "    # bootstrict page: theme reads the designer's _variables.scss sheet",
     "    bootstrict::bs_page(",
     "      title = \"{{package_name}}\",",
     "      theme = bootstrict::bootstrict_theme(",
-    "        variables = app_sys(\"app/www/_variables.sass\")",
+    "        variables = app_sys(\"app/www/_variables.scss\")",
     "      ),",
     "      bootstrict::bs_container(",
     "        shiny::h1(\"Hello world\")",

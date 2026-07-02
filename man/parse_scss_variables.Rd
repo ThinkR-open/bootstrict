@@ -7,7 +7,8 @@
 parse_scss_variables(path)
 }
 \arguments{
-\item{path}{Path to a \code{.scss}/\code{.sass} file.}
+\item{path}{Path to a \code{.scss} file (SCSS syntax, \verb{$name: value;} — the
+indented \code{.sass} syntax has no semicolons and cannot be parsed).}
 }
 \value{
 A named list of Sass variable values. Names use the Bootstrap

@@ -20,7 +20,8 @@ bs_file_input(
 
 \item{label}{Input label.}
 
-\item{...}{Extra attributes applied to each radio \verb{<input>}.}
+\item{...}{Extra attributes applied to the \verb{<input type="file">} element
+itself (e.g. \code{capture}, \code{webkitdirectory}).}
 
 \item{multiple}{Allow selecting more than one file.}
 

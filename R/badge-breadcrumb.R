@@ -80,9 +80,20 @@ bs_breadcrumb <- function(
       ) ==
         1L
   ) {
+    # The value sits inside single quotes in the CSS custom property: escape
+    # backslashes and quotes so e.g. divider = "'" stays valid CSS.
+    escaped <- gsub(
+      "'",
+      "\\\\'",
+      gsub(
+        "\\\\",
+        "\\\\\\\\",
+        divider
+      )
+    )
     paste0(
       "--bs-breadcrumb-divider: '",
-      divider,
+      escaped,
       "';"
     )
   }

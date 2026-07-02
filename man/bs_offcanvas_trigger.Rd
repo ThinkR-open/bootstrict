@@ -9,7 +9,8 @@ bs_offcanvas_trigger(target, ..., class = NULL)
 \arguments{
 \item{target}{Id of the \code{\link[=bs_offcanvas]{bs_offcanvas()}} to open.}
 
-\item{...}{Content (label) and named HTML attributes applied to the button.}
+\item{...}{Content (label) and named HTML attributes, forwarded to
+\code{\link[=bs_button]{bs_button()}}.}
 
 \item{class}{Extra classes.}
 }

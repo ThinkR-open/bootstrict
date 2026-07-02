@@ -55,7 +55,8 @@ separate toggle caret).}
 \item{direction}{Menu drop direction: \code{"down"}, \code{"up"}, \code{"end"} or
 \code{"start"}.}
 
-\item{dark}{If \code{TRUE}, a dark dropdown menu (\code{.dropdown-menu-dark}).}
+\item{dark}{If \code{TRUE}, a dark dropdown via \code{data-bs-theme="dark"} on the
+wrapper (the Bootstrap 5.3 idiom; \code{.dropdown-menu-dark} is deprecated).}
 
 \item{align}{Menu alignment. \code{"end"} right-aligns the menu
 (\code{.dropdown-menu-end}); a named list such as \code{list(lg = "end")} produces a

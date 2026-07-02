@@ -11,7 +11,9 @@ bs_close_button(..., label = "Close", white = FALSE, class = NULL)
 
 \item{label}{Accessible label.}
 
-\item{white}{If \code{TRUE}, white variant for dark backgrounds.}
+\item{white}{If \code{TRUE}, the variant for dark backgrounds
+(\code{data-bs-theme="dark"} on the button — the Bootstrap 5.3 idiom;
+\code{.btn-close-white} is deprecated).}
 
 \item{class}{Extra classes.}
 }

@@ -10,6 +10,7 @@ bs_img(
   fluid = FALSE,
   thumbnail = FALSE,
   rounded = FALSE,
+  object_fit = NULL,
   alt = NULL,
   class = NULL
 )
@@ -24,6 +25,10 @@ bs_img(
 \item{thumbnail}{Render with a rounded thumbnail border (\code{.img-thumbnail}).}
 
 \item{rounded}{Add rounded corners (\code{.rounded}).}
+
+\item{object_fit}{How the image fills its box (Bootstrap 5.3
+\verb{.object-fit-*} utility): \code{"contain"}, \code{"cover"}, \code{"fill"}, \code{"scale"}
+(scale-down) or \code{"none"}.}
 
 \item{alt}{Alternative text.}
 

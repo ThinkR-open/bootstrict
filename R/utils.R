@@ -229,6 +229,48 @@ bs_breakpoints <- c(
   "xxl"
 )
 
+#' Validate a heading level (1-6); returns it as an integer.
+#'
+#' `<h7>` is not an HTML element and classes like `display-7` do not exist,
+#' so fail loudly rather than emit broken markup.
+#' @noRd
+check_heading_level <- function(
+  level,
+  arg_nm = rlang::caller_arg(
+    level
+  )
+) {
+  ok <- length(
+    level
+  ) ==
+    1L &&
+    is.numeric(
+      level
+    ) &&
+    !is.na(
+      level
+    ) &&
+    level ==
+      as.integer(
+        level
+      ) &&
+    level >=
+      1 &&
+    level <=
+      6
+  if (
+    !ok
+  ) {
+    rlang::abort(sprintf(
+      "`%s` must be a heading level between 1 and 6.",
+      arg_nm
+    ))
+  }
+  as.integer(
+    level
+  )
+}
+
 # --- attribute helpers -----------------------------------------------------
 
 #' Coerce a logical/character flag into a `data-bs-*` attribute value.
@@ -268,6 +310,80 @@ bs_bool_attr <- function(
   )
 }
 
+#' Build a CSS id selector (`#id`) with special characters escaped.
+#'
+#' Bootstrap resolves `data-bs-target` / `href` / `data-bs-parent` with
+#' `document.querySelector()`, so ids containing CSS-significant characters
+#' (`.`, `:`, ... — which arise from dotted Shiny module namespaces) must be
+#' escaped the way JavaScript's `CSS.escape()` does, or the selector silently
+#' matches nothing.
+#' @noRd
+css_id_selector <- function(
+  id
+) {
+  chars <- strsplit(
+    as.character(
+      id
+    ),
+    ""
+  )[[
+    1
+  ]]
+  esc <- vapply(
+    chars,
+    function(
+      ch
+    ) {
+      if (
+        grepl(
+          "^[-_a-zA-Z0-9]$",
+          ch
+        )
+      ) {
+        ch
+      } else {
+        paste0(
+          "\\",
+          ch
+        )
+      }
+    },
+    character(
+      1
+    ),
+    USE.NAMES = FALSE
+  )
+  # A leading digit is not a valid start of a CSS identifier: hex-escape it
+  # (`#1a` -> `#\31 a`), as CSS.escape() does.
+  if (
+    length(
+      esc
+    ) &&
+      grepl(
+        "^[0-9]$",
+        chars[[
+          1
+        ]]
+      )
+  ) {
+    esc[[
+      1
+    ]] <- sprintf(
+      "\\3%s ",
+      chars[[
+        1
+      ]]
+    )
+  }
+  paste0(
+    "#",
+    paste(
+      esc,
+      collapse = ""
+    )
+  )
+}
+
 # --- tag tree walking ------------------------------------------------------
 
 #' Does a tag carry a given class?
@@ -286,7 +402,12 @@ has_class <- function(
       FALSE
     )
   }
-  classes <- tag$attribs$class
+  # tagGetAttribute() joins *repeated* `class` entries (tagAppendAttributes()
+  # adds a new entry each call); `tag$attribs$class` would only see the first.
+  classes <- htmltools::tagGetAttribute(
+    tag,
+    "class"
+  )
   if (
     is.null(
       classes
@@ -297,12 +418,7 @@ has_class <- function(
     )
   }
   classes <- unlist(strsplit(
-    paste(
-      unlist(
-        classes
-      ),
-      collapse = " "
-    ),
+    classes,
     "\\s+"
   ))
   cls %in%
@@ -606,10 +722,15 @@ enhance_form_control <- function(
 }
 
 #' Append Bootstrap help text (`.form-text`) to a form control container.
+#'
+#' When the input's `id` is supplied, the help text gets `id = "<id>-help"`
+#' and the control an `aria-describedby` pointing at it, per the Bootstrap
+#' forms reference markup.
 #' @noRd
 add_form_help <- function(
   tag,
-  help
+  help,
+  id = NULL
 ) {
   if (
     is.null(
@@ -620,9 +741,60 @@ add_form_help <- function(
       tag
     )
   }
+  help_id <- if (
+    !is.null(
+      id
+    )
+  ) {
+    paste0(
+      id,
+      "-help"
+    )
+  }
+  if (
+    !is.null(
+      help_id
+    )
+  ) {
+    tag <- tag_modify_where(
+      tag,
+      function(
+        t
+      ) {
+        has_class(
+          t,
+          "form-control"
+        ) ||
+          has_class(
+            t,
+            "form-select"
+          ) ||
+          has_class(
+            t,
+            "form-check-input"
+          ) ||
+          has_class(
+            t,
+            "form-range"
+          ) ||
+          identical(
+            t$name,
+            "textarea"
+          )
+      },
+      function(
+        t
+      )
+        htmltools::tagAppendAttributes(
+          t,
+          `aria-describedby` = help_id
+        )
+    )
+  }
   htmltools::tagAppendChild(
     tag,
     htmltools::div(
+      id = help_id,
       class = "form-text",
       help
     )
@@ -672,7 +844,23 @@ add_control_attribs <- function(
     },
     function(
       t
-    )
+    ) {
+      # Replace rather than merge: htmltools space-joins duplicated attribute
+      # names at render time, which turns an override such as `type = "email"`
+      # into the invalid `type="text email"`. `class` is the exception —
+      # appending classes is valid and expected.
+      replace_nms <- setdiff(
+        names(
+          attrs
+        ),
+        "class"
+      )
+      t$attribs[
+        names(
+          t$attribs
+        ) %in%
+          replace_nms
+      ] <- NULL
       do.call(
         htmltools::tagAppendAttributes,
         c(
@@ -682,6 +870,7 @@ add_control_attribs <- function(
           attrs
         )
       )
+    }
   )
 }
 

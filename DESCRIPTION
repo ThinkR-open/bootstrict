@@ -1,16 +1,16 @@
 Package: bootstrict
-Title: Strict Bootstrap 5.2 Widgets for Shiny
-Version: 0.0.0.9000
+Title: Strict Bootstrap 5.3 Widgets for Shiny
+Version: 0.1.0
 Authors@R:
     person("Colin", "Fay", , "colin@thinkr.fr", role = c("aut", "cre"))
-Description: A complete, faithful implementation of the Bootstrap 5.2 component,
+Description: A complete, faithful implementation of the Bootstrap 5.3 component,
     layout and form library as Shiny UI functions. Every widget mirrors the
-    Bootstrap 5.2 HTML structure one-to-one so that a designer's mockup and SASS
+    Bootstrap 5.3 HTML structure one-to-one so that a designer's mockup and SASS
     variables can be dropped into a Shiny application with minimal deviation
     from Shiny's own conventions. Interactive components report their state to
     the server and can be controlled server-side through update functions and
-    proxies. Theming is delegated to 'bslib' so designer-provided SASS variable
-    sheets compose natively.
+    proxies. Theming is delegated to 'bslib' (which ships the Bootstrap 5.3
+    runtime) so designer-provided SASS variable sheets compose natively.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -23,6 +23,7 @@ Imports:
     rlang (>= 1.1.0),
     shiny (>= 1.7.0)
 Suggests:
+    golem,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://github.com/thinkr-open/bootstrict

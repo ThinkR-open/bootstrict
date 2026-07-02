@@ -176,7 +176,7 @@ test_that("controls can be disabled", {
   ))
 })
 
-test_that("fade and dark add their modifier classes", {
+test_that("fade and dark add their modifiers", {
   html <- as.character(
     bs_carousel(
       "c",
@@ -191,13 +191,20 @@ test_that("fade and dark add their modifier classes", {
     html,
     "carousel-fade"
   )
+  # Bootstrap 5.3 colour modes (.carousel-dark is deprecated).
   expect_match(
+    html,
+    "data-bs-theme=\"dark\""
+  )
+  expect_no_match(
     html,
     "carousel-dark"
   )
 })
 
-test_that("autoplay FALSE sets data-bs-ride to true", {
+test_that("autoplay FALSE omits data-bs-ride entirely", {
+  # data-bs-ride="true" would resume autoplay after the first interaction;
+  # only the absence of the attribute disables autoplay for good.
   html <- as.character(
     bs_carousel(
       "c",
@@ -207,9 +214,9 @@ test_that("autoplay FALSE sets data-bs-ride to true", {
       autoplay = FALSE
     )
   )
-  expect_match(
+  expect_no_match(
     html,
-    "data-bs-ride=\"true\""
+    "data-bs-ride"
   )
 })
 

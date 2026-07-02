@@ -11,15 +11,22 @@
     events: ["shown.bs.collapse", "hidden.bs.collapse"],
     getValue: function (el) {
       return el.classList.contains("show");
+    },
+    unsubscribe: function (el) {
+      if (window.bootstrap && window.bootstrap.Collapse) {
+        var inst = window.bootstrap.Collapse.getInstance(el);
+        if (inst) inst.dispose();
+      }
     }
   });
 
   // Server -> client: show / hide / toggle.
   bootstrict.addHandler("collapse.update", function (msg) {
     var el = document.getElementById(msg.id);
-    if (!el) return;
+    if (!el) return bootstrict.missing("collapse.update", msg.id);
     var action = msg.action;
     if (action !== "show" && action !== "hide" && action !== "toggle") return;
-    bootstrict.bs("Collapse", el)[action]();
+    var inst = bootstrict.bs("Collapse", el);
+    if (inst) inst[action]();
   });
 })(window);

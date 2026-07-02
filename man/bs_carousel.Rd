@@ -37,12 +37,15 @@ bs_carousel_item(
 \item{fade}{If \code{TRUE}, crossfade between slides instead of sliding
 (\code{.carousel-fade}).}
 
-\item{autoplay}{If \code{TRUE} (default), start cycling on load. When \code{FALSE}, the
-carousel only advances on user interaction (Bootstrap \code{data-bs-ride="true"}).}
+\item{autoplay}{If \code{TRUE} (default), start cycling on load
+(\code{data-bs-ride="carousel"}). When \code{FALSE}, the attribute is omitted so the
+carousel only ever advances on user interaction (Bootstrap's
+\code{data-bs-ride="true"} would resume autoplay after the first interaction).}
 
 \item{interval}{Cycling interval in milliseconds (sets \code{data-bs-interval}).}
 
-\item{dark}{If \code{TRUE}, use the dark variant (\code{.carousel-dark}).}
+\item{dark}{If \code{TRUE}, the dark variant via \code{data-bs-theme="dark"} (the
+Bootstrap 5.3 idiom; \code{.carousel-dark} is deprecated).}
 
 \item{class}{Extra classes.}
 

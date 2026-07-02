@@ -50,7 +50,9 @@ bs_tooltip <- function(
   tag <- htmltools::tagAppendAttributes(
     tag,
     `data-bs-toggle` = "tooltip",
-    title = title,
+    # Bootstrap 5.3 idiom — also avoids the native browser tooltip that a
+    # plain `title` attribute would trigger before Bootstrap takes over.
+    `data-bs-title` = title,
     `data-bs-placement` = placement,
     `data-bs-html` = if (
       isTRUE(
@@ -111,7 +113,7 @@ bs_popover <- function(
     tag,
     `data-bs-toggle` = "popover",
     `data-bs-content` = content,
-    title = title,
+    `data-bs-title` = title,
     `data-bs-placement` = placement,
     `data-bs-trigger` = trigger,
     `data-bs-html` = if (
@@ -135,6 +137,10 @@ bs_popover <- function(
 #'
 #' @param target Id (without `#`) of the nav / list-group that scrollspy drives.
 #' @param ... Scrollable content and named HTML attributes.
+#' @param id Optional container id. The href of the currently active nav link
+#'   is reported as `input$id`. Defaults to a unique auto-generated id (an id
+#'   is required for bootstrict to initialise scrollspy, including inside
+#'   `renderUI()` — Bootstrap only auto-initialises on full page load).
 #' @param offset Pixels from the top to offset link activation
 #'   (`data-bs-offset`).
 #' @param smooth If `TRUE`, enable smooth scrolling (`data-bs-smooth-scroll`).
@@ -148,14 +154,24 @@ bs_popover <- function(
 bs_scrollspy <- function(
   target,
   ...,
+  id = NULL,
   offset = NULL,
   smooth = TRUE,
   class = NULL
 ) {
+  if (
+    is.null(
+      id
+    )
+  ) {
+    id <- bs_auto_id(
+      "bs-scrollspy"
+    )
+  }
   attach_deps(htmltools::div(
+    id = id,
     `data-bs-spy` = "scroll",
-    `data-bs-target` = paste0(
-      "#",
+    `data-bs-target` = css_id_selector(
       target
     ),
     `data-bs-offset` = offset,
@@ -166,6 +182,7 @@ bs_scrollspy <- function(
     )
       "true",
     tabindex = "0",
+    `data-bootstrict` = "scrollspy",
     class = bs_classes(
       class
     ),

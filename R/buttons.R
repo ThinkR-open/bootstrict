@@ -93,9 +93,25 @@ bs_button <- function(
   ) {
     htmltools::tags$a(
       id = id,
-      class = classes,
+      # Anchors have no `disabled` attribute: Bootstrap requires the
+      # `.disabled` class (pointer-events: none) plus tabindex/aria.
+      class = bs_classes(
+        classes,
+        if (
+          isTRUE(
+            disabled
+          )
+        )
+          "disabled"
+      ),
       href = href,
       role = "button",
+      tabindex = if (
+        isTRUE(
+          disabled
+        )
+      )
+        "-1",
       `aria-disabled` = if (
         isTRUE(
           disabled

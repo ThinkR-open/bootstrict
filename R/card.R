@@ -106,6 +106,9 @@ bs_card_title <- function(
   level = 5,
   class = NULL
 ) {
+  level <- check_heading_level(
+    level
+  )
   tag_name <- paste0(
     "h",
     level
@@ -129,6 +132,9 @@ bs_card_subtitle <- function(
   level = 6,
   class = NULL
 ) {
+  level <- check_heading_level(
+    level
+  )
   tag_name <- paste0(
     "h",
     level
@@ -139,6 +145,7 @@ bs_card_subtitle <- function(
       class = bs_classes(
         "card-subtitle",
         "mb-2",
+        # Bootstrap 5.3 idiom (`text-muted` is deprecated in 5.3).
         "text-body-secondary",
         class
       ),

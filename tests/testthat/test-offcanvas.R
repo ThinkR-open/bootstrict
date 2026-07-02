@@ -174,9 +174,11 @@ test_that("bs_offcanvas_trigger renders a toggle button targeting the offcanvas"
     html,
     "^<button"
   )
+  # Delegates to bs_button() (like bs_modal_trigger), so it gets a real
+  # colour variant instead of a bare unstyled .btn.
   expect_match(
     html,
-    "class=\"btn\""
+    "class=\"btn btn-primary\""
   )
   expect_match(
     html,
