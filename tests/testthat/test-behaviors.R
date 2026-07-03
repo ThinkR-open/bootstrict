@@ -237,3 +237,55 @@ test_that("bs_vr renders a vertical rule", {
     "mx-2"
   )
 })
+
+test_that("bs_tooltip leaves an existing data-API trigger untouched", {
+  # Decorating an offcanvas/modal/collapse trigger must not append a second
+  # data-bs-toggle value ("offcanvas tooltip"), which Bootstrap's exact
+  # [data-bs-toggle="offcanvas"] selector would no longer match.
+  out <- as.character(bs_tooltip(
+    bs_offcanvas_trigger(
+      "filters",
+      "Filters"
+    ),
+    "Open the filter drawer"
+  ))
+  expect_match(
+    out,
+    "data-bs-toggle=\"offcanvas\""
+  )
+  expect_no_match(
+    out,
+    "offcanvas tooltip"
+  )
+  # The tooltip still initialises (marker + title present).
+  expect_match(
+    out,
+    "data-bootstrict-tip=\"tooltip\""
+  )
+  expect_match(
+    out,
+    "data-bs-title=\"Open the filter drawer\""
+  )
+})
+
+test_that("bs_popover leaves an existing data-API trigger untouched", {
+  out <- as.character(bs_popover(
+    bs_modal_trigger(
+      "info",
+      "Details"
+    ),
+    "Popover body"
+  ))
+  expect_match(
+    out,
+    "data-bs-toggle=\"modal\""
+  )
+  expect_no_match(
+    out,
+    "modal popover"
+  )
+  expect_match(
+    out,
+    "data-bootstrict-tip=\"popover\""
+  )
+})

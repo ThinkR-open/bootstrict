@@ -1,5 +1,16 @@
 # bootstrict (development version)
 
+## New showcase app
+
+* `inst/examples/quakewatch`: Quake Watch, a realistic demo (a seismic monitor
+  for the Fiji region built on `datasets::quakes`) complementing the exhaustive
+  widget catalogue in `inst/examples/demo`. It exercises the designer hand-off
+  (`bootstrict_theme(variables = "_variables.scss")`), UI-declared overlays
+  (offcanvas filter drawer, modal event records, toasts), state-reporting
+  components driven by `update_bs_*()`, and the 5.3 surface (colour modes,
+  `.nav-underline`, `.progress-stacked`). Run it with
+  `shiny::runApp(system.file("examples/quakewatch", package = "bootstrict"))`.
+
 ## Bootstrap upgrade
 
 The package now targets **Bootstrap 5.3** (5.3.8, the runtime `bslib` actually
@@ -53,6 +64,15 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
   or `[object Object]`), and its `...` must be empty.
 
 ## Bug fixes
+
+* `bs_tooltip()` / `bs_popover()` no longer break the tag they decorate when it
+  is already a data-API trigger (`bs_modal_trigger()`, `bs_offcanvas_trigger()`,
+  `bs_collapse_trigger()`, a dropdown toggle…). They used to append a second
+  `data-bs-toggle` value (e.g. `"offcanvas tooltip"`), which Bootstrap's exact
+  `[data-bs-toggle="offcanvas"]` delegated selector no longer matched — the
+  trigger went dead. The existing attribute is now left untouched; tooltip and
+  popover initialisation never relied on it (it is driven by
+  `data-bootstrict-tip`).
 
 * Named arguments in `...` are now applied to the documented element:
   the `bs_dropdown()` wrapper (they were rendered as visible page text), the

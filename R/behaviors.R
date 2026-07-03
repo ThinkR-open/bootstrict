@@ -13,7 +13,10 @@
 #'
 #' Decorates an existing tag with the data attributes Bootstrap needs to render
 #' a tooltip. Tooltips are initialised client-side by bootstrict (Bootstrap does
-#' not auto-initialise them).
+#' not auto-initialise them). A tag that is already a data-API trigger — a
+#' [bs_modal_trigger()], [bs_offcanvas_trigger()], [bs_collapse_trigger()] or a
+#' dropdown toggle — keeps its own `data-bs-toggle`; the tooltip works
+#' alongside it.
 #'
 #' @param tag A UI element (a `shiny.tag`) to attach the tooltip to.
 #' @param title Tooltip text (or HTML, when `html = TRUE`).
@@ -49,7 +52,19 @@ bs_tooltip <- function(
   )
   tag <- htmltools::tagAppendAttributes(
     tag,
-    `data-bs-toggle` = "tooltip",
+    # Only claim data-bs-toggle when the tag doesn't carry one already:
+    # htmltools appends duplicated attributes ("offcanvas tooltip"), which
+    # Bootstrap's exact [data-bs-toggle=...] delegated selectors no longer
+    # match — decorating a modal/offcanvas/collapse trigger would kill it.
+    # Initialisation doesn't rely on it (binding-behaviors.js selects on
+    # data-bootstrict-tip); the attribute is only the Bootstrap idiom.
+    `data-bs-toggle` = if (
+      is.null(htmltools::tagGetAttribute(
+        tag,
+        "data-bs-toggle"
+      ))
+    )
+      "tooltip",
     # Bootstrap 5.3 idiom — also avoids the native browser tooltip that a
     # plain `title` attribute would trigger before Bootstrap takes over.
     `data-bs-title` = title,
@@ -73,7 +88,10 @@ bs_tooltip <- function(
 #'
 #' Decorates an existing tag with the data attributes Bootstrap needs to render
 #' a popover. Popovers are initialised client-side by bootstrict (Bootstrap does
-#' not auto-initialise them).
+#' not auto-initialise them). A tag that is already a data-API trigger — a
+#' [bs_modal_trigger()], [bs_offcanvas_trigger()], [bs_collapse_trigger()] or a
+#' dropdown toggle — keeps its own `data-bs-toggle`; the popover works
+#' alongside it.
 #'
 #' @param tag A UI element (a `shiny.tag`) to attach the popover to.
 #' @param content Popover body content (or HTML, when `html = TRUE`).
@@ -111,7 +129,14 @@ bs_popover <- function(
   )
   tag <- htmltools::tagAppendAttributes(
     tag,
-    `data-bs-toggle` = "popover",
+    # See bs_tooltip(): never clobber an existing data-API trigger attribute.
+    `data-bs-toggle` = if (
+      is.null(htmltools::tagGetAttribute(
+        tag,
+        "data-bs-toggle"
+      ))
+    )
+      "popover",
     `data-bs-content` = content,
     `data-bs-title` = title,
     `data-bs-placement` = placement,

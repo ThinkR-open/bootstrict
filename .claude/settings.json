@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -v \"^.*bs_send\\(\\\\s*$\")",
+      "Bash(R CMD build . --no-manual)",
+      "Bash(R CMD check bootstrict_0.0.0.9000.tar.gz --no-manual)",
+      "Bash(rm -rf /Users/colinfay/git/github/thinkr-open/bootstrict/bootstrict.Rcheck /Users/colinfay/git/github/thinkr-open/bootstrict/bootstrict_0.0.0.9000.tar.gz)",
+      "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict status --short)",
+      "Bash(grep -E \"\\(WARNING|NOTE|ERROR|Status|OK$\\)\")",
+      "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict diff --stat)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --screenshot=quakewatch.png --window-size=1440,1400 --virtual-time-budget=8000 http://127.0.0.1:8931/)",
+      "Bash(Rscript -e ' *)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://127.0.0.1:8932/)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --screenshot=quakewatch-final.png --window-size=1440,1000 --virtual-time-budget=8000 http://127.0.0.1:8932/)",
+      "Bash(pkill -f \"runApp.*quakewatch\")",
+      "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict status --short man/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://127.0.0.1:8933/)"
+    ]
+  }
+}

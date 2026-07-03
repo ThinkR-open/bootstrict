@@ -257,10 +257,16 @@ toast, tooltip, scrollspy, plus helpers (`bs_ratio()`, `bs_visually_hidden()`,
 `set_bs_color_mode("light")`; component-level `dark = TRUE` / `theme = "dark"`
 arguments emit `data-bs-theme` per the 5.3 idiom.
 
-See `?bootstrict` and run the demo:
+See `?bootstrict` and run the demos:
 
 ```r
+# The catalogue: every widget, one card each.
 shiny::runApp(system.file("examples/demo", package = "bootstrict"))
+
+# The showcase: Quake Watch, a seismic monitor for the Fiji region built on
+# datasets::quakes — designer theme from a _variables.scss sheet, offcanvas
+# filter drawer, modal event records, colour modes, stacked progress.
+shiny::runApp(system.file("examples/quakewatch", package = "bootstrict"))
 ```
 
 ## License

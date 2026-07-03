@@ -1,0 +1,27 @@
+// _variables.scss — exported by the design team (Figma tokens -> Bootstrap 5.3).
+//
+// This sheet is the entire visual identity of Quake Watch. The app loads it
+// with bootstrict_theme(variables = "_variables.scss"); bslib compiles it as
+// part of the Bootstrap 5.3 build, so every token below lands exactly where
+// the Bootstrap docs say it does. Nothing in app.R hard-codes a colour.
+
+// Palette — "deep ocean" brand.
+$primary: #0f766e;
+$secondary: #64748b;
+$success: #059669;
+$info: #0ea5e9;
+$warning: #d97706;
+$danger: #e11d48;
+$light: #f1f5f9;
+$dark: #0f172a;
+
+// Shape & type.
+$border-radius: 0.75rem;
+$border-radius-sm: 0.5rem;
+$border-radius-lg: 1rem;
+$font-family-base: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+$headings-font-weight: 600;
+
+// Components.
+$card-cap-bg: transparent;
+$card-border-color: rgba(15, 23, 42, 0.08);

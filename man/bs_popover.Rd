@@ -37,7 +37,10 @@ The decorated tag, with the bootstrict dependency attached.
 \description{
 Decorates an existing tag with the data attributes Bootstrap needs to render
 a popover. Popovers are initialised client-side by bootstrict (Bootstrap does
-not auto-initialise them).
+not auto-initialise them). A tag that is already a data-API trigger — a
+\code{\link[=bs_modal_trigger]{bs_modal_trigger()}}, \code{\link[=bs_offcanvas_trigger]{bs_offcanvas_trigger()}}, \code{\link[=bs_collapse_trigger]{bs_collapse_trigger()}} or a
+dropdown toggle — keeps its own \code{data-bs-toggle}; the popover works
+alongside it.
 }
 \examples{
 bs_popover(shiny::tags$button("Click me"), "Popover body", title = "Heads up")
