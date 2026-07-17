@@ -29,6 +29,7 @@ through \code{...} are merged with the component's own classes.
 Useful links:
 \itemize{
   \item \url{https://github.com/thinkr-open/bootstrict}
+  \item \url{https://thinkr-open.github.io/bootstrict/}
   \item Report bugs at \url{https://github.com/thinkr-open/bootstrict/issues}
 }
 

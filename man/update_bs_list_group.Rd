@@ -13,8 +13,9 @@ update_bs_list_group(
 \arguments{
 \item{id}{List group id (namespaced automatically inside modules).}
 
-\item{selected}{Item value to activate. \code{NULL} leaves the selection
-unchanged.}
+\item{selected}{Item value to activate. \code{NULL} (the default) leaves the
+current selection unchanged; \code{character(0)} clears it (deselects every
+item and resets \code{input$id} to \code{NULL}).}
 
 \item{session}{The Shiny session.}
 }
@@ -28,5 +29,6 @@ Activates the item whose \code{value} matches \code{selected} in a selectable
 \examples{
 \dontrun{
 update_bs_list_group("my_group", selected = "two")
+update_bs_list_group("my_group", selected = character(0)) # clear
 }
 }

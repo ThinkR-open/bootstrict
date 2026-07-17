@@ -365,8 +365,9 @@ bs_list_group_item <- function(
 #' [bs_list_group()] (one created with an `id`).
 #'
 #' @param id List group id (namespaced automatically inside modules).
-#' @param selected Item value to activate. `NULL` leaves the selection
-#'   unchanged.
+#' @param selected Item value to activate. `NULL` (the default) leaves the
+#'   current selection unchanged; `character(0)` clears it (deselects every
+#'   item and resets `input$id` to `NULL`).
 #' @param session The Shiny session.
 #'
 #' @return Invisibly `NULL`, called for its side effect.
@@ -375,12 +376,15 @@ bs_list_group_item <- function(
 #' @examples
 #' \dontrun{
 #' update_bs_list_group("my_group", selected = "two")
+#' update_bs_list_group("my_group", selected = character(0)) # clear
 #' }
 update_bs_list_group <- function(
   id,
   selected = NULL,
   session = shiny::getDefaultReactiveDomain()
 ) {
+  # `NULL` -> no-op; `character(0)` (or any empty value) -> clear the selection.
+  clear <- !is.null(selected) && length(selected) == 0L
   bs_send(
     "listgroup.update",
     id = bs_ns(
@@ -390,12 +394,17 @@ update_bs_list_group <- function(
     selected = if (
       !is.null(
         selected
-      )
+      ) &&
+        length(
+          selected
+        ) >
+          0L
     )
       as.character(
         selected
       ) else
       NULL,
+    clear = if (clear) TRUE else NULL,
     session = session
   )
 }

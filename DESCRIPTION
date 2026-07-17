@@ -1,6 +1,6 @@
 Package: bootstrict
 Title: Strict Bootstrap 5.3 Widgets for Shiny
-Version: 0.1.1
+Version: 0.2.0
 Authors@R:
     person("Colin", "Fay", , "colin@thinkr.fr", role = c("aut", "cre"))
 Description: A complete, faithful implementation of the Bootstrap 5.3 component,
@@ -24,7 +24,11 @@ Imports:
     shiny (>= 1.7.0)
 Suggests:
     golem,
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: knitr
 Config/testthat/edition: 3
-URL: https://github.com/thinkr-open/bootstrict
+URL: https://github.com/thinkr-open/bootstrict,
+    https://thinkr-open.github.io/bootstrict/
 BugReports: https://github.com/thinkr-open/bootstrict/issues

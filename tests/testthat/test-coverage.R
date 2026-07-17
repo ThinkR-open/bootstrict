@@ -230,6 +230,23 @@ test_that("update_bs_list_group sends the selected value", {
   msg <- last_custom(s)
   expect_equal(msg$message$method, "listgroup.update")
   expect_equal(msg$message$selected, "two")
+  expect_null(msg$message$clear)
+})
+
+test_that("update_bs_list_group(selected = NULL) is a no-op payload", {
+  s <- mock_session()
+  update_bs_list_group("grp", selected = NULL, session = s)
+  msg <- last_custom(s)
+  expect_null(msg$message$selected)
+  expect_null(msg$message$clear)
+})
+
+test_that("update_bs_list_group(selected = character(0)) clears the selection", {
+  s <- mock_session()
+  update_bs_list_group("grp", selected = character(0), session = s)
+  msg <- last_custom(s)
+  expect_true(msg$message$clear)
+  expect_null(msg$message$selected)
 })
 
 # --- progress -------------------------------------------------------------

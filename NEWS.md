@@ -152,6 +152,11 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## New features
 
+* `update_bs_list_group(id, selected = character(0))` clears the selection
+  (deselects every item and resets `input$id` to `NULL`). `selected = NULL`
+  remains the no-op that leaves the current selection untouched, so a group
+  can now be cleared server-side without the surprise reset that the pre-`NULL`
+  no-op behaviour carried.
 * `bs_checkbox_input()`, `bs_switch_input()`, `bs_date_input()` and
   `bs_date_range_input()` gain the `help` argument the other inputs already
   had.

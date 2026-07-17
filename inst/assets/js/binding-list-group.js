@@ -39,10 +39,21 @@
   });
 
   // Server -> client: activate the item carrying the given data-value.
-  // `selected` absent -> leave the selection unchanged (documented no-op).
+  // `selected` absent -> leave the selection unchanged (documented no-op);
+  // `clear` (from selected = character(0)) -> drop every active item.
   bootstrict.addHandler("listgroup.update", function (msg) {
     var group = document.getElementById(msg.id);
     if (!group) return bootstrict.missing("listgroup.update", msg.id);
+
+    // Explicit clear: deselect every item and report the empty selection.
+    if (msg.clear) {
+      group.querySelectorAll(".list-group-item.active").forEach(function (other) {
+        other.classList.remove("active");
+        other.removeAttribute("aria-current");
+      });
+      $(group).trigger("bootstrict:listgroup");
+      return;
+    }
 
     if (msg.selected === null || typeof msg.selected === "undefined") return;
 
