@@ -1,0 +1,207 @@
+---
+title: "Theming and the designer hand-off"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Theming and the designer hand-off}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r}
+library(shiny)
+library(bootstrict)
+```
+
+Theming in `bootstrict` is delegated entirely to
+[`bslib`](https://rstudio.github.io/bslib/), which ships the Bootstrap 5.3
+runtime and compiles SASS. Because the markup `bootstrict` emits is *exactly*
+the markup Bootstrap 5.3 documents, a designer's SASS variables restyle every
+widget with no per-component work. This article covers the whole theming story:
+building a theme, the designer hand-off via a `_variables.scss` sheet, and
+Bootstrap 5.3 colour modes.
+
+## The motivating workflow
+
+The workflow `bootstrict` is built around:
+
+1. A designer works in Figma, staying strictly within the Bootstrap 5.3 docs.
+2. They export a `_variables.scss` sheet — a list of `$name: value;` overrides.
+3. You receive the mockup and the sheet, and wire the sheet into the app. That
+   is the *entire* theming step.
+
+```{r}
+ui <- bs_page(
+  theme = bootstrict_theme(variables = "_variables.scss"),
+  bs_container(
+    bs_card(bs_card_body("The whole visual identity comes from the sheet."))
+  )
+)
+```
+
+## `bootstrict_theme()`
+
+`bootstrict_theme()` is a thin wrapper over `bslib::bs_theme()`, pinned to
+Bootstrap 5. It merges, in order of increasing priority:
+
+- a designer's exported SASS variable sheet (`variables=`),
+- inline variables passed through `...`.
+
+```{r}
+bootstrict_theme(
+  ...,           # Sass variables forwarded to bslib::bs_theme(), e.g. primary =
+  variables = NULL,   # path to a .scss sheet, or a named list
+  bootswatch = NULL,  # optional Bootswatch theme name
+  preset = NULL       # optional bslib preset name
+)
+```
+
+Inline `...` variables **win over the file** on a name clash — handy for
+overriding a single token without editing the designer's sheet:
+
+```{r}
+bootstrict_theme(
+  variables = "_variables.scss",
+  primary = "#ff6600"
+)
+```
+
+Any Sass variable `bslib::bs_theme()` understands works here. Note that some
+variable names are not valid R names, so quote them:
+
+```{r}
+bootstrict_theme(primary = "#ff6600", "font-size-base" = "1rem")
+```
+
+Pass the resulting theme to any page constructor:
+
+```{r}
+bs_page(theme = bootstrict_theme(primary = "#0d6efd"), ...)
+```
+
+## The `_variables.scss` sheet
+
+A `_variables.scss` sheet is plain SCSS: one `$name: value;` declaration per
+line. It is exactly what a designer exports, and it drops in unchanged.
+
+```scss
+// _variables.scss
+$primary:       #ff6600;
+$secondary:     #6c757d;
+$border-radius: 0.5rem;
+$font-family-base: "Inter", sans-serif;
+```
+
+### Inspecting a sheet with `parse_scss_variables()`
+
+`parse_scss_variables()` turns a sheet's top-level declarations into the named
+list `bslib` expects. `bootstrict_theme(variables=)` calls it for you, but it is
+useful on its own — for example to echo the active theme back in an app.
+
+```{r}
+tmp <- tempfile(fileext = ".scss")
+writeLines(
+  c("$primary: #ff6600;", "$border-radius: 0.5rem !default;"),
+  tmp
+)
+parse_scss_variables(tmp)
+#> $primary
+#> [1] "#ff6600"
+#>
+#> $`border-radius`
+#> [1] "0.5rem"
+```
+
+It strips `!default` / `!global` flags and comments. Note the parser reads the
+**SCSS** syntax (`$name: value;`, with semicolons) — the indented `.sass`
+syntax has no semicolons and cannot be parsed.
+
+## Colour modes (Bootstrap 5.3)
+
+Bootstrap 5.3 introduced native light/dark **colour modes** driven by the
+`data-bs-theme` attribute. `bootstrict` exposes them at three levels.
+
+### Set the initial mode on the page
+
+```{r}
+bs_page(color_mode = "dark", ...)
+```
+
+### Flip the mode from the server
+
+`set_bs_color_mode()` toggles the whole page between `"light"` and `"dark"` at
+runtime:
+
+```{r}
+server <- function(input, output, session) {
+  observeEvent(input$dark_switch, {
+    set_bs_color_mode(if (isTRUE(input$dark_switch)) "dark" else "light")
+  })
+}
+```
+
+A complete light/dark toggle is just a switch wired to `set_bs_color_mode()`:
+
+```{r}
+ui <- bs_page(
+  color_mode = "light",
+  bs_container(
+    bs_switch_input("dark", "Dark mode"),
+    bs_card(bs_card_body("This surface follows the colour mode."))
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$dark, {
+    set_bs_color_mode(if (isTRUE(input$dark)) "dark" else "light")
+  })
+}
+
+shinyApp(ui, server)
+```
+
+### Scope a mode to one component
+
+Many components accept a component-level `dark = TRUE` (or `theme = "dark"`)
+argument, which emits `data-bs-theme` on just that element — the 5.3 idiom that
+replaces the deprecated `.navbar-dark` / `.dropdown-menu-dark` /
+`.carousel-dark` classes. For example a dark navbar on a light page:
+
+```{r}
+bs_navbar(brand = bs_navbar_brand("Acme"), bg = "primary", theme = "dark")
+```
+
+## The golem hook
+
+If you scaffold Shiny apps with [`golem`](https://thinkr-open.github.io/golem/),
+`use_bootstrict_golem` is a `project_hook` that turns a fresh golem skeleton
+into a minimal `bootstrict` app: it rewrites `R/app_ui.R` to use `bs_page()` /
+`bs_container()` and creates `inst/app/www/_variables.scss` for you.
+
+```{r}
+golem::create_golem(
+  "my.app",
+  project_hook = bootstrict::use_bootstrict_golem
+)
+```
+
+## Attaching the dependency by hand
+
+Page constructors (`bs_page()` and friends) wire in the `bootstrict`
+dependency automatically, and every top-level widget carries it too. If you
+build a UI without a `bs_page()` wrapper — for example inside a larger app
+shell — add the dependency once with `use_bootstrict()`:
+
+```{r}
+tagList(
+  use_bootstrict(),
+  bs_card(bs_card_body("..."))
+)
+```

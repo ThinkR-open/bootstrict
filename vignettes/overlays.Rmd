@@ -1,0 +1,229 @@
+---
+title: "Overlays and server-driven interactivity"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Overlays and server-driven interactivity}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r}
+library(shiny)
+library(bootstrict)
+```
+
+This article covers the overlay widgets — modal, offcanvas, toast — plus
+tooltips, popovers and scrollspy, and pulls together the one pattern that runs
+through the whole package: interactive widgets report their state as `input$id`
+and are controlled from the server with `id`-first helpers.
+
+## The overlay model: declare in the UI, open by id
+
+This is the biggest deliberate difference from Shiny. Shiny builds overlays on
+the server (`showModal(modalDialog(...))`). `bootstrict` follows the native
+Bootstrap pattern: **declare the overlay once in the UI with an `id`, then open
+or close it by id from the server.**
+
+Two consequences follow:
+
+- **Place overlays at the top level of the page** — a direct child of
+  `bs_page()` / `bs_container()`, *not* nested inside a `bs_card()` or other
+  positioned element, which Bootstrap can clip or mis-position.
+- **Every overlay reports its open state as `input$id`** (`TRUE` when shown) —
+  something Shiny modals do not do.
+
+## Modal
+
+Declare a `bs_modal()` with an `id`; open it with `show_bs_modal()`.
+
+```{r}
+ui <- bs_page(
+  bs_container(
+    bs_button("open", "Open modal", color = "primary")
+  ),
+  # top level of the page, not inside the container's card
+  bs_modal(
+    "info",
+    "Modal body text.",
+    title = "Heads up",
+    footer = bs_button("ok", "OK", color = "primary")
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$open, show_bs_modal("info"))
+  observeEvent(input$info, message("modal open state: ", input$info))
+}
+
+shinyApp(ui, server)
+```
+
+The server helpers are `show_bs_modal()`, `hide_bs_modal()` and
+`toggle_bs_modal()` — each `id`-first, session-last:
+
+```{r}
+show_bs_modal("info")
+hide_bs_modal("info")
+```
+
+Options: `size` (`"sm"`/`"lg"`/`"xl"`), `centered`, `scrollable`,
+`fullscreen` (`TRUE`, or a breakpoint for fullscreen-below), `backdrop`
+(`TRUE` / `"static"` / `FALSE`) and `keyboard` (Escape to close). The pieces
+`bs_modal_header()`, `bs_modal_title()`, `bs_modal_body()` and
+`bs_modal_footer()` are there when you want to hand-build the dialog.
+
+### Opening without a server round trip
+
+`bs_modal_trigger()` opens a modal declaratively from the UI — no `observeEvent`
+needed:
+
+```{r}
+bs_modal_trigger("info", "Open modal", color = "primary")
+```
+
+## Offcanvas (drawer)
+
+An offcanvas is a panel that slides in from an edge — Shiny has no equivalent.
+Same model as the modal: declare it, open it by id.
+
+```{r}
+ui <- bs_page(
+  bs_container(
+    bs_offcanvas_trigger("filters", "Filters", class = "btn-primary")
+  ),
+  bs_offcanvas(
+    "filters",
+    title = "Filter events",
+    placement = "end",              # "start"/"end"/"top"/"bottom"
+    bs_range_input("mag", "Minimum magnitude", value = 4, min = 4, max = 6.5),
+    bs_button("reset", "Reset", color = "secondary", outline = TRUE)
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$reset, {
+    update_bs_range("mag", 4)
+    hide_bs_offcanvas("filters")
+  })
+}
+
+shinyApp(ui, server)
+```
+
+Server helpers: `show_bs_offcanvas()`, `hide_bs_offcanvas()`,
+`toggle_bs_offcanvas()`, plus the UI `bs_offcanvas_trigger()`. `backdrop`
+behaves as for the modal; `responsive = "lg"` shows the panel inline from that
+breakpoint up and only turns it into a drawer below it.
+
+## Toasts
+
+A toast is a small, transient notification. There are two ways to use them.
+
+**Declared toast.** Declare a `bs_toast()` (usually inside a
+`bs_toast_container()` that positions it) and show it by id:
+
+```{r}
+ui <- bs_page(
+  bs_button("save", "Save"),
+  bs_toast_container(
+    bs_toast("saved", "Your changes were saved.", title = "Done"),
+    placement = "top-end"
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$save, show_bs_toast("saved"))
+}
+```
+
+**Notification toast.** `bs_notify_toast()` is the one server-built widget — the
+closest thing to `shiny::showNotification()`. It builds *and* shows a transient
+toast in one call, creating a container on demand and cleaning itself up
+afterwards. Note the argument order: `body` first, `session` last.
+
+```{r}
+bs_notify_toast(
+  "Showing the full catalogue again.",
+  title = "Filters reset",
+  color = "success"
+)
+```
+
+`body` and `title` are plain text only. `color` is a theme colour (`.text-bg-*`),
+`autohide`/`delay` control the auto-dismiss, and `placement` uses the same nine
+keywords as `bs_toast_container()` (`"top-end"`, `"bottom-center"`, …).
+
+## Tooltips and popovers
+
+These **decorate a tag you already have** — they are pipe-friendly wrappers, not
+constructors. Bootstrap does not auto-initialise them, but `bootstrict` does.
+They are UI-only: there is no server-side toggle.
+
+```{r}
+bs_tooltip(bs_button(label = "Hover me"), "Tooltip text", placement = "top")
+
+bs_popover(
+  bs_button(label = "Click me"),
+  "Popover body content",
+  title = "Heads up",
+  placement = "right"
+)
+```
+
+`bs_tooltip()` takes `title`; `bs_popover()` takes `content` (and an optional
+`title`). Both accept `placement` (`"top"`/`"right"`/`"bottom"`/`"left"`),
+`trigger` and `html = TRUE` to allow HTML content.
+
+## Scrollspy
+
+`bs_scrollspy()` wraps a scrollable region and updates a nav (identified by
+`target`) as the user scrolls. It needs an `id` to initialise (one is
+auto-generated if you omit it), including inside `renderUI()`; the active nav
+link's href is reported as `input$id`.
+
+```{r}
+bs_scrollspy(
+  "section-nav",
+  tags$h4("Section one"), tags$p("..."),
+  tags$h4("Section two"), tags$p("..."),
+  offset = 100
+)
+```
+
+## The pattern, in one place
+
+Every interactive widget in `bootstrict` follows the same two-way contract:
+
+| Widget | Reads back as `input$id` | Server control |
+| --- | --- | --- |
+| `bs_tabset()` | active panel value | `update_bs_tabset()` |
+| `bs_accordion()` | open panel value(s) | `update_bs_accordion()` |
+| `bs_carousel()` | active slide index (0-based) | `update_bs_carousel()` |
+| `bs_collapse()` | shown/hidden (`TRUE`/`FALSE`) | `update_bs_collapse()` |
+| `bs_list_group(id=)` | selected item value | `update_bs_list_group()` |
+| `bs_progress_bar(id=)` | *(display only)* | `update_bs_progress()` |
+| `bs_range_input()` | value | `update_bs_range()` |
+| `bs_color_input()` | value | `update_bs_color()` |
+| `bs_modal()` | open (`TRUE`/`FALSE`) | `show_/hide_/toggle_bs_modal()` |
+| `bs_offcanvas()` | open (`TRUE`/`FALSE`) | `show_/hide_/toggle_bs_offcanvas()` |
+| `bs_toast()` | visible (`TRUE`/`FALSE`) | `show_/hide_bs_toast()` |
+| page colour mode | — | `set_bs_color_mode()` |
+
+Every one of these helpers takes the **`id` first** and the **`session` last and
+optional** (it defaults to the current reactive domain), and ids are namespaced
+automatically inside Shiny modules — so the same call works at the top level and
+inside a module with no changes:
+
+```{r}
+update_bs_tabset("tabs", selected = "profile")   # no session argument needed
+show_bs_modal("info")
+set_bs_color_mode("dark")
+```

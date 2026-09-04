@@ -1,5 +1,17 @@
 # bootstrict (development version)
 
+## New widgets
+
+* `bs_download_button()` and `bs_download_link()` wrap
+  `shiny::downloadButton()` / `shiny::downloadLink()`. shiny hardcodes the
+  Bootstrap 3 class `.btn-default` on the download button, which has no
+  Bootstrap 5 equivalent and leaves the button unstyled; the wrapper swaps it
+  for a real 5.3 variant and takes `color` / `outline` / `size` like
+  `bs_button()`. shiny's download plumbing (the `shiny-download-link` class,
+  `href` / `target` / `download` and the auto-enable dance) is left intact, so
+  the server side stays a plain `shiny::downloadHandler()`. `icon` defaults to
+  `NULL` rather than shiny's Font Awesome icon, which is outside Bootstrap 5.
+
 ## New showcase app
 
 * `inst/examples/quakewatch`: Quake Watch, a realistic demo (a seismic monitor

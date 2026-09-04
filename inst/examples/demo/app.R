@@ -698,6 +698,33 @@ ui <- bs_page(
                 class = "ms-2",
                 bs_close_button()
               )
+            ),
+            demo(
+              "bs_download_button() / bs_download_link()",
+              note = paste(
+                "Bootstrap 5 skin over shiny's download output; the server",
+                "side stays a plain shiny::downloadHandler()."
+              ),
+              bs_hstack(
+                gap = 2,
+                class = "flex-wrap align-items-center",
+                bs_download_button(
+                  "c_dl",
+                  "Download CSV"
+                ),
+                bs_download_button(
+                  "c_dl_outline",
+                  "Outline, small",
+                  color = "secondary",
+                  outline = TRUE,
+                  size = "sm"
+                ),
+                bs_download_link(
+                  "c_dl_link",
+                  "or grab the raw data",
+                  color = "primary"
+                )
+              )
             )
           ),
           bs_col(
@@ -1481,6 +1508,25 @@ server <- function(
       )
     }
   )
+
+  # Proof that the download widgets are ordinary shiny download outputs: the
+  # same handler serves the two buttons and the link.
+  mtcars_csv <- function()
+    downloadHandler(
+      filename = function()
+        "mtcars.csv",
+      content = function(
+        file
+      )
+        utils::write.csv(
+          datasets::mtcars,
+          file,
+          row.names = TRUE
+        )
+    )
+  output$c_dl <- mtcars_csv()
+  output$c_dl_outline <- mtcars_csv()
+  output$c_dl_link <- mtcars_csv()
 
   # Proof that bs_file_input() delivers a value to the server.
   output$file_info <- renderUI(

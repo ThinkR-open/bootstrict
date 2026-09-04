@@ -1,0 +1,183 @@
+---
+title: "Navigation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Navigation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r}
+library(shiny)
+library(bootstrict)
+```
+
+The navigation family: static navs, interactive tabsets, the navbar,
+breadcrumbs, pagination and dropdowns.
+
+## Nav vs. tabset
+
+There are two related things here, and it is worth being clear about the
+difference:
+
+- **`bs_nav()`** is a *static* navigation bar — a styled row of links. It
+  reports no state; you decide what each link does.
+- **`bs_tabset()`** is an *interactive* tabbed-panel set. It reports the active
+  panel as `input$id` and is driven from the server with `update_bs_tabset()`.
+  This is the `bootstrict` equivalent of `tabsetPanel()` / `tabPanel()`.
+
+### Static nav
+
+```{r}
+bs_nav(
+  bs_nav_item(bs_nav_link("Active", active = TRUE)),
+  bs_nav_item(bs_nav_link("Link", href = "#")),
+  bs_nav_item(bs_nav_link("Disabled", disabled = TRUE)),
+  type = "tabs"     # NULL (plain), "tabs", "pills" or "underline" (5.3)
+)
+```
+
+`fill`, `justified` and `vertical` control how the links spread and stack.
+
+### Interactive tabset
+
+Build a tabset from `bs_tab_panel()`s. An `id` is required, and each panel's
+`value` (defaulting to its title) is what gets reported.
+
+```{r}
+bs_tabset(
+  "tabs",
+  type = "tabs",          # "tabs" (default), "pills" or "underline"
+  selected = "profile",
+  bs_tab_panel("Home", "Home content", value = "home"),
+  bs_tab_panel("Profile", "Profile content", value = "profile")
+)
+```
+
+Read the active tab as `input$tabs`, and switch it from the server:
+
+```{r}
+server <- function(input, output, session) {
+  observe(print(input$tabs))                            # active panel value
+  observeEvent(input$go, update_bs_tabset("tabs", selected = "home"))
+}
+```
+
+The Bootstrap 5.3 `.nav-underline` style is available via `type = "underline"` —
+used, for example, in the bundled Quake Watch showcase.
+
+## Navbar
+
+`bs_navbar()` is a responsive header that collapses behind a toggler below the
+`expand` breakpoint.
+
+```{r}
+bs_navbar(
+  ...,
+  brand = NULL,       # usually a bs_navbar_brand()
+  id = NULL,          # auto-generated if omitted
+  expand = "lg",      # "sm"/"md"/"lg"/"xl"/"xxl", or TRUE (always) / FALSE (never)
+  bg = NULL,          # a theme colour, or "body"/"body-secondary"/"white"/…
+  theme = NULL,       # "light" or "dark" (data-bs-theme)
+  placement = NULL,   # "fixed-top"/"fixed-bottom"/"sticky-top"/"sticky-bottom"
+  fluid = TRUE,
+  class = NULL
+)
+```
+
+A typical navbar pairs a brand, a nav list and some text. Note the 5.3 idiom:
+for a dark navbar, set `theme = "dark"` (not the deprecated `.navbar-dark`).
+
+```{r}
+bs_navbar(
+  brand = bs_navbar_brand("Quake Watch", href = "/"),
+  bs_navbar_nav(
+    bs_nav_item(bs_nav_link("Monitor", active = TRUE)),
+    bs_nav_item(bs_nav_link("Docs", href = "#"))
+  ),
+  bs_navbar_text("Fiji region · 1964 →"),
+  bg = "primary",
+  theme = "dark"
+)
+```
+
+`bs_navbar_nav()` can scroll a long link list: `scroll = TRUE` with an optional
+`scroll_height = "75vh"`.
+
+## Breadcrumbs
+
+`bs_breadcrumb()` composes `bs_breadcrumb_item()`s; the last item is usually
+`active = TRUE` (the current page, rendered without a link).
+
+```{r}
+bs_breadcrumb(
+  bs_breadcrumb_item("Home", href = "#"),
+  bs_breadcrumb_item("Library", href = "#"),
+  bs_breadcrumb_item("Data", active = TRUE)
+)
+```
+
+`divider=` sets the separator character via the `--bs-breadcrumb-divider` CSS
+variable, e.g. `divider = ">"`.
+
+## Pagination
+
+Build pagination by hand from `bs_page_item()`s:
+
+```{r}
+bs_pagination(
+  bs_page_item("Previous", href = "#"),
+  bs_page_item("1", href = "#", active = TRUE),
+  bs_page_item("2", href = "#"),
+  bs_page_item("Next", href = "#"),
+  size = "sm",         # "sm" or "lg"
+  align = "center"     # "start"/"center"/"end"
+)
+```
+
+…or let `bs_pagination_numbered()` lay out Previous / `1..n` / Next for you:
+
+```{r}
+bs_pagination_numbered(5, current = 2, href_template = "?page=%d")
+```
+
+`href_template` is a `sprintf()`-style pattern; without it every link is `"#"`.
+
+## Dropdowns
+
+`bs_dropdown()` builds a toggleable menu. Bootstrap drives the open/close, so
+there is no `update_bs_*()` for it. To make a menu item reactive, give it an
+`id` — it then behaves as a Shiny action button, reporting its click count as
+`input$id`.
+
+```{r}
+bs_dropdown(
+  "Menu",
+  bs_dropdown_header("Actions"),
+  bs_dropdown_item("Edit", id = "edit"),
+  bs_dropdown_item("Duplicate", id = "dup"),
+  bs_dropdown_divider(),
+  bs_dropdown_text("Signed in as Colin"),
+  color = "secondary",   # a theme colour or "link"
+  outline = TRUE
+)
+```
+
+```{r}
+server <- function(input, output, session) {
+  observeEvent(input$edit, message("Edit clicked"))
+}
+```
+
+Other options: `size` (`"sm"`/`"lg"`), `split = TRUE` for a split button,
+`direction` (`"down"`/`"up"`/`"end"`/`"start"`), `align` (right-align the menu,
+or a responsive `list(lg = "end")`), and `dark = TRUE` for a dark menu (the 5.3
+`data-bs-theme` idiom).

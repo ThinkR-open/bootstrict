@@ -14,7 +14,13 @@
       "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --screenshot=quakewatch-final.png --window-size=1440,1000 --virtual-time-budget=8000 http://127.0.0.1:8932/)",
       "Bash(pkill -f \"runApp.*quakewatch\")",
       "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict status --short man/)",
-      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://127.0.0.1:8933/)"
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://127.0.0.1:8933/)",
+      "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict remote -v)",
+      "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict log --oneline -5)",
+      "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict status -sb)",
+      "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict ls-files inst/examples/quakewatch)",
+      "Bash(git -C /Users/colinfay/git/github/thinkr-open/bootstrict show --stat f43967f)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://connect.thinkr.fr/content/b758afbd-d22f-4313-a169-1db4cdc94b5a/)"
     ]
   }
 }

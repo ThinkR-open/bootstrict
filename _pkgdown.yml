@@ -1,0 +1,176 @@
+url: https://thinkr-open.github.io/bootstrict/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: Theming and the designer hand-off
+        href: articles/theming.html
+      - text: Layout and the grid
+        href: articles/layout.html
+      - text: "Content: tables, media and typography"
+        href: articles/content.html
+      - text: Forms and inputs
+        href: articles/forms.html
+      - text: Components
+        href: articles/components.html
+      - text: Navigation
+        href: articles/navigation.html
+      - text: Overlays and server-driven interactivity
+        href: articles/overlays.html
+
+articles:
+- title: Guides
+  navbar: ~
+  contents:
+  - theming
+  - layout
+  - content
+  - forms
+  - components
+  - navigation
+  - overlays
+
+reference:
+- title: Pages & theming
+  desc: >
+    Wrap an app in a page, build a theme from a designer's SASS sheet, and
+    switch Bootstrap 5.3 colour modes.
+  contents:
+  - bs_page
+  - bootstrict_theme
+  - parse_scss_variables
+  - set_bs_color_mode
+  - use_bootstrict
+  - use_bootstrict_golem
+  - bootstrict_dep
+
+- title: Layout
+  desc: Containers, the responsive 12-column grid, and flex stacks.
+  contents:
+  - bs_container
+  - bs_row
+  - bs_col
+  - bs_hstack
+
+- title: Content
+  desc: Tables, media, typography, lists and small helpers.
+  contents:
+  - bs_table
+  - bs_img
+  - bs_figure
+  - bs_blockquote
+  - bs_display_heading
+  - bs_lead
+  - bs_list_unstyled
+  - bs_icon_link
+  - bs_ratio
+  - bs_vr
+  - bs_visually_hidden
+
+- title: Forms — inputs
+  desc: >
+    Bootstrap 5 form controls. Most delegate to the matching shiny::*Input();
+    bs_range_input() and bs_color_input() are native and take update_bs_*().
+  contents:
+  - bs_text_input
+  - bs_textarea_input
+  - bs_numeric_input
+  - bs_password_input
+  - bs_select_input
+  - bs_checkbox_input
+  - bs_radio_input
+  - bs_checkbox_group_input
+  - bs_range_input
+  - bs_color_input
+  - bs_date_input
+  - bs_date_range_input
+  - bs_file_input
+  - update_bs_range
+  - update_bs_color
+
+- title: Forms — layout & validation
+  desc: Group, float and validate controls.
+  contents:
+  - bs_input_group
+  - bs_floating_label
+  - bs_form
+  - bs_form_label
+  - bs_form_text
+  - bs_valid_feedback
+
+- title: Components — buttons
+  contents:
+  - bs_button
+  - bs_button_group
+  - bs_close_button
+  - bs_download_button
+  - bs_download_link
+
+- title: Components — cards
+  contents:
+  - bs_card
+
+- title: Components — feedback
+  desc: Alerts, badges, progress, spinners and loading placeholders.
+  contents:
+  - bs_alert
+  - bs_badge
+  - bs_progress
+  - update_bs_progress
+  - bs_spinner
+  - bs_placeholder
+
+- title: Components — interactive
+  desc: >
+    Accordion, carousel, collapse and list group report state as input$id and
+    are driven from the server with update_bs_*().
+  contents:
+  - bs_accordion
+  - update_bs_accordion
+  - bs_carousel
+  - update_bs_carousel
+  - bs_collapse
+  - bs_collapse_trigger
+  - update_bs_collapse
+  - bs_list_group
+  - update_bs_list_group
+
+- title: Navigation
+  desc: Navs & tabsets, the navbar, breadcrumbs, pagination and dropdowns.
+  contents:
+  - bs_nav
+  - bs_tabset
+  - update_bs_tabset
+  - bs_navbar
+  - bs_breadcrumb
+  - bs_pagination
+  - bs_page_item
+  - bs_pagination_numbered
+  - bs_dropdown
+
+- title: Overlays
+  desc: >
+    Declared once in the UI, opened by id from the server. Modal, offcanvas and
+    toast, plus tooltips, popovers and scrollspy.
+  contents:
+  - bs_modal
+  - show_bs_modal
+  - bs_modal_trigger
+  - bs_offcanvas
+  - show_bs_offcanvas
+  - bs_offcanvas_trigger
+  - bs_toast
+  - bs_toast_container
+  - bs_notify_toast
+  - show_bs_toast
+  - bs_tooltip
+  - bs_popover
+  - bs_scrollspy

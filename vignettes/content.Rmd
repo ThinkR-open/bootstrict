@@ -1,0 +1,185 @@
+---
+title: "Content: tables, media and typography"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Content: tables, media and typography}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r}
+library(shiny)
+library(bootstrict)
+```
+
+These are the static "content" widgets: tables, images and figures, blockquotes,
+display typography, and lists — plus a few small helpers. None report state to
+the server; they are pure UI.
+
+## Tables
+
+`bs_table()` renders a faithful Bootstrap `<table class="table">`. Pass a data
+frame or matrix as the first argument and it builds the header and body for you;
+pass tag children instead to hand-build the rows.
+
+```{r}
+bs_table(
+  data = NULL,
+  ...,                 # manual children when `data` is NULL
+  striped = FALSE,     # zebra-striped rows
+  bordered = FALSE,    # borders on all sides
+  borderless = FALSE,  # remove all borders
+  hover = FALSE,       # hover highlight
+  small = FALSE,       # condensed padding
+  variant = NULL,      # a theme colour: .table-{colour}
+  responsive = FALSE,  # TRUE, or a breakpoint "sm"/"md"/… for horizontal scroll
+  align = NULL,        # vertical alignment: "middle"/"top"/"bottom"
+  caption = NULL,
+  class = NULL
+)
+```
+
+The most common form — a styled data-frame table:
+
+```{r}
+bs_table(head(mtcars), striped = TRUE, hover = TRUE)
+```
+
+`responsive = TRUE` wraps the table so it scrolls horizontally on narrow
+screens (or pass a breakpoint to only do so below it):
+
+```{r}
+bs_table(
+  df,
+  striped = TRUE,
+  small = TRUE,
+  responsive = TRUE,
+  caption = "24 matching events"
+)
+```
+
+## Images
+
+`bs_img()` is a Bootstrap `<img>` with the usual responsive utilities.
+
+```{r}
+bs_img(
+  src,
+  ...,
+  fluid = FALSE,      # .img-fluid — scale down to fit the parent
+  thumbnail = FALSE,  # .img-thumbnail — rounded bordered frame
+  rounded = FALSE,    # rounded corners
+  object_fit = NULL,  # "contain"/"cover"/"fill"/"scale"/"none" (5.3)
+  alt = NULL,
+  class = NULL
+)
+```
+
+```{r}
+bs_img("logo.png", alt = "Logo", fluid = TRUE)
+```
+
+## Figures
+
+A figure groups an image with a caption. Use `bs_figure_img()` and
+`bs_figure_caption()` inside `bs_figure()`:
+
+```{r}
+bs_figure(
+  bs_figure_img("photo.jpg", alt = "A photo"),
+  bs_figure_caption("A caption for the image.")
+)
+```
+
+## Blockquotes
+
+`bs_blockquote()` renders a Bootstrap `.blockquote` inside a `<figure>`, with an
+optional attribution `footer`:
+
+```{r}
+bs_blockquote(
+  "The data set gives the locations of 1000 seismic events of MB > 4.0.",
+  footer = "R datasets documentation"
+)
+```
+
+## Display typography
+
+Two constructors cover Bootstrap's opinionated typographic accents.
+
+`bs_display_heading()` is a large, prominent heading; `level` (1–6) sets both
+the size (`.display-{level}`) and the heading element:
+
+```{r}
+bs_display_heading("Seismic activity, Fiji region", level = 2)
+```
+
+`bs_lead()` is a standout opening paragraph (`.lead`):
+
+```{r}
+bs_lead("1,000 events of magnitude 4.0 and above, recorded since 1964.")
+```
+
+## Lists
+
+`bs_list_unstyled()` strips the default list styling; each unnamed argument
+becomes an `<li>`. `bs_list_inline()` lays the items out horizontally.
+
+```{r}
+bs_list_unstyled("First", "Second", "Third")
+bs_list_inline("One", "Two", "Three")
+```
+
+You can also pass explicit `tags$li()` children when an item needs richer
+content:
+
+```{r}
+bs_list_unstyled(
+  tags$li(tags$code("bootstrict_theme()"), " — the designer's sheet is the theme"),
+  tags$li(tags$code("bs_offcanvas()"), " — the filter drawer")
+)
+```
+
+(For an interactive, selectable list, use `bs_list_group()` — see
+[Components](components.html).)
+
+## Small helpers
+
+A handful of one-off utilities round out the content toolkit:
+
+- **`bs_icon_link()`** — the Bootstrap 5.3 icon-link: an inline-flex `<a>`
+  pairing an icon with text. `hover = TRUE` nudges the icon on hover.
+
+  ```{r}
+  bs_icon_link("Documentation", href = "#")
+  ```
+
+- **`bs_ratio()`** — wraps an embedded element (an `<iframe>`, a video) so it
+  keeps a fixed aspect ratio. `ratio` is `"1x1"`, `"4x3"`, `"16x9"` or
+  `"21x9"`.
+
+  ```{r}
+  bs_ratio(tags$iframe(src = "https://example.com"), ratio = "16x9")
+  ```
+
+- **`bs_vr()`** — a vertical divider, the vertical counterpart of `<hr>`. Handy
+  between items in an `bs_hstack()`.
+
+  ```{r}
+  bs_hstack(gap = 2, "Left", bs_vr(), "Right")
+  ```
+
+- **`bs_visually_hidden()`** — content available to assistive technology but
+  hidden from sighted users.
+
+  ```{r}
+  bs_visually_hidden("Loading, please wait")
+  ```
