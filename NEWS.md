@@ -90,6 +90,24 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* `parse_scss_variables()` no longer drops most of a designer's sheet. It
+  matched `$name: value;` line by line, so any declaration spanning several
+  lines matched nothing and was discarded without a warning — that is the
+  shape of every Bootstrap map (`$theme-colors`, `$grid-breakpoints`,
+  `$spacers`, `$container-max-widths`, `$font-sizes`, `$utilities`). On
+  Bootstrap's own `_variables.scss` it read 916 of 963 declarations and
+  `theme-colors` was absent. Stripping `//` comments with no notion of strings
+  also truncated any value containing one, silently losing `$web-font-path`
+  and `url("https://…")`; a `;` inside a quoted string cut the value short;
+  and a final declaration with no trailing `;` was lost.
+
+  The file is now scanned instead of split into lines: declarations may span
+  any number of lines, `;` / `//` / `/* */` inside a quoted string or an
+  unquoted `url()` are read as data, `#{}` interpolation is not mistaken for a
+  rule block, and a rule block no longer bleeds into the declaration that
+  follows it.
+
+
 * `bs_tooltip()` / `bs_popover()` no longer disable the Shiny input they
   decorate. Both were initialised through a `Shiny.InputBinding`, and since
   Shiny binds at most one input per element and later registrations take

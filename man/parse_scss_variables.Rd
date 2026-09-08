@@ -22,6 +22,14 @@ for passing to \code{\link[=bootstrict_theme]{bootstrict_theme()}} or \code{\lin
 are returned verbatim as strings (Sass resolves them at compile time), so
 maps, functions and colour expressions all pass straight through.
 }
+\details{
+The file is scanned rather than read line by line, so a declaration may
+span as many lines as it likes (\verb{$theme-colors}, \verb{$grid-breakpoints} and
+\verb{$spacers} always do), and a \verb{;}, \verb{//} or \verb{/* */} inside a quoted string or
+an unquoted \code{url()} is read as data. Anything that is not a top-level
+variable declaration — \verb{@use}/\verb{@import}, a rule block — is ignored. A final
+declaration with no trailing \verb{;} is still read.
+}
 \examples{
 tmp <- tempfile(fileext = ".scss")
 writeLines(c("$primary: #ff6600;", "$border-radius: 0.5rem !default;"), tmp)

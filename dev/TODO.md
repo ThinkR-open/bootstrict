@@ -9,24 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 3. `parse_scss_variables()` jette silencieusement une partie de la feuille
-
-`R/theme.R:44-71`
-
-Le parseur découpe en lignes et matche `\$name\s*:\s*[^;]+;`. Quatre conséquences :
-
-- toute déclaration multi-lignes disparaît sans avertissement — donc `$theme-colors`,
-  `$grid-breakpoints`, `$spacers`, `$container-max-widths`, `$font-sizes`, `$utilities` ;
-  sur la feuille de Bootstrap elle-même, 916 des 959 déclarations seulement sont lues et
-  `"theme-colors" %in% names(v)` est `FALSE` ;
-- `sub("//.*$", "", lines)` tronque toute valeur contenant `//`, donc
-  `$web-font-path: "https://fonts.googleapis.com/…"` est perdu ;
-- un `;` dans une chaîne tronque la valeur ;
-- une dernière déclaration sans `;` final est perdue.
-
-À faire : parser le texte entier avec suivi de profondeur parenthèses/accolades et
-d'état de chaîne, au lieu du découpage par ligne.
-
 ### 4. `bootstrict_theme()` ne tient pas la promesse de son roxygen
 
 `R/theme.R:9-10` et `R/theme.R:190-215`

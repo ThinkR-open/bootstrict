@@ -9,6 +9,13 @@
 #' are returned verbatim as strings (Sass resolves them at compile time), so
 #' maps, functions and colour expressions all pass straight through.
 #'
+#' The file is scanned rather than read line by line, so a declaration may
+#' span as many lines as it likes (`$theme-colors`, `$grid-breakpoints` and
+#' `$spacers` always do), and a `;`, `//` or `/* */` inside a quoted string or
+#' an unquoted `url()` is read as data. Anything that is not a top-level
+#' variable declaration — `@use`/`@import`, a rule block — is ignored. A final
+#' declaration with no trailing `;` is still read.
+#'
 #' @param path Path to a `.scss` file (SCSS syntax, `$name: value;` — the
 #'   indented `.sass` syntax has no semicolons and cannot be parsed).
 #'
@@ -40,43 +47,16 @@ parse_scss_variables <- function(
     ),
     collapse = "\n"
   )
-  # strip block comments /* ... */ (with (?s) so multi-line comments — the
-  # usual exported-file header — are removed too) and line comments // ...
-  txt <- gsub(
-    "(?s)/\\*.*?\\*/",
-    "",
-    txt,
-    perl = TRUE
-  )
-  lines <- unlist(strsplit(
-    txt,
-    "\n",
-    fixed = TRUE
-  ))
-  lines <- sub(
-    "//.*$",
-    "",
-    lines
-  )
-  # gregexpr: capture every declaration on a line, not just the first.
-  decls <- regmatches(
-    lines,
-    gregexpr(
-      "\\$[A-Za-z0-9_-]+\\s*:\\s*[^;]+;",
-      lines
-    )
-  )
-  decls <- unlist(
-    decls
-  )
-
   out <- list()
-  for (d in decls) {
+  for (stmt in scss_statements(
+    txt
+  )) {
     m <- regmatches(
-      d,
+      stmt,
       regexec(
-        "\\$([A-Za-z0-9_-]+)\\s*:\\s*(.+);\\s*$",
-        d
+        "(?s)^\\s*\\$([A-Za-z0-9_-]+)\\s*:\\s*(.*)$",
+        stmt,
+        perl = TRUE
       )
     )[[
       1
@@ -87,33 +67,352 @@ parse_scss_variables <- function(
       ) !=
         3
     ) {
-      # nocov start
-      # Defensive: every `decls` element already matched the extraction regex,
-      # so the stricter capture regex above always yields 3 groups. Unreachable.
+      # Not a variable declaration: an @import/@use, a rule block, stray text.
       next
-      # nocov end
     }
-    name <- m[[
-      2
-    ]]
     value <- trimws(m[[
       3
     ]])
-    value <- trimws(sub(
-      "!default\\s*$",
-      "",
-      value
-    ))
-    value <- trimws(sub(
-      "!global\\s*$",
-      "",
-      value
-    ))
-    out[[
-      name
-    ]] <- value
+    repeat {
+      stripped <- trimws(sub(
+        "!(default|global)\\s*$",
+        "",
+        value
+      ))
+      if (
+        identical(
+          stripped,
+          value
+        )
+      )
+        break
+      value <- stripped
+    }
+    if (
+      nzchar(
+        value
+      )
+    ) {
+      out[[m[[
+        2
+      ]]]] <- value
+    }
   }
   out
+}
+
+#' Split SCSS source into its top-level `;`-terminated statements.
+#'
+#' A character scanner rather than a line-wise regex, because every delimiter
+#' is context sensitive: a declaration spans as many lines as it likes (every
+#' Bootstrap map does), and `;`, `//` and `/* */` are ordinary characters
+#' inside a quoted string or an unquoted `url()`. Comments are dropped; a
+#' rule block (`.foo { ... }`) is discarded; a final statement with no
+#' trailing `;` is still returned.
+#' @noRd
+scss_statements <- function(
+  txt
+) {
+  chars <- strsplit(
+    txt,
+    "",
+    fixed = TRUE
+  )[[
+    1
+  ]]
+  n <- length(
+    chars
+  )
+  # Preallocated output buffer: growing a vector one character at a time is
+  # quadratic, and Bootstrap's own sheet is ~60k characters.
+  keep <- character(
+    n
+  )
+  k <- 0L
+  push <- function(
+    ch
+  ) {
+    k <<- k +
+      1L
+    keep[[
+      k
+    ]] <<- ch
+  }
+  statements <- character()
+  start <- 1L
+  # Open brackets, so a `}` can tell a rule block from a `#{}` interpolation.
+  stack <- character()
+  i <- 1L
+
+  while (
+    i <=
+      n
+  ) {
+    ch <- chars[[
+      i
+    ]]
+    nxt <- if (
+      i <
+        n
+    )
+      chars[[
+        i +
+          1L
+      ]] else
+      ""
+
+    if (
+      ch ==
+        "/" &&
+        nxt ==
+          "/"
+    ) {
+      while (
+        i <=
+          n &&
+          chars[[
+            i
+          ]] !=
+            "\n"
+      )
+        i <- i +
+          1L
+      next
+    }
+    if (
+      ch ==
+        "/" &&
+        nxt ==
+          "*"
+    ) {
+      i <- i +
+        2L
+      while (
+        i <=
+          n &&
+          !(chars[[
+            i
+          ]] ==
+            "*" &&
+            identical(
+              chars[
+                i +
+                  1L
+              ],
+              "/"
+            ))
+      ) {
+        i <- i +
+          1L
+      }
+      i <- i +
+        2L
+      next
+    }
+    if (
+      ch ==
+        "\"" ||
+        ch ==
+          "'"
+    ) {
+      push(
+        ch
+      )
+      i <- i +
+        1L
+      while (
+        i <=
+          n
+      ) {
+        cur <- chars[[
+          i
+        ]]
+        push(
+          cur
+        )
+        i <- i +
+          1L
+        if (
+          cur ==
+            "\\" &&
+            i <=
+              n
+        ) {
+          push(chars[[
+            i
+          ]])
+          i <- i +
+            1L
+        } else if (
+          cur ==
+            ch
+        ) {
+          break
+        }
+      }
+      next
+    }
+    # Sass reads no comment inside an unquoted url(): copy it through whole.
+    if (
+      tolower(substr(
+        txt,
+        i,
+        i +
+          3L
+      )) ==
+        "url("
+    ) {
+      open <- 0L
+      while (
+        i <=
+          n
+      ) {
+        cur <- chars[[
+          i
+        ]]
+        push(
+          cur
+        )
+        i <- i +
+          1L
+        if (
+          cur ==
+            "("
+        )
+          open <- open +
+            1L
+        if (
+          cur ==
+            ")"
+        ) {
+          open <- open -
+            1L
+          if (
+            open ==
+              0L
+          )
+            break
+        }
+      }
+      next
+    }
+
+    if (
+      ch %in%
+        c(
+          "(",
+          "["
+        )
+    ) {
+      stack <- c(
+        stack,
+        "paren"
+      )
+    } else if (
+      ch ==
+        "{"
+    ) {
+      stack <- c(
+        stack,
+        if (
+          i >
+            1L &&
+            chars[[
+              i -
+                1L
+            ]] ==
+              "#"
+        )
+          "interp" else
+          "block"
+      )
+    }
+
+    if (
+      ch ==
+        ";" &&
+        !length(
+          stack
+        )
+    ) {
+      if (
+        k >=
+          start
+      ) {
+        statements <- c(
+          statements,
+          paste(
+            keep[
+              start:k
+            ],
+            collapse = ""
+          )
+        )
+      }
+      start <- k +
+        1L
+      i <- i +
+        1L
+      next
+    }
+
+    push(
+      ch
+    )
+    i <- i +
+      1L
+
+    if (
+      ch %in%
+        c(
+          ")",
+          "]",
+          "}"
+        )
+    ) {
+      closed <- if (
+        length(
+          stack
+        )
+      )
+        stack[[length(
+          stack
+        )]] else
+        ""
+      stack <- utils::head(
+        stack,
+        -1L
+      )
+      # A rule block carries declarations of its own; drop it whole rather
+      # than letting it bleed into the next statement.
+      if (
+        closed ==
+          "block" &&
+          !length(
+            stack
+          )
+      ) {
+        start <- k +
+          1L
+      }
+    }
+  }
+
+  if (
+    k >=
+      start
+  ) {
+    statements <- c(
+      statements,
+      paste(
+        keep[
+          start:k
+        ],
+        collapse = ""
+      )
+    )
+  }
+  statements
 }
 
 #' Create a Bootstrap 5 theme for a bootstrict UI
