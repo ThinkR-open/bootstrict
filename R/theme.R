@@ -686,11 +686,17 @@ use_bootstrict <- function() {
 
 #' Switch the Bootstrap colour mode from the server
 #'
-#' Sets the Bootstrap 5.3 colour mode (`data-bs-theme`) on the page body,
-#' switching every component between light and dark. Set the initial mode
-#' with the `color_mode` argument of [bs_page()].
+#' Sets the Bootstrap 5.3 colour mode (`data-bs-theme`) on the document root,
+#' switching every component between light and dark. Set the initial mode with
+#' the `color_mode` argument of [bs_page()].
 #'
-#' @param mode `"light"` or `"dark"`.
+#' A choice is remembered in the browser's `localStorage`, so it survives a
+#' reload; `"auto"` forgets it and follows the operating system again. The
+#' mode actually in force is reported as `input$bootstrict_color_mode`, which
+#' is `"light"` or `"dark"` even when the preference is `"auto"`.
+#'
+#' @param mode `"light"`, `"dark"`, or `"auto"` to follow the operating
+#'   system.
 #' @param session The Shiny session.
 #'
 #' @return Invisibly `NULL`, called for its side effect.
@@ -706,7 +712,8 @@ set_bs_color_mode <- function(
     mode,
     c(
       "light",
-      "dark"
+      "dark",
+      "auto"
     ),
     allow_null = FALSE
   )

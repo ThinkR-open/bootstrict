@@ -2,6 +2,15 @@
 
 ## New widgets
 
+* Colour modes follow the operating system. `bs_page(color_mode = "auto")`
+  resolves the mode from `prefers-color-scheme` before the page paints, so
+  there is no flash of the wrong theme, and `set_bs_color_mode("auto")` hands
+  control back to the OS. A mode the user chose is remembered in the browser
+  and survives a reload. The mode in force is reported as
+  `input$bootstrict_color_mode`, always `"light"` or `"dark"`, so the server
+  can render to match. An app that never mentions `color_mode` is untouched.
+
+
 * `update_bs_carousel(action =)` pauses and resumes cycling.
 
 * `bs_scrollspy()` takes Bootstrap 5.3's observer options, `root_margin` and
@@ -185,6 +194,11 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
   or `[object Object]`), and its `...` must be empty.
 
 ## Bug fixes
+
+* `data-bs-theme` is now set on the document root rather than the `<body>`.
+  Bootstrap's `color-scheme` declaration is what tells the browser to paint
+  scrollbars and native controls dark, and it only reaches them from `<html>`.
+
 
 * Dropdown options now reach the element Bootstrap reads them from. Passing
   `data-bs-auto-close` through `...` put it on the `.dropdown` wrapper, while

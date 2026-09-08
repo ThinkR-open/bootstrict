@@ -776,6 +776,64 @@ test_that("a dropdown reports its open state and is driven from the server", {
   ))
 })
 
+test_that("the colour mode lives on the root and reports itself", {
+  # The fixture asks for color_mode = "auto"; without an explicit mode nothing
+  # is applied at all, which keeps Bootstrap's default for an app that never
+  # asked. data-bs-theme has to be on <html>: color-scheme only reaches the
+  # browser's scrollbars and native controls from the root element.
+  expect_true(wait_until(
+    app,
+    'document.documentElement.hasAttribute("data-bs-theme")'
+  ))
+  expect_false(js(
+    app,
+    'document.body.hasAttribute("data-bs-theme")'
+  ))
+  expect_true(wait_until(
+    app,
+    'document.getElementById("mode").innerText.trim() === "light" || ' %+%
+      'document.getElementById("mode").innerText.trim() === "dark"'
+  ))
+
+  click(
+    app,
+    "mode_dark"
+  )
+  expect_true(wait_until(
+    app,
+    'document.documentElement.getAttribute("data-bs-theme") === "dark"'
+  ))
+  expect_true(wait_until(
+    app,
+    'document.getElementById("mode").innerText.trim() === "dark"'
+  ))
+  # A choice outlives the reload.
+  expect_equal(
+    js(
+      app,
+      'window.localStorage.getItem("bootstrict-color-mode")'
+    ),
+    "dark"
+  )
+
+  # "auto" hands control back to the operating system and forgets the choice.
+  click(
+    app,
+    "mode_auto"
+  )
+  expect_true(wait_until(
+    app,
+    'window.localStorage.getItem("bootstrict-color-mode") === null'
+  ))
+  expect_equal(
+    js(
+      app,
+      'document.documentElement.getAttribute("data-bootstrict-color-mode")'
+    ),
+    "auto"
+  )
+})
+
 test_that("a scrollspy inside a hidden tab pane activates once shown", {
   # Bootstrap measures a zero-height container while the pane is hidden, so
   # the scrollspy never activated anything and reported nothing.

@@ -468,3 +468,69 @@ test_that("theme helpers parse SASS variables and build a bs5 theme", {
     "bs_theme"
   )
 })
+
+test_that("bs_page resolves the colour mode before the page paints", {
+  # The stored preference and the OS are only knowable in the browser, and
+  # late resolution flashes light before turning dark.
+  dark <- as.character(bs_page(
+    color_mode = "dark",
+    "x"
+  ))
+  expect_match(
+    dark,
+    "bootstrict-color-mode"
+  )
+  expect_match(
+    dark,
+    "data-bs-theme=\"dark\""
+  )
+
+  # "auto" has nothing to write server-side: the script decides.
+  auto <- as.character(bs_page(
+    color_mode = "auto",
+    "x"
+  ))
+  expect_no_match(
+    auto,
+    "data-bs-theme=\"auto\"",
+    fixed = TRUE
+  )
+  expect_match(
+    auto,
+    "prefers-color-scheme"
+  )
+
+  expect_error(
+    bs_page(
+      color_mode = "bogus"
+    ),
+    "color_mode"
+  )
+})
+
+test_that("set_bs_color_mode accepts auto", {
+  store <- NULL
+  session <- list(
+    sendCustomMessage = function(
+      type,
+      message
+    ) {
+      store <<- message
+      invisible()
+    }
+  )
+  set_bs_color_mode(
+    "auto",
+    session = session
+  )
+  expect_equal(
+    store$mode,
+    "auto"
+  )
+  expect_error(
+    set_bs_color_mode(
+      "bogus"
+    ),
+    "mode"
+  )
+})

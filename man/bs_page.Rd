@@ -38,9 +38,11 @@ bs_page_fillable(
 \item{theme}{A \code{\link[=bootstrict_theme]{bootstrict_theme()}} / \code{\link[bslib:bs_theme]{bslib::bs_theme()}} object. Defaults to
 a stock Bootstrap 5 theme.}
 
-\item{color_mode}{Initial Bootstrap colour mode (\code{data-bs-theme} on the
-page body): \code{"light"} or \code{"dark"}. Switch it from the server with
-\code{\link[=set_bs_color_mode]{set_bs_color_mode()}}.}
+\item{color_mode}{Initial Bootstrap colour mode: \code{"light"}, \code{"dark"}, or
+\code{"auto"} to follow the operating system. A mode the user later chose is
+remembered in the browser and wins over this initial value. Switch it
+from the server with \code{\link[=set_bs_color_mode]{set_bs_color_mode()}}, and read the mode in force as
+\code{input$bootstrict_color_mode}.}
 
 \item{lang}{Document language (\verb{<html lang>}).}
 }

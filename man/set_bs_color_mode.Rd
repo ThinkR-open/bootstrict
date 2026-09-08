@@ -7,7 +7,8 @@
 set_bs_color_mode(mode, session = shiny::getDefaultReactiveDomain())
 }
 \arguments{
-\item{mode}{\code{"light"} or \code{"dark"}.}
+\item{mode}{\code{"light"}, \code{"dark"}, or \code{"auto"} to follow the operating
+system.}
 
 \item{session}{The Shiny session.}
 }
@@ -15,9 +16,15 @@ set_bs_color_mode(mode, session = shiny::getDefaultReactiveDomain())
 Invisibly \code{NULL}, called for its side effect.
 }
 \description{
-Sets the Bootstrap 5.3 colour mode (\code{data-bs-theme}) on the page body,
-switching every component between light and dark. Set the initial mode
-with the \code{color_mode} argument of \code{\link[=bs_page]{bs_page()}}.
+Sets the Bootstrap 5.3 colour mode (\code{data-bs-theme}) on the document root,
+switching every component between light and dark. Set the initial mode with
+the \code{color_mode} argument of \code{\link[=bs_page]{bs_page()}}.
+}
+\details{
+A choice is remembered in the browser's \code{localStorage}, so it survives a
+reload; \code{"auto"} forgets it and follows the operating system again. The
+mode actually in force is reported as \code{input$bootstrict_color_mode}, which
+is \code{"light"} or \code{"dark"} even when the preference is \code{"auto"}.
 }
 \examples{
 if (interactive()) set_bs_color_mode("dark")

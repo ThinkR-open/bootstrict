@@ -167,6 +167,46 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
+### Following the operating system
+
+`color_mode = "auto"` resolves the mode from the OS
+(`prefers-color-scheme`) before the page paints, so there is no flash of the
+wrong theme. A mode the user later chooses is remembered in the browser and
+wins over the initial value on the next visit; `set_bs_color_mode("auto")`
+forgets it and hands control back to the OS.
+
+Whatever the preference, the mode actually in force is reported as
+`input$bootstrict_color_mode`, always `"light"` or `"dark"` -- never
+`"auto"` -- so the server can render to match.
+
+```{r}
+ui <- bs_page(
+  color_mode = "auto",
+  bs_container(
+    bs_radio_button_input(
+      "mode",
+      "Appearance",
+      c(Light = "light", Dark = "dark", Auto = "auto"),
+      selected = "auto"
+    ),
+    plotOutput("plot")
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$mode, set_bs_color_mode(input$mode))
+
+  output$plot <- renderPlot({
+    # Follows the resolved mode, not the preference.
+    bg <- if (identical(input$bootstrict_color_mode, "dark")) "black" else "white"
+    plot(1, bg = bg)
+  })
+}
+```
+
+An app that never mentions `color_mode` is left alone: it keeps Bootstrap's
+default rather than quietly following the OS.
+
 ### Scope a mode to one component
 
 Many components accept a component-level `dark = TRUE` (or `theme = "dark"`)

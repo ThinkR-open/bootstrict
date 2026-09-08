@@ -60,13 +60,6 @@ A trancher : un tooltip decore un tag qui a souvent deja un id, donc
 n'oblige la cible a avoir un id, et en inventer un casserait le contrat
 "minimum de deviation".
 
-### 26. Modes couleur incomplets
-
-`data-bs-theme` est posé sur `<body>` alors que la doc le met sur `<html>`. Le sélecteur
-canonique de la doc (auto / `prefers-color-scheme` / `localStorage`) est absent — aucune
-occurrence de `localStorage` dans le dépôt — et le mode courant n'est jamais remonté au
-serveur. `binding-color-mode.js` fait 16 lignes.
-
 ### 27. Internationalisation
 
 Libellés en dur sans override : contrôles de carousel (`R/carousel.R:183,220,236`),

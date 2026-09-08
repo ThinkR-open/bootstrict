@@ -8,6 +8,7 @@ library(shiny)
 ui <- bs_page(
   theme = bootstrict_theme(),
   title = "bindings",
+  color_mode = "auto",
   bs_navbar(
     brand = bs_navbar_brand("Fixture"),
     bs_navbar_nav(
@@ -82,6 +83,10 @@ ui <- bs_page(
     verbatimTextOutput("tbc_type"),
     uiOutput("dyn"),
 
+    bs_button("mode_dark", "Dark"),
+    bs_button("mode_auto", "Auto"),
+    verbatimTextOutput("mode"),
+
     bs_file_input("up", "Upload", accept = ".csv"),
 
     bs_radio_button_input("tbr", "Size", c(Small = "s", Large = "l")),
@@ -132,6 +137,9 @@ server <- function(input, output, session) {
   observeEvent(input$close_alert, close_bs_alert("al"))
   observeEvent(input$open_dd, show_bs_dropdown("dd"))
   observeEvent(input$goto3, update_bs_pagination("pg", selected = "3"))
+  output$mode <- renderText(input$bootstrict_color_mode %||% "(none)")
+  observeEvent(input$mode_dark, set_bs_color_mode("dark"))
+  observeEvent(input$mode_auto, set_bs_color_mode("auto"))
   observeEvent(input$pick_l, update_bs_toggle_buttons("tbr", selected = "l"))
   observeEvent(input$clear_tbc, update_bs_toggle_buttons("tbc", selected = character(0)))
   observeEvent(input$regen, {
