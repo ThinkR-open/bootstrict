@@ -258,6 +258,9 @@ bs_tabset <- function(
   vertical = FALSE,
   class = NULL
 ) {
+  check_widget_id(
+    id
+  )
   type <- match_arg(
     type,
     c(

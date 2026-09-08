@@ -43,13 +43,6 @@ d'API : on perd `shiny::updateDateInput()`, les arguments `format` /
 `language` / `datesdisabled`, et `input$id` change de semantique. A trancher
 avant de le faire.
 
-### 21. Oublier l'`id` initial ne déclenche aucune erreur
-
-`bs_tabset(bs_tab_panel("A", "a"))` rend
-`<ul class="nav nav-tabs" id="A A NULL list(&quot;a&quot;) NULL"></ul>` sans un mot. Sur
-une API dont la convention centrale est « l'`id` en premier », c'est l'erreur que tout le
-monde fera. Idem `bs_modal()`.
-
 ### 22. Bugs localisés restants
 
 - `bs_accordion_panel()` et `bs_tab_panel()` rendent les `...` **nommés** comme du texte

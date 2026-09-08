@@ -34,6 +34,9 @@ bs_toast <- function(
   animation = TRUE,
   class = NULL
 ) {
+  check_widget_id(
+    id
+  )
   # Named `...` decorate the root; unnamed `...` are body content.
   dots <- split_dots(
     ...

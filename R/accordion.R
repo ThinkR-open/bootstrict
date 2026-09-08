@@ -33,6 +33,9 @@ bs_accordion <- function(
   flush = FALSE,
   class = NULL
 ) {
+  check_widget_id(
+    id
+  )
   panels <- Filter(
     Negate(
       is.null

@@ -721,6 +721,46 @@ enhance_form_control <- function(
   tag
 }
 
+#' Validate the leading `id` of an interactive widget.
+#'
+#' These constructors take their id first, so a forgotten one silently turns
+#' the first child into the id: `bs_tabset(bs_tab_panel("A", "a"))` used to
+#' render an empty `<ul>` whose id was the deparsed panel object.
+#' @noRd
+check_widget_id <- function(
+  id,
+  arg_nm = "id"
+) {
+  ok <- is.character(
+    id
+  ) &&
+    length(
+      id
+    ) ==
+      1L &&
+    !is.na(
+      id
+    ) &&
+    nzchar(
+      id
+    )
+  if (
+    !ok
+  ) {
+    rlang::abort(sprintf(
+      paste0(
+        "`%s` must be a single non-empty string. Interactive widgets take ",
+        "their id first, so their state is reported as `input$%s`."
+      ),
+      arg_nm,
+      arg_nm
+    ))
+  }
+  invisible(
+    id
+  )
+}
+
 #' Is this a plain container of children rather than a value in its own right?
 #'
 #' A `tagList()` is a container to open; a classed list such as the

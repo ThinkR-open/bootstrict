@@ -42,6 +42,9 @@ bs_carousel <- function(
   dark = FALSE,
   class = NULL
 ) {
+  check_widget_id(
+    id
+  )
   dots <- split_dots(
     ...
   )

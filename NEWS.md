@@ -156,6 +156,15 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* Forgetting the leading `id` of an interactive widget now raises an error
+  instead of rendering silently. `bs_tabset()`, `bs_accordion()`,
+  `bs_carousel()`, `bs_collapse()`, `bs_modal()`, `bs_offcanvas()` and
+  `bs_toast()` take their id first, so the first child landed on `id`:
+  `bs_tabset(bs_tab_panel("A", "a"))` rendered an empty `<ul>` whose id was
+  the deparsed panel object. On an API whose central convention is "the id
+  comes first", that is the mistake everyone makes.
+
+
 * `bs_tabset()`, `bs_accordion()`, `bs_carousel()` and `bs_progress()` accept
   children built with `lapply()`. Generating panels in a loop is the usual
   thing to do in a data-driven app, and `dev/CONVENTIONS.md` says to let

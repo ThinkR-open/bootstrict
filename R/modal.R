@@ -48,6 +48,9 @@ bs_modal <- function(
   keyboard = TRUE,
   class = NULL
 ) {
+  check_widget_id(
+    id
+  )
   size <- match_arg(
     size,
     c(

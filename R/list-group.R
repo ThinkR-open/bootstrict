@@ -384,7 +384,13 @@ update_bs_list_group <- function(
   session = shiny::getDefaultReactiveDomain()
 ) {
   # `NULL` -> no-op; `character(0)` (or any empty value) -> clear the selection.
-  clear <- !is.null(selected) && length(selected) == 0L
+  clear <- !is.null(
+    selected
+  ) &&
+    length(
+      selected
+    ) ==
+      0L
   bs_send(
     "listgroup.update",
     id = bs_ns(
@@ -404,7 +410,11 @@ update_bs_list_group <- function(
         selected
       ) else
       NULL,
-    clear = if (clear) TRUE else NULL,
+    clear = if (
+      clear
+    )
+      TRUE else
+      NULL,
     session = session
   )
 }

@@ -1393,3 +1393,88 @@ test_that("flattening children does not take a panel object apart", {
     "must be `bs_tab_panel"
   )
 })
+
+test_that("a forgotten leading id is reported instead of silently rendered", {
+  # These constructors take their id first, so the first child landed on `id`:
+  # bs_tabset(bs_tab_panel("A", "a")) rendered an empty <ul> whose id was the
+  # deparsed panel object.
+  for (fn in c(
+    "bs_tabset",
+    "bs_accordion",
+    "bs_carousel",
+    "bs_collapse",
+    "bs_modal",
+    "bs_offcanvas",
+    "bs_toast"
+  )) {
+    expect_error(
+      do.call(
+        fn,
+        list(htmltools::div(
+          "x"
+        ))
+      ),
+      "single non-empty string",
+      info = fn
+    )
+  }
+  expect_error(
+    bs_tabset(
+      NULL
+    ),
+    "single non-empty string"
+  )
+  expect_error(
+    bs_modal(c(
+      "a",
+      "b"
+    )),
+    "single non-empty string"
+  )
+  expect_error(
+    bs_modal(
+      NA_character_
+    ),
+    "single non-empty string"
+  )
+  expect_error(
+    bs_modal(
+      ""
+    ),
+    "single non-empty string"
+  )
+})
+
+test_that("bs_list_group keeps taking a leading item instead of an id", {
+  # Its id is optional and leading, so an items-only call passes the first item
+  # positionally; the constructor already treats a non-string `id` as a child,
+  # which is better than an error and is what the documented example does.
+  out <- as.character(bs_list_group(
+    bs_list_group_item(
+      "An item"
+    ),
+    bs_list_group_item(
+      "A second",
+      active = TRUE
+    ),
+    flush = TRUE
+  ))
+  expect_match(
+    out,
+    "list-group-flush"
+  )
+  expect_equal(
+    length(gregexpr(
+      "list-group-item",
+      out
+    )[[
+      1
+    ]]),
+    2L
+  )
+  expect_no_match(
+    out,
+    "id=",
+    fixed = TRUE
+  )
+})

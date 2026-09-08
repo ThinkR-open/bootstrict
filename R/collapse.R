@@ -26,6 +26,9 @@ bs_collapse <- function(
   horizontal = FALSE,
   class = NULL
 ) {
+  check_widget_id(
+    id
+  )
   attach_deps(htmltools::div(
     id = id,
     class = bs_classes(

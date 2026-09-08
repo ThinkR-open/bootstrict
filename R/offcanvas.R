@@ -40,6 +40,9 @@ bs_offcanvas <- function(
   responsive = NULL,
   class = NULL
 ) {
+  check_widget_id(
+    id
+  )
   placement <- match_arg(
     placement,
     c(
