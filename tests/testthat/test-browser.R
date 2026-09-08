@@ -369,6 +369,37 @@ test_that("a navbar dropdown is valid markup and opens", {
   ))
 })
 
+test_that("a dismissible alert reports its state and closes from the server", {
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "al"
+      ),
+      "=== true"
+    )
+  ))
+  click(
+    app,
+    "close_alert"
+  )
+  # close.bs.alert fires while the element is still bound; closed.bs.alert
+  # fires after Bootstrap has removed it, too late to report anything.
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "al"
+      ),
+      "=== false"
+    )
+  ))
+  expect_true(wait_until(
+    app,
+    'document.getElementById("al") === null'
+  ))
+})
+
 test_that("nothing threw during the whole session", {
   expect_equal(
     js_errors(

@@ -124,6 +124,7 @@ reference:
   desc: Alerts, badges, progress, spinners and loading placeholders.
   contents:
   - bs_alert
+  - close_bs_alert
   - bs_badge
   - bs_progress
   - update_bs_progress

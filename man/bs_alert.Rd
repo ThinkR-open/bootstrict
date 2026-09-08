@@ -6,7 +6,7 @@
 \alias{bs_alert_link}
 \title{Bootstrap alert}
 \usage{
-bs_alert(..., color = "primary", dismissible = FALSE, class = NULL)
+bs_alert(..., id = NULL, color = "primary", dismissible = FALSE, class = NULL)
 
 bs_alert_heading(..., level = 4, class = NULL)
 
@@ -14,6 +14,8 @@ bs_alert_link(..., href = "#", class = NULL)
 }
 \arguments{
 \item{...}{Alert content and named HTML attributes.}
+
+\item{id}{Optional alert id. Its visibility is reported as \code{input$id}.}
 
 \item{color}{Theme colour (\verb{.alert-*}). Defaults to \code{"primary"}.}
 
@@ -29,9 +31,14 @@ bs_alert_link(..., href = "#", class = NULL)
 An alert tag.
 }
 \description{
-Bootstrap alert
+Given an \code{id}, a dismissible alert reports whether it is still on the page
+as \code{input$id} (\code{TRUE} until it is dismissed, \code{FALSE} once it is) and can be
+closed from the server with \code{\link[=close_bs_alert]{close_bs_alert()}}.
 }
 \examples{
 bs_alert("Well done!", color = "success")
 bs_alert("Heads up.", color = "warning", dismissible = TRUE)
+}
+\seealso{
+\code{\link[=close_bs_alert]{close_bs_alert()}}
 }

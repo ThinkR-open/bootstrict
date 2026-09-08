@@ -64,6 +64,9 @@ ui <- bs_page(
     bs_button("swap", "Re-render"),
     uiOutput("dyn"),
 
+    bs_alert("Saved", id = "al", color = "success", dismissible = TRUE),
+    bs_button("close_alert", "Close alert"),
+
     bs_modal("m", "Modal body", title = "Title"),
     bs_offcanvas("oc", "Panel", title = "Filters"),
     bs_offcanvas("ocr", "Responsive panel", title = "Resp", responsive = "lg"),
@@ -81,6 +84,7 @@ server <- function(input, output, session) {
   observeEvent(input$validate, {
     set_bs_validation("user", "invalid", "Deja pris.")
   })
+  observeEvent(input$close_alert, close_bs_alert("al"))
 }
 
 shinyApp(ui, server)

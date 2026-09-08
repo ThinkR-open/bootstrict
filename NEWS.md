@@ -2,6 +2,11 @@
 
 ## New widgets
 
+* `bs_alert(id =)` reports whether the alert is still on the page as
+  `input$id`, and `close_bs_alert()` dismisses it from the server. Alerts are
+  interactive in Bootstrap, but reported nothing and had no server helper.
+
+
 * `bs_nav_dropdown()` builds the menu a designer draws in a navbar: an
   `<li class="nav-item dropdown">` whose toggle is a `.nav-link`, per the
   Bootstrap reference. `bs_dropdown()` emits a standalone

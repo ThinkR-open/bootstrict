@@ -2,12 +2,18 @@
 
 #' Bootstrap alert
 #'
+#' Given an `id`, a dismissible alert reports whether it is still on the page
+#' as `input$id` (`TRUE` until it is dismissed, `FALSE` once it is) and can be
+#' closed from the server with [close_bs_alert()].
+#'
 #' @param ... Alert content and named HTML attributes.
+#' @param id Optional alert id. Its visibility is reported as `input$id`.
 #' @param color Theme colour (`.alert-*`). Defaults to `"primary"`.
 #' @param dismissible If `TRUE`, add a close button and fade-out behaviour.
 #' @param class Extra classes.
 #'
 #' @return An alert tag.
+#' @seealso [close_bs_alert()]
 #' @export
 #'
 #' @examples
@@ -15,6 +21,7 @@
 #' bs_alert("Heads up.", color = "warning", dismissible = TRUE)
 bs_alert <- function(
   ...,
+  id = NULL,
   color = "primary",
   dismissible = FALSE,
   class = NULL
@@ -54,9 +61,45 @@ bs_alert <- function(
         class
       ),
       role = "alert",
+      id = id,
+      `data-bootstrict` = if (
+        !is.null(
+          id
+        )
+      )
+        "alert",
       ...,
       close_btn
     )
+  )
+}
+
+#' Close an alert from the server
+#'
+#' Dismisses the [bs_alert()] registered under `id`, exactly as its close
+#' button does. Bootstrap removes the element, so the alert cannot be brought
+#' back: render it from a `renderUI()` if it has to come and go.
+#'
+#' @param id Alert id, as passed to [bs_alert()].
+#' @param session The Shiny session.
+#'
+#' @return Nothing, called for its side effect.
+#' @seealso [bs_alert()]
+#' @export
+#'
+#' @examples
+#' if (interactive()) close_bs_alert("saved")
+close_bs_alert <- function(
+  id,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  bs_send(
+    "alert.close",
+    id = bs_ns(
+      id,
+      session
+    ),
+    session = session
   )
 }
 
