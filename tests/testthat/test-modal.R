@@ -362,3 +362,69 @@ test_that("modal and offcanvas dispose after the hide transition, not during it"
     fixed = TRUE
   )
 })
+
+test_that("a hand-composed modal keeps header, body and footer as siblings", {
+  # The roxygen tells the user to compose the dialog with bs_modal_header() /
+  # bs_modal_body() / bs_modal_footer(); every child used to be wrapped in a
+  # .modal-body regardless, so the documented path produced
+  # .modal-content > .modal-body > (.modal-header, .modal-body, .modal-footer)
+  # and broke the sticky header and the scrollable body.
+  out <- as.character(bs_modal(
+    "m",
+    bs_modal_header(bs_modal_title(
+      "Titre"
+    )),
+    bs_modal_body(
+      "Corps"
+    ),
+    bs_modal_footer(
+      "Pied"
+    )
+  ))
+  expect_match(
+    out,
+    paste0(
+      "<div class=\"modal-content\">\\s*",
+      "<div class=\"modal-header\">.*",
+      "<div class=\"modal-body\">Corps</div>\\s*",
+      "<div class=\"modal-footer\">Pied</div>"
+    )
+  )
+  # Exactly one body, not one nested inside another.
+  expect_equal(
+    length(gregexpr(
+      "class=\"modal-body\"",
+      out
+    )[[
+      1
+    ]]),
+    1L
+  )
+})
+
+test_that("bs_modal still wraps bare children, and wraps them in place", {
+  plain <- as.character(bs_modal(
+    "m2",
+    "Corps",
+    title = "Titre",
+    footer = "Pied"
+  ))
+  expect_match(
+    plain,
+    "<div class=\"modal-body\">Corps</div>"
+  )
+
+  # Mixing the two styles keeps document order: the bare text is wrapped where
+  # it sits, before the composed footer.
+  mixed <- as.character(bs_modal(
+    "m3",
+    "intro",
+    bs_modal_footer(
+      "Pied"
+    )
+  ))
+  expect_match(
+    mixed,
+    "<div class=\"modal-body\">intro</div>\\s*<div class=\"modal-footer\">Pied</div>"
+  )
+})

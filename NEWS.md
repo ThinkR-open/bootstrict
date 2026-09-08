@@ -90,6 +90,17 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* A hand-composed `bs_modal()` no longer nests its header and footer inside a
+  `.modal-body`. `bs_modal()`'s own documentation invites composing the dialog
+  with `bs_modal_header()` / `bs_modal_body()` / `bs_modal_footer()`, but every
+  unnamed child was wrapped in a `.modal-body` regardless, so the documented
+  path produced `.modal-content > .modal-body > (.modal-header, .modal-body,
+  .modal-footer)` — invalid structure that breaks the sticky header and the
+  scrollable body. Children that already carry one of those classes are now
+  emitted as siblings of `.modal-content`; bare children are still wrapped, in
+  place, so the two styles can be mixed.
+
+
 * Re-rendering a `bs_modal()` or `bs_offcanvas()` while it is open no longer
   leaves the page permanently unscrollable. Both bindings tore the widget down
   with `inst.hide(); inst.dispose();` in the same tick, but `hide()` is

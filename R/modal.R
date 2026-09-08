@@ -129,7 +129,7 @@ bs_modal <- function(
           title,
           id = title_id
         )),
-      bs_modal_body(
+      modal_content_children(
         dots$children
       ),
       if (
@@ -200,6 +200,101 @@ bs_modal <- function(
   attach_deps(
     root
   )
+}
+
+#' Arrange `bs_modal()`'s children inside `.modal-content`.
+#'
+#' A child that is already a `.modal-header` / `.modal-body` / `.modal-footer`
+#' is a sibling of the others, not something to nest: wrapping it in a
+#' `.modal-body` (as this used to do unconditionally) breaks the sticky header
+#' and the scrollable body the reference markup relies on. Bare children are
+#' still wrapped, in place, so both styles can be mixed.
+#' @noRd
+modal_content_children <- function(
+  children
+) {
+  parts <- vapply(
+    children,
+    function(
+      child
+    ) {
+      has_class(
+        child,
+        "modal-header"
+      ) ||
+        has_class(
+          child,
+          "modal-body"
+        ) ||
+        has_class(
+          child,
+          "modal-footer"
+        )
+    },
+    logical(
+      1
+    )
+  )
+  if (
+    !any(
+      parts
+    )
+  ) {
+    return(list(bs_modal_body(
+      children
+    )))
+  }
+  out <- list()
+  bare <- list()
+  for (i in seq_along(
+    children
+  )) {
+    if (
+      parts[[
+        i
+      ]]
+    ) {
+      if (
+        length(
+          bare
+        )
+      ) {
+        out <- c(
+          out,
+          list(bs_modal_body(
+            bare
+          ))
+        )
+        bare <- list()
+      }
+      out <- c(
+        out,
+        children[
+          i
+        ]
+      )
+    } else {
+      bare <- c(
+        bare,
+        children[
+          i
+        ]
+      )
+    }
+  }
+  if (
+    length(
+      bare
+    )
+  ) {
+    out <- c(
+      out,
+      list(bs_modal_body(
+        bare
+      ))
+    )
+  }
+  out
 }
 
 #' @rdname bs_modal
