@@ -209,12 +209,39 @@ The lower-level pieces are available when you hand-build a control:
   `bs_invalid_feedback("Please choose a username.")` — inline validation
   messages that Bootstrap shows when the control is marked valid/invalid.
 
+## Validation
+
+Bootstrap only displays a feedback message when it is a *following sibling* of
+the control carrying `.is-valid` / `.is-invalid`. A message placed after a
+`bs_*_input()` is a sibling of shiny's input container, not of the control
+inside it, so it would never appear. `bs_feedback()` puts it in the right
+place:
+
 ```{r}
-tagList(
+bs_feedback(
   bs_text_input("user", "Username"),
-  bs_invalid_feedback("Please choose a username.")
+  invalid = "Please choose a username."
 )
 ```
+
+Declare the messages in the UI, then switch the state from the server with
+`set_bs_validation()`:
+
+```{r}
+observeEvent(input$submit, {
+  if (input$user %in% taken) {
+    set_bs_validation("user", "invalid", "That name is taken.")
+  } else {
+    set_bs_validation("user", "valid")
+  }
+})
+```
+
+`set_bs_validation(id, "none")` clears the state. Pass `state =` to
+`bs_feedback()` when a control should render already marked.
+
+The bare `bs_valid_feedback()` / `bs_invalid_feedback()` divs remain useful in
+a hand-built `<form>`, where you control the sibling order yourself.
 
 ## Putting it together
 

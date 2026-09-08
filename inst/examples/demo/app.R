@@ -598,31 +598,31 @@ ui <- bs_page(
               bs_col(
                 md = 12,
                 demo(
-                  "bs_form() / bs_form_label() / bs_form_text() / bs_valid_feedback() / bs_invalid_feedback()",
+                  "bs_form() / bs_form_label() / bs_form_text() / bs_feedback()",
                   note = "Plain <form> with explicit label, help text and validation feedback.",
                   bs_form(
                     bs_form_label(
                       "f_email2",
                       "Email"
                     ),
-                    bs_text_input(
-                      "f_email2",
-                      NULL,
-                      class = "is-valid"
-                    ),
-                    bs_valid_feedback(
-                      "Looks good."
+                    bs_feedback(
+                      bs_text_input(
+                        "f_email2",
+                        NULL
+                      ),
+                      valid = "Looks good.",
+                      state = "valid"
                     ),
                     bs_form_text(
                       "We'll never share it."
                     ),
-                    bs_text_input(
-                      "f_email3",
-                      NULL,
-                      class = "is-invalid"
-                    ),
-                    bs_invalid_feedback(
-                      "Please provide a value."
+                    bs_feedback(
+                      bs_text_input(
+                        "f_email3",
+                        NULL
+                      ),
+                      invalid = "Please provide a value.",
+                      state = "invalid"
                     )
                   )
                 )

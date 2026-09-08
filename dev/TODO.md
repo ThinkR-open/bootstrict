@@ -9,21 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 2. Le feedback de validation ne peut pas s'afficher
-
-`R/forms-layout.R`, `vignettes/forms.Rmd:212-217`, `inst/examples/demo/app.R:603-628`
-
-Bootstrap n'affiche le feedback que par `.is-invalid ~ .invalid-feedback`. Les inputs
-emballent le contrôle dans `div.form-group.shiny-input-container`, donc un
-`bs_invalid_feedback()` posé après est frère du wrapper, jamais du contrôle, et reste
-en `display:none`.
-
-À faire : des arguments `valid=` / `invalid=` sur les constructeurs d'input qui posent
-la classe sur le contrôle et injectent le div de feedback juste après lui, dans le même
-conteneur (comme `add_form_help()` le fait déjà). Plus un
-`set_bs_validation(id, state, message)` côté serveur. Corriger la vignette et l'app de
-démo, qui montrent toutes les deux le motif cassé.
-
 ### 3. `parse_scss_variables()` jette silencieusement une partie de la feuille
 
 `R/theme.R:44-71`

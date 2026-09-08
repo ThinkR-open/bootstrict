@@ -104,6 +104,8 @@ reference:
   - bs_form
   - bs_form_label
   - bs_form_text
+  - bs_feedback
+  - set_bs_validation
   - bs_valid_feedback
 
 - title: Components — buttons

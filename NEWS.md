@@ -2,6 +2,19 @@
 
 ## New widgets
 
+* `bs_feedback()` and `set_bs_validation()` make validation feedback work.
+  Bootstrap only displays a `.valid-feedback` / `.invalid-feedback` message
+  when it is a *following sibling* of the control carrying `.is-valid` /
+  `.is-invalid`. Every `bs_*_input()` returns its control wrapped in shiny's
+  `div.form-group.shiny-input-container`, so a `bs_invalid_feedback()` placed
+  after the input was a sibling of the *wrapper*, never of the control, and
+  stayed `display: none` — the pattern the forms vignette and the demo app
+  both showed could not work. `bs_feedback(input, valid =, invalid =)` inserts
+  the messages next to the control itself (once after the last option, for a
+  choice group), takes an optional initial `state =`, and
+  `set_bs_validation(id, state, message)` switches the state and the message
+  text from the server.
+
 * `bs_download_button()` and `bs_download_link()` wrap
   `shiny::downloadButton()` / `shiny::downloadLink()`. shiny hardcodes the
   Bootstrap 3 class `.btn-default` on the download button, which has no

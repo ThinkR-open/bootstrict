@@ -284,6 +284,296 @@ bs_invalid_feedback <- function(
   )
 }
 
+#' Attach validation feedback to a form control
+#'
+#' Bootstrap only shows a `.valid-feedback` / `.invalid-feedback` message when
+#' it is a *following sibling* of the control carrying `.is-valid` /
+#' `.is-invalid`. A feedback div placed after a `bs_*_input()` is a sibling of
+#' shiny's input container, not of the control inside it, so it would never
+#' display. `bs_feedback()` inserts the messages in the right place, whatever
+#' the control's internal structure, and is the supported way to validate a
+#' bootstrict input.
+#'
+#' Declare the messages in the UI and switch the state from the server with
+#' [set_bs_validation()].
+#'
+#' @param input A control tag tree produced by a `bs_*_input()` constructor.
+#' @param valid Message shown when the control is valid, or `NULL` for none.
+#' @param invalid Message shown when the control is invalid, or `NULL`.
+#' @param state Initial state: `"valid"`, `"invalid"` or `NULL` (neutral).
+#'
+#' @return The input, with the feedback messages attached.
+#' @seealso [set_bs_validation()], [bs_valid_feedback()]
+#' @export
+#'
+#' @examples
+#' bs_feedback(
+#'   bs_text_input("user", "Username"),
+#'   invalid = "Please choose a username."
+#' )
+bs_feedback <- function(
+  input,
+  valid = NULL,
+  invalid = NULL,
+  state = NULL
+) {
+  state <- match_arg(
+    state,
+    c(
+      "valid",
+      "invalid"
+    )
+  )
+  if (
+    !inherits(
+      input,
+      "shiny.tag"
+    )
+  ) {
+    rlang::abort(
+      "`input` must be a tag built by a `bs_*_input()` constructor."
+    )
+  }
+  if (
+    !is.null(
+      state
+    )
+  ) {
+    input <- tag_modify_where(
+      input,
+      is_form_control,
+      function(
+        t
+      )
+        htmltools::tagAppendAttributes(
+          t,
+          class = paste0(
+            "is-",
+            state
+          )
+        )
+    )
+  }
+  messages <- drop_nulls(
+    list(
+      if (
+        !is.null(
+          valid
+        )
+      )
+        bs_valid_feedback(
+          valid
+        ),
+      if (
+        !is.null(
+          invalid
+        )
+      )
+        bs_invalid_feedback(
+          invalid
+        )
+    )
+  )
+  if (
+    !length(
+      messages
+    )
+  ) {
+    return(
+      attach_deps(
+        input
+      )
+    )
+  }
+  attach_deps(
+    append_after_last_control(
+      input,
+      messages
+    )
+  )
+}
+
+#' Does this tag hold a form control among its direct children?
+#' @noRd
+holds_control <- function(
+  t
+) {
+  kids <- flatten_tag_children(
+    t$children
+  )
+  any(vapply(
+    kids,
+    function(
+      ch
+    )
+      inherits(
+        ch,
+        "shiny.tag"
+      ) &&
+        is_form_control(
+          ch
+        ),
+    logical(
+      1
+    )
+  ))
+}
+
+#' Flatten the nested lists htmltools allows inside `$children`.
+#' @noRd
+flatten_tag_children <- function(
+  kids
+) {
+  if (
+    is.null(
+      kids
+    )
+  ) {
+    return(
+      list()
+    )
+  }
+  out <- list()
+  for (ch in kids) {
+    if (
+      inherits(
+        ch,
+        "shiny.tag"
+      )
+    ) {
+      out <- c(
+        out,
+        list(
+          ch
+        )
+      )
+    } else if (
+      is.list(
+        ch
+      )
+    ) {
+      out <- c(
+        out,
+        flatten_tag_children(
+          ch
+        )
+      )
+    }
+  }
+  out
+}
+
+#' Append `nodes` inside the element holding the *last* form control.
+#'
+#' A choice group (radio, checkbox group) holds one control per option; per the
+#' Bootstrap reference the feedback is carried once, after the final one.
+#' @noRd
+append_after_last_control <- function(
+  tag,
+  nodes
+) {
+  total <- 0L
+  tag_modify_where(
+    tag,
+    holds_control,
+    function(
+      t
+    ) {
+      total <<- total +
+        1L
+      t
+    }
+  )
+  if (
+    total ==
+      0L
+  ) {
+    rlang::abort(
+      "`input` holds no Bootstrap form control to attach feedback to."
+    )
+  }
+  seen <- 0L
+  tag_modify_where(
+    tag,
+    holds_control,
+    function(
+      t
+    ) {
+      seen <<- seen +
+        1L
+      if (
+        seen <
+          total
+      ) {
+        return(
+          t
+        )
+      }
+      htmltools::tagAppendChildren(
+        t,
+        list = nodes
+      )
+    }
+  )
+}
+
+#' Set a control's validation state from the server
+#'
+#' Toggles `.is-valid` / `.is-invalid` on the control registered under `id` and,
+#' when `message` is supplied, replaces the text of the matching feedback
+#' message declared with [bs_feedback()].
+#'
+#' @param id Input id, as passed to the `bs_*_input()` constructor.
+#' @param state `"valid"`, `"invalid"`, or `"none"` to clear the state.
+#' @param message Optional replacement text for the feedback message. Plain
+#'   text: it is set with `textContent`.
+#' @param session The Shiny session.
+#'
+#' @return Nothing, called for its side effect.
+#' @seealso [bs_feedback()]
+#' @export
+#'
+#' @examples
+#' if (interactive()) {
+#'   set_bs_validation("user", "invalid", "That name is taken.")
+#' }
+set_bs_validation <- function(
+  id,
+  state = c(
+    "valid",
+    "invalid",
+    "none"
+  ),
+  message = NULL,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  state <- rlang::arg_match(
+    state
+  )
+  if (
+    !is.null(
+      message
+    ) &&
+      !is.character(
+        message
+      )
+  ) {
+    rlang::abort(
+      "`message` must be plain text (it is rendered with `textContent`)."
+    )
+  }
+  bs_send(
+    "validation.set",
+    id = bs_ns(
+      id,
+      session
+    ),
+    state = state,
+    message = message,
+    session = session
+  )
+}
+
 #' Bootstrap floating label
 #'
 #' Reshape a control built by one of the `bs_*_input()` constructors (e.g.

@@ -721,6 +721,33 @@ enhance_form_control <- function(
   tag
 }
 
+#' Is this tag a Bootstrap form control (the element that carries the value)?
+#' @noRd
+is_form_control <- function(
+  t
+) {
+  has_class(
+    t,
+    "form-control"
+  ) ||
+    has_class(
+      t,
+      "form-select"
+    ) ||
+    has_class(
+      t,
+      "form-check-input"
+    ) ||
+    has_class(
+      t,
+      "form-range"
+    ) ||
+    identical(
+      t$name,
+      "textarea"
+    )
+}
+
 #' Append Bootstrap help text (`.form-text`) to a form control container.
 #'
 #' When the input's `id` is supplied, the help text gets `id = "<id>-help"`
@@ -758,30 +785,7 @@ add_form_help <- function(
   ) {
     tag <- tag_modify_where(
       tag,
-      function(
-        t
-      ) {
-        has_class(
-          t,
-          "form-control"
-        ) ||
-          has_class(
-            t,
-            "form-select"
-          ) ||
-          has_class(
-            t,
-            "form-check-input"
-          ) ||
-          has_class(
-            t,
-            "form-range"
-          ) ||
-          identical(
-            t$name,
-            "textarea"
-          )
-      },
+      is_form_control,
       function(
         t
       )
