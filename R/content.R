@@ -547,6 +547,85 @@ bs_lead <- function(
 #'
 #' @examples
 #' bs_list_unstyled("First", "Second", "Third")
+#' Expand bare lists among a list's children.
+#'
+#' `lapply()`-built items arrive as a single list child, which would otherwise
+#' be wrapped whole in one `<li>`.
+#' @noRd
+flatten_list_children <- function(
+  children
+) {
+  out <- list()
+  for (child in children) {
+    if (
+      !inherits(
+        child,
+        "shiny.tag"
+      ) &&
+        is.list(
+          child
+        )
+    ) {
+      out <- c(
+        out,
+        flatten_list_children(
+          child
+        )
+      )
+    } else {
+      out <- c(
+        out,
+        list(
+          child
+        )
+      )
+    }
+  }
+  out
+}
+
+#' Turn a list child into an `<li>`.
+#'
+#' A child that is already an `<li>` is passed through: wrapping it would emit
+#' `<li><li>...</li></li>`, and the HTML parser closes the outer item at the
+#' inner start tag, leaving an empty item followed by one that carries none of
+#' the list's classes. The vignette documents passing explicit `tags$li()` for
+#' richer items, so this is the common case.
+#' @noRd
+list_item <- function(
+  child,
+  class = NULL
+) {
+  if (
+    inherits(
+      child,
+      "shiny.tag"
+    ) &&
+      identical(
+        child$name,
+        "li"
+      )
+  ) {
+    if (
+      is.null(
+        class
+      )
+    ) {
+      return(
+        child
+      )
+    }
+    return(htmltools::tagAppendAttributes(
+      child,
+      class = class
+    ))
+  }
+  htmltools::tags$li(
+    class = class,
+    child
+  )
+}
+
 bs_list_unstyled <- function(
   ...,
   class = NULL
@@ -555,13 +634,10 @@ bs_list_unstyled <- function(
     ...
   )
   items <- lapply(
-    parts$children,
-    function(
-      child
-    )
-      htmltools::tags$li(
-        child
-      )
+    flatten_list_children(
+      parts$children
+    ),
+    list_item
   )
   attach_deps(do.call(
     htmltools::tags$ul,
@@ -591,15 +667,11 @@ bs_list_inline <- function(
     ...
   )
   items <- lapply(
-    parts$children,
-    function(
-      child
-    ) {
-      htmltools::tags$li(
-        class = "list-inline-item",
-        child
-      )
-    }
+    flatten_list_children(
+      parts$children
+    ),
+    list_item,
+    class = "list-inline-item"
   )
   attach_deps(do.call(
     htmltools::tags$ul,

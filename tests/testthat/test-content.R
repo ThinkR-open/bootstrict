@@ -307,3 +307,71 @@ test_that("named ... become attributes on list containers", {
     "<li>X</li>"
   )
 })
+
+test_that("lists pass explicit <li> children through instead of nesting them", {
+  # The content vignette documents passing tags$li() for richer items. Wrapping
+  # them produced <li><li>...</li></li>; the HTML parser closes the outer item
+  # at the inner start tag, so the item that survives carries none of the
+  # list's classes and .list-inline breaks.
+  expect_equal(
+    as.character(bs_list_unstyled(
+      htmltools::tags$li(
+        "x"
+      ),
+      htmltools::tags$li(
+        "y"
+      )
+    )),
+    "<ul class=\"list-unstyled\">\n  <li>x</li>\n  <li>y</li>\n</ul>"
+  )
+
+  # bs_list_inline() still adds its class, merged with the item's own.
+  expect_match(
+    as.character(bs_list_inline(
+      htmltools::tags$li(
+        class = "extra",
+        "x"
+      )
+    )),
+    "<li class=\"extra list-inline-item\">x</li>",
+    fixed = TRUE
+  )
+
+  # Bare children are still wrapped.
+  expect_match(
+    as.character(bs_list_inline(
+      "One",
+      "Two"
+    )),
+    "<li class=\"list-inline-item\">One</li>",
+    fixed = TRUE
+  )
+})
+
+test_that("lists expand lapply()-built children", {
+  # A list child used to be wrapped whole in a single <li>.
+  expect_equal(
+    length(gregexpr(
+      "<li>",
+      as.character(bs_list_unstyled(lapply(
+        1:3,
+        function(
+          i
+        )
+          htmltools::tags$li(
+            i
+          )
+      )))
+    )[[
+      1
+    ]]),
+    3L
+  )
+  expect_match(
+    as.character(bs_list_unstyled(htmltools::tagList(htmltools::tags$li(
+      "x"
+    )))),
+    "<li>x</li>",
+    fixed = TRUE
+  )
+})

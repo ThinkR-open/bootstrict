@@ -9,17 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 9. `bs_list_unstyled()` / `bs_list_inline()` imbriquent un `<li>` dans un `<li>`
-
-`R/content.R:562`, `R/content.R:598`, usage documenté en `vignettes/content.Rmd:141-147`
-
-Les deux emballent chaque enfant dans un `tags$li()` neuf. La vignette dit de passer des
-`tags$li()` explicites pour les items riches : le parseur ferme alors le premier `li`, on
-obtient un `<li class="list-inline-item">` vide suivi d'un `<li>` nu sans la classe.
-
-À faire : laisser passer tel quel un enfant qui est déjà une `shiny.tag` nommée `"li"`
-(en lui ajoutant `.list-inline-item` pour `bs_list_inline()`), n'emballer que le reste.
-
 ### 10. `bs_input_group_text()` contenant une checkbox est détruit
 
 `R/forms-layout.R:77-133`

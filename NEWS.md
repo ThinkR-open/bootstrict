@@ -90,6 +90,18 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* `bs_list_unstyled()` and `bs_list_inline()` no longer nest an `<li>` inside
+  an `<li>`. Every child was wrapped in a fresh `<li>`, including one that
+  already was an `<li>` — the usage the content vignette documents for richer
+  items. The HTML parser closes the outer item at the inner start tag, so what
+  survived was an empty `<li class="list-inline-item">` followed by a bare
+  `<li>` carrying none of the list's classes, which breaks the inline layout
+  and made the Bootstrap nested-list example unreachable. An `<li>` child is
+  now passed through (gaining `.list-inline-item` where it applies), and a
+  child that is a bare list (an `lapply()` result, a `tagList()`) is expanded
+  into one item per element instead of being wrapped whole in one `<li>`.
+
+
 * `bs_progress(height =)` no longer wipes out a stacked group. Each segment
   received two separate `style` attributes, and htmltools joins duplicated
   attributes with a space rather than `"; "`, so the rendered attribute was
