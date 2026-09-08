@@ -339,3 +339,12 @@ js_errors <- function(
   app
 )
   app$errors$js
+
+`%+%` <- function(
+  a,
+  b
+)
+  paste0(
+    a,
+    b
+  )

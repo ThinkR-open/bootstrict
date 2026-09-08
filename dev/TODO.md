@@ -27,20 +27,6 @@ C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
 
 ## Ensuite
 
-### 17. Les `updateXxx()` de shiny cassent le markup des groupes
-
-`shiny:::generateOptions` n'a pas de branche par thème et sort toujours
-`<div class="radio"><label><input>`. Le binding remplace tout le bloc d'options sur
-update, donc après `updateRadioButtons(session, id, choices = …)` le contrôle a perdu
-`.form-check`, `.form-check-input` et `.form-check-label`.
-
-`vignettes/bootstrict.Rmd:150-152` promet pourtant que les `updateXxx()` de Shiny
-« continuent de fonctionner à l'identique ».
-
-À faire : `update_bs_radio_input()` / `update_bs_checkbox_group_input()` qui envoient le
-markup enrichi, ou un shim JS qui réapplique les classes après `receiveMessage`. Corriger
-la promesse de la vignette.
-
 ### 18. `.btn-check` absent
 
 Les groupes de boutons à cocher / radio (contrôles segmentés) n'existent nulle part :

@@ -64,6 +64,10 @@ ui <- bs_page(
     bs_button("swap", "Re-render"),
     uiOutput("dyn"),
 
+    bs_radio_input("rad", "Size", c("S", "M"), inline = TRUE),
+    bs_checkbox_group_input("cgrp", "Pick", c("a", "b")),
+    bs_button("regen", "Regenerate choices"),
+
     bs_nav(
       bs_nav_item(bs_nav_link("Home", active = TRUE, value = "home")),
       bs_nav_item(bs_nav_link("Profile", value = "prof")),
@@ -99,6 +103,11 @@ server <- function(input, output, session) {
   observeEvent(input$close_alert, close_bs_alert("al"))
   observeEvent(input$open_dd, show_bs_dropdown("dd"))
   observeEvent(input$goto3, update_bs_pagination("pg", selected = "3"))
+  observeEvent(input$regen, {
+    # shiny's own updaters, exactly as the vignette promises they can be used.
+    updateRadioButtons(session, "rad", choices = c("L", "XL"), inline = TRUE)
+    updateCheckboxGroupInput(session, "cgrp", choices = c("c", "d"))
+  })
 }
 
 shinyApp(ui, server)

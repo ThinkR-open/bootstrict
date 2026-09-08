@@ -136,6 +136,19 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* `shiny::updateRadioButtons()` and `shiny::updateCheckboxGroupInput()` no
+  longer strip the Bootstrap 5 markup off `bs_radio_input()` and
+  `bs_checkbox_group_input()`. Both replace the whole options block with HTML
+  generated server-side by `shiny:::generateOptions()`, which has no theme
+  branch and always emits Bootstrap 3 (`<div class="radio"><label><input>`);
+  bootstrict's enhancement ran once, at render time, so the first update with
+  `choices` silently lost `.form-check`, `.form-check-input` and
+  `.form-check-label`. The classes are now put back client-side, which keeps
+  the documented promise that shiny's own updaters work unchanged — `inline`
+  and `reverse` cannot be recovered from the replaced HTML, so they are
+  recorded on the container.
+
+
 * The package tarball no longer ships an internal Posit Connect deployment
   record (`inst/examples/quakewatch/rsconnect/…/quakewatch.dcf`, carrying a
   server host name and a user name). `.Rbuildignore` now excludes any

@@ -369,6 +369,92 @@ test_that("a navbar dropdown is valid markup and opens", {
   ))
 })
 
+test_that("shiny's own choice-group updaters keep the Bootstrap 5 markup", {
+  # shiny:::generateOptions() has no theme branch: it always regenerates the
+  # options as <div class="radio"><label><input>, so without a repair the
+  # control loses .form-check on the first update.
+  classes <- function(
+    selector
+  ) {
+    js(
+      app,
+      sprintf(
+        paste0(
+          '(function(){return Array.prototype.map.call(',
+          'document.querySelectorAll("%s"),',
+          'function(el){return el.className;}).join("|");})()'
+        ),
+        selector
+      )
+    )
+  }
+  expect_match(
+    classes(
+      "#rad .shiny-options-group > *"
+    ),
+    "form-check"
+  )
+
+  click(
+    app,
+    "regen"
+  )
+  expect_true(wait_until(
+    app,
+    'document.querySelectorAll("#rad input").length === 2 && ' %+%
+      'document.querySelector("#rad input").value === "L"'
+  ))
+
+  for (group in c(
+    "#rad",
+    "#cgrp"
+  )) {
+    wrappers <- classes(paste(
+      group,
+      ".shiny-options-group > *"
+    ))
+    expect_match(
+      wrappers,
+      "form-check",
+      info = group
+    )
+    expect_no_match(
+      wrappers,
+      "\\bradio\\b",
+      info = group
+    )
+    expect_no_match(
+      wrappers,
+      "\\bcheckbox\\b",
+      info = group
+    )
+    expect_match(
+      classes(paste(
+        group,
+        "input"
+      )),
+      "form-check-input",
+      info = group
+    )
+  }
+  # Inline is not recoverable from the replaced HTML, so it is remembered on
+  # the container. There the <label> *is* the .form-check, exactly as
+  # bootstrict renders it, so there is no inner .form-check-label -- unlike
+  # the stacked group next to it.
+  expect_match(
+    classes(
+      "#rad .shiny-options-group > *"
+    ),
+    "form-check-inline"
+  )
+  expect_match(
+    classes(
+      "#cgrp label"
+    ),
+    "form-check-label"
+  )
+})
+
 test_that("a nav reports its active link and takes one from the server", {
   expect_true(wait_until(
     app,

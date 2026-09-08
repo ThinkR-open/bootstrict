@@ -85,7 +85,7 @@
     Code
       snap(bs_radio_input("r", "Size", c("S", "M"), inline = TRUE))
     Output
-      <div id="r" class="form-group shiny-input-radiogroup shiny-input-container shiny-input-container-inline" role="radiogroup" aria-labelledby="r-label">
+      <div id="r" class="form-group shiny-input-radiogroup shiny-input-container shiny-input-container-inline" role="radiogroup" aria-labelledby="r-label" data-bootstrict="form-check" data-bootstrict-inline="">
         <label class="control-label form-label" for="r" id="r-label">Size</label>
         <div class="shiny-options-group">
           <label class="form-check form-check-inline">
@@ -104,7 +104,7 @@
     Code
       snap(bs_checkbox_group_input("cg", "Pick", c("a", "b")))
     Output
-      <div id="cg" class="form-group shiny-input-checkboxgroup shiny-input-container" role="group" aria-labelledby="cg-label">
+      <div id="cg" class="form-group shiny-input-checkboxgroup shiny-input-container" role="group" aria-labelledby="cg-label" data-bootstrict="form-check">
         <label class="control-label form-label" for="cg" id="cg-label">Pick</label>
         <div class="shiny-options-group">
           <div class="form-check">

@@ -182,6 +182,37 @@ form_check_enhance <- function(
   inline = FALSE,
   reverse = FALSE
 ) {
+  # A choice group's options are regenerated server-side by shiny's own
+  # updaters, in Bootstrap 3 markup. Mark the container so the client can put
+  # the Bootstrap 5 classes back, and record the two variants that are not
+  # recoverable from the replaced HTML.
+  if (
+    has_class(
+      tag,
+      "shiny-input-radiogroup"
+    ) ||
+      has_class(
+        tag,
+        "shiny-input-checkboxgroup"
+      )
+  ) {
+    tag <- htmltools::tagAppendAttributes(
+      tag,
+      `data-bootstrict` = "form-check",
+      `data-bootstrict-inline` = if (
+        isTRUE(
+          inline
+        )
+      )
+        "",
+      `data-bootstrict-reverse` = if (
+        isTRUE(
+          reverse
+        )
+      )
+        ""
+    )
+  }
   # Wrappers: .radio / .checkbox (and their -inline variants) -> .form-check.
   tag <- tag_modify_where(
     tag,

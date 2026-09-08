@@ -296,3 +296,55 @@ test_that("extra named ... become attributes on the control", {
     "data-test=\"y\""
   )
 })
+
+test_that("choice groups are marked so the client can repair shiny's updates", {
+  # shiny:::generateOptions() regenerates the options in Bootstrap 3 markup on
+  # every updateRadioButtons()/updateCheckboxGroupInput() with `choices`, and
+  # `inline` / `reverse` cannot be recovered from the replaced HTML.
+  inline <- as.character(bs_radio_input(
+    "r",
+    "Size",
+    c(
+      "S",
+      "M"
+    ),
+    inline = TRUE
+  ))
+  expect_match(
+    inline,
+    "data-bootstrict=\"form-check\""
+  )
+  expect_match(
+    inline,
+    "data-bootstrict-inline"
+  )
+
+  stacked <- as.character(bs_checkbox_group_input(
+    "cg",
+    "Pick",
+    c(
+      "a",
+      "b"
+    )
+  ))
+  expect_match(
+    stacked,
+    "data-bootstrict=\"form-check\""
+  )
+  expect_no_match(
+    stacked,
+    "data-bootstrict-inline",
+    fixed = TRUE
+  )
+
+  # A single checkbox is not a group: nothing regenerates it, so it is not
+  # marked.
+  expect_no_match(
+    as.character(bs_checkbox_input(
+      "cb",
+      "Agree"
+    )),
+    "data-bootstrict=",
+    fixed = TRUE
+  )
+})
