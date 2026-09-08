@@ -193,10 +193,11 @@ bs_pagination_numbered(5, current = 2, href_template = "?page=%d")
 
 ## Dropdowns
 
-`bs_dropdown()` builds a toggleable menu. Bootstrap drives the open/close, so
-there is no `update_bs_*()` for it. To make a menu item reactive, give it an
-`id` — it then behaves as a Shiny action button, reporting its click count as
-`input$id`.
+`bs_dropdown()` builds a toggleable menu. To make a menu item reactive, give it
+an `id` — it then behaves as a Shiny action button, reporting its click count
+as `input$id`. Give the *dropdown* an `id` and its open state is reported too,
+and `show_bs_dropdown()` / `hide_bs_dropdown()` / `toggle_bs_dropdown()` drive
+it from the server.
 
 ```{r}
 bs_dropdown(

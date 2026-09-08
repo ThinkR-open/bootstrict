@@ -148,9 +148,11 @@ show_bs_modal("info")
    `bs_file_input()`, `bs_textarea_input()`, `bs_password_input()`. They wrap the
    matching `shiny::*Input()`, so `input$id` **and Shiny's own `updateXxx()`
    keep working unchanged**.
-2. **Native inputs with no Shiny equivalent** — `bs_range_input()` and
-   `bs_color_input()`. They ship their own bindings, so drive them with
-   `update_bs_range()` / `update_bs_color()`.
+2. **Native inputs with no Shiny equivalent** — `bs_range_input()`,
+   `bs_color_input()` and the `.btn-check` segmented controls
+   (`bs_radio_button_input()`, `bs_checkbox_button_input()`). They ship their
+   own bindings, so drive them with `update_bs_range()` / `update_bs_color()` /
+   `update_bs_toggle_buttons()`.
 
 ### `bs_button()` is an action button only when given an id
 

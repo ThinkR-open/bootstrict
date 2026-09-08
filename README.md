@@ -26,6 +26,8 @@ The Bootstrap 5.3 runtime and SASS compilation are provided by [`bslib`](https:/
 
 Every widget mirrors the Bootstrap 5.3 HTML structure **one-to-one**, so a designer's mockup (for example in Figma) and exported SASS variables drop straight into a Shiny app. Interactive components report their state to the server and can be driven from the server with `update_*()` helpers.
 
+Two things fall short of that, both inherited from the Shiny inputs the package delegates to: every delegated input keeps Shiny's `div.form-group.shiny-input-container` wrapper, and the date inputs load `bootstrap-datepicker` for the calendar popup, which is not in the Bootstrap 5.3 docs. Everything else is the reference markup, and the test suite snapshots it.
+
 The motivating workflow: a designer works in Figma, stays strictly within [the Bootstrap 5.3 docs](https://getbootstrap.com/docs/5.3/), and exports a `_variables.scss` sheet.
 
 You received a Figma mockup and the variables, and can implement this directly into shiny.
@@ -172,18 +174,32 @@ show_bs_modal("info")
    matching `shiny::*Input()` and only restyle the markup, so `input$id` **and
    Shiny's own `updateXxx()` keep working unchanged** — use
    `shiny::updateTextInput()` etc. for these.
-2. **Native inputs with no Shiny equivalent** — `bs_range_input()` and
-   `bs_color_input()`. They ship their own bindings, so drive them with
-   `update_bs_range()` / `update_bs_color()` (Shiny's `updateSliderInput()`
-   won't reach them).
+2. **Native inputs with no Shiny equivalent** — `bs_range_input()`,
+   `bs_color_input()`, `bs_radio_button_input()` and
+   `bs_checkbox_button_input()`. They ship their own bindings, so drive them
+   with `update_bs_range()` / `update_bs_color()` /
+   `update_bs_toggle_buttons()` (Shiny's `updateSliderInput()` won't reach
+   them).
 
-Two specifics worth knowing:
+A few specifics worth knowing:
 
 - `bs_select_input()` renders a **plain Bootstrap `<select>`** — selectize is
   off, so there is no search / tagging box that Shiny's `selectInput()` adds by
   default.
 - `bs_range_input()` is a native HTML `<input type="range">`, **not** Shiny's
   `sliderInput()` (no ticks, animation or ion.rangeSlider features).
+- `bs_file_input()` is the Bootstrap 5.3 `<input class="form-control"
+  type="file">`, so the browser draws the button and the file name — not
+  Shiny's "Browse" button beside a readonly text box, which is Bootstrap 3
+  markup.
+- `bs_date_input()` / `bs_date_range_input()` still delegate to Shiny, which
+  ships `bootstrap-datepicker` for the calendar popup. That popup is the one
+  thing in the package that is **not** in the Bootstrap 5.3 docs; the field
+  itself is a plain `.form-control`.
+- Validation feedback needs `bs_feedback()`: Bootstrap only shows a message
+  that is a *sibling* of the marked control, and a bare
+  `bs_invalid_feedback()` after an input is a sibling of Shiny's wrapper.
+  `set_bs_validation()` switches the state from the server.
 
 ### `bs_button()` is an action button only when given an id
 
@@ -193,12 +209,26 @@ reactivity is opt-in.
 
 ### Interactive components are driven by `update_bs_*()`
 
-Accordion, tabset, carousel, collapse, list-group and progress report their
-state as `input$id` and are controlled with `update_bs_accordion()`,
-`update_bs_tabset()`, `update_bs_carousel()`, `update_bs_collapse()`,
-`update_bs_list_group()` and `update_bs_progress()`. Tabs in particular use
-`bs_tabset()` + `bs_tab_panel()` (an `id` is required and panels are validated) —
-not `tabsetPanel()` / `tabPanel()`.
+Give a widget an `id` and it reports its state as `input$id` and takes
+instructions from a matching helper:
+
+| Widget | `input$id` | Server helper |
+| --- | --- | --- |
+| `bs_accordion()` | open panel value(s) | `update_bs_accordion()` |
+| `bs_tabset()` | active tab | `update_bs_tabset()` |
+| `bs_carousel()` | active slide | `update_bs_carousel()` |
+| `bs_collapse()` | open / closed | `update_bs_collapse()` |
+| `bs_list_group()` | selected item | `update_bs_list_group()` |
+| `bs_nav()`, `bs_navbar_nav()` | active link | `update_bs_nav()` |
+| `bs_pagination()` | active page | `update_bs_pagination()` |
+| `bs_dropdown()`, `bs_nav_dropdown()` | open / closed | `show_bs_dropdown()` … |
+| `bs_alert()` | still on the page | `close_bs_alert()` |
+| `bs_progress()` | — | `update_bs_progress()` |
+
+Tabs in particular use `bs_tabset()` + `bs_tab_panel()` (an `id` is required
+and panels are validated) — not `tabsetPanel()` / `tabPanel()`. For the other
+widgets the `id` is optional: without one they are static markup, which is what
+a decorative alert or a nav of plain links should be.
 
 ### Tooltips & popovers decorate an existing tag
 
@@ -241,21 +271,31 @@ offsets, order, gutters, alignment), `bs_hstack()` / `bs_vstack()` stacks.
 `bs_figure()`, `bs_blockquote()`, `bs_display_heading()`, `bs_lead()`, lists.
 
 **Forms** — text / textarea / number / password / select / checkbox / switch /
-radio / checkbox-group / range / color / file / date / date-range inputs, plus
-`bs_input_group()`, `bs_floating_label()`, `bs_form()`, validation feedback, and
-`.form-check-reverse` via `reverse = TRUE`.
+radio / checkbox-group / range / color / file / date / date-range inputs, the
+`.btn-check` segmented controls (`bs_radio_button_input()`,
+`bs_checkbox_button_input()`), plus `bs_input_group()`, `bs_floating_label()`,
+`bs_form()`, working validation feedback (`bs_feedback()` /
+`set_bs_validation()`), and `.form-check-reverse` via `reverse = TRUE`.
 
 **Components** — accordion, alert, badge, breadcrumb, buttons & button groups,
-card, carousel, close button, collapse, dropdown, list group, modal, nav &
-tabs (including `.nav-underline`, 5.3), navbar, offcanvas, pagination,
-placeholder, popover, progress (including `.progress-stacked`, 5.3), spinner,
-toast, tooltip, scrollspy, plus helpers (`bs_ratio()`, `bs_visually_hidden()`,
-`bs_vr()`, `bs_icon_link()`).
+card, carousel, close button, collapse, dropdown (standalone and in a nav or
+navbar, `bs_nav_dropdown()`), list group, modal, nav & tabs (including
+`.nav-underline`, 5.3), navbar, offcanvas, pagination, placeholder, popover,
+progress (including `.progress-stacked`, 5.3), spinner, toast, tooltip,
+scrollspy, plus helpers (`bs_ratio()`, `bs_visually_hidden()`, `bs_vr()`,
+`bs_icon_link()`).
 
 **Colour modes (5.3)** — set the initial mode with
-`bs_page(color_mode = "dark")` and switch it from the server with
-`set_bs_color_mode("light")`; component-level `dark = TRUE` / `theme = "dark"`
-arguments emit `data-bs-theme` per the 5.3 idiom.
+`bs_page(color_mode = "dark")`, or `"auto"` to follow the operating system;
+switch it from the server with `set_bs_color_mode("light")` and read the mode
+in force as `input$bootstrict_color_mode`. A mode the user picks is remembered
+in the browser. Component-level `dark = TRUE` / `theme = "dark"` arguments emit
+`data-bs-theme` per the 5.3 idiom.
+
+**Utilities** — none are wrapped, deliberately. Every constructor takes a
+trailing `class` and forwards named `...` as attributes, so a mockup's
+`class="p-4 text-center"` transfers verbatim and a utility Bootstrap adds later
+works the day it ships.
 
 See `?bootstrict` and run the demos:
 

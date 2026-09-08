@@ -19,9 +19,31 @@ with server-side \verb{update_*()} controls.
 \item Every constructor is \code{snake_case} and prefixed \code{bs_} (e.g. \code{\link[=bs_card]{bs_card()}}).
 \item \code{...} follows the Shiny/htmltools convention: named arguments become HTML
 attributes, unnamed arguments become children. Extra \code{class} values passed
-through \code{...} are merged with the component's own classes.
+through \code{...} are merged with the component's own classes. Bootstrap's
+utility classes are therefore written as themselves rather than wrapped in
+arguments, so a mockup's \code{class} list transfers verbatim.
 \item Interactive constructors take a leading \code{id} so their value is available as
-\code{input$id}.
+\code{input$id}. Where a component is useful without one -- an alert, a nav, a
+dropdown -- the \code{id} is optional and the widget stays static markup until
+it is given one.
+\item Server helpers take the \code{id} first and the \code{session} last and optional,
+and namespace the id themselves inside a Shiny module. The UI triggers
+(\code{\link[=bs_modal_trigger]{bs_modal_trigger()}} and friends) point at a target element, so those
+need \code{ns()} applied by the caller.
+}
+}
+
+\section{Known deviations}{
+
+Two things are not Bootstrap 5.3 markup, both inherited from the Shiny
+inputs the package delegates to:
+\itemize{
+\item every delegated input keeps Shiny's \code{div.form-group.shiny-input-container}
+wrapper, which is why validation feedback needs \code{\link[=bs_feedback]{bs_feedback()}} rather
+than a bare \code{\link[=bs_invalid_feedback]{bs_invalid_feedback()}} placed after the control;
+\item \code{\link[=bs_date_input]{bs_date_input()}} and \code{\link[=bs_date_range_input]{bs_date_range_input()}} load \code{bootstrap-datepicker}
+for the calendar popup, which is not in the Bootstrap 5.3 documentation.
+The field itself is a plain \code{.form-control}.
 }
 }
 

@@ -70,6 +70,30 @@ bs_button_group(
 The standalone Bootstrap close button (used inside dismissible components) is
 `bs_close_button()`. On a dark background use `white = TRUE`.
 
+### Download buttons
+
+`bs_download_button()` and `bs_download_link()` wrap the Shiny originals.
+Shiny hardcodes the Bootstrap 3 class `.btn-default`, which has no Bootstrap 5
+equivalent and leaves the button unstyled; these take `color` / `outline` /
+`size` like `bs_button()` instead. The server side stays a plain
+`shiny::downloadHandler()`.
+
+```{r}
+ui <- bs_page(
+  bs_container(bs_download_button("save", "Download CSV", color = "success"))
+)
+
+server <- function(input, output, session) {
+  output$save <- downloadHandler(
+    filename = "data.csv",
+    content = function(file) write.csv(mtcars, file)
+  )
+}
+```
+
+`icon` defaults to `NULL` rather than Shiny's Font Awesome icon, which is
+outside Bootstrap 5.
+
 ## Cards
 
 Cards are built from composable pieces. `bs_card()` is the container; the rest
@@ -122,6 +146,26 @@ bs_alert(
   bs_alert_heading("Something went wrong"),
   "Read the ", bs_alert_link("full log", href = "#"), " for details."
 )
+```
+
+Give it an `id` and it becomes interactive: `input$id` is `TRUE` while the
+alert is on the page and `FALSE` once dismissed, and `close_bs_alert()`
+dismisses it from the server. Bootstrap removes the element, so an alert
+cannot be brought back — render it from a `renderUI()` if it has to come and
+go.
+
+```{r}
+ui <- bs_page(
+  bs_container(
+    bs_alert("Saved.", id = "saved", color = "success", dismissible = TRUE),
+    bs_button("dismiss", "Dismiss")
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$dismiss, close_bs_alert("saved"))
+  observe(message("alert still shown: ", input$saved))
+}
 ```
 
 ## Badges

@@ -11,9 +11,27 @@
 #' * Every constructor is `snake_case` and prefixed `bs_` (e.g. [bs_card()]).
 #' * `...` follows the Shiny/htmltools convention: named arguments become HTML
 #'   attributes, unnamed arguments become children. Extra `class` values passed
-#'   through `...` are merged with the component's own classes.
+#'   through `...` are merged with the component's own classes. Bootstrap's
+#'   utility classes are therefore written as themselves rather than wrapped in
+#'   arguments, so a mockup's `class` list transfers verbatim.
 #' * Interactive constructors take a leading `id` so their value is available as
-#'   `input$id`.
+#'   `input$id`. Where a component is useful without one -- an alert, a nav, a
+#'   dropdown -- the `id` is optional and the widget stays static markup until
+#'   it is given one.
+#' * Server helpers take the `id` first and the `session` last and optional,
+#'   and namespace the id themselves inside a Shiny module. The UI triggers
+#'   ([bs_modal_trigger()] and friends) point at a target element, so those
+#'   need `ns()` applied by the caller.
+#'
+#' @section Known deviations:
+#' Two things are not Bootstrap 5.3 markup, both inherited from the Shiny
+#' inputs the package delegates to:
+#' * every delegated input keeps Shiny's `div.form-group.shiny-input-container`
+#'   wrapper, which is why validation feedback needs [bs_feedback()] rather
+#'   than a bare [bs_invalid_feedback()] placed after the control;
+#' * [bs_date_input()] and [bs_date_range_input()] load `bootstrap-datepicker`
+#'   for the calendar popup, which is not in the Bootstrap 5.3 documentation.
+#'   The field itself is a plain `.form-control`.
 #'
 #' @keywords internal
 "_PACKAGE"
