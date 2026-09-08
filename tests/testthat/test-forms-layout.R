@@ -443,3 +443,72 @@ test_that("set_bs_validation rejects a non-text message and a bad state", {
     "one of"
   )
 })
+
+test_that("an input-group addon survives holding a checkbox", {
+  # ig_unwrap_control() descended into any child holding a
+  # .shiny-input-container and returned the bare control, discarding
+  # everything around it -- so the <span class="input-group-text"> vanished
+  # and the checkbox became a sibling of the text input.
+  out <- as.character(bs_input_group(
+    bs_input_group_text(bs_checkbox_input(
+      "cb",
+      NULL
+    )),
+    bs_text_input(
+      "u",
+      NULL
+    )
+  ))
+  expect_match(
+    out,
+    "<span class=\"input-group-text\">",
+    fixed = TRUE
+  )
+  expect_match(
+    out,
+    "input-group-text\">\\s*<input[^>]*form-check-input mt-0"
+  )
+  expect_match(
+    out,
+    "id=\"u\""
+  )
+})
+
+test_that("bs_input_group_text builds the reference checkbox addon", {
+  # Bootstrap's addon is a lone .form-check-input.mt-0: no
+  # .shiny-input-container, and no .form-check, whose indent is meant for a
+  # labelled control in a form.
+  out <- as.character(bs_input_group_text(bs_checkbox_input(
+    "cb",
+    NULL
+  )))
+  expect_no_match(
+    out,
+    "shiny-input-container",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "form-check-label",
+    fixed = TRUE
+  )
+  expect_match(
+    out,
+    "form-check-input mt-0"
+  )
+
+  # Plain addons are untouched, and named `...` still become attributes.
+  expect_equal(
+    as.character(bs_input_group_text(
+      "@"
+    )),
+    "<span class=\"input-group-text\">@</span>"
+  )
+  expect_match(
+    as.character(bs_input_group_text(
+      "@",
+      id = "at"
+    )),
+    "id=\"at\""
+  )
+})

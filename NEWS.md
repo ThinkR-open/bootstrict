@@ -90,6 +90,19 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* An `.input-group-text` addon holding a checkbox is no longer destroyed.
+  `bs_input_group()` descended into any child containing a
+  `.shiny-input-container` and returned the first control it found, discarding
+  everything around it, so
+  `bs_input_group(bs_input_group_text(bs_checkbox_input("cb", NULL)), …)` lost
+  its `<span class="input-group-text">` and left the checkbox as a bare
+  sibling of the text input. Addons are now passed through untouched, and
+  `bs_input_group_text()` builds Bootstrap's documented addon: a lone
+  `.form-check-input.mt-0`, without the `.shiny-input-container` and
+  `.form-check` wrappers whose indent is meant for a labelled control in a
+  form.
+
+
 * `bs_list_unstyled()` and `bs_list_inline()` no longer nest an `<li>` inside
   an `<li>`. Every child was wrapped in a fresh `<li>`, including one that
   already was an `<li>` — the usage the content vignette documents for richer

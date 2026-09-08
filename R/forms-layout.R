@@ -75,12 +75,25 @@ bs_input_group <- function(
 #' Unwrap a shiny-input-container to its bare Bootstrap control for input groups.
 #' @noRd
 ig_unwrap_control <- function(
-  x
+  x,
+  what = "bs_input_group()"
 ) {
   if (
     !inherits(
       x,
       "shiny.tag"
+    )
+  ) {
+    return(
+      x
+    )
+  }
+  # An `.input-group-text` addon is a sibling of the control, not a wrapper
+  # around one: hoisting whatever it contains would discard the addon itself.
+  if (
+    has_class(
+      x,
+      "input-group-text"
     )
   ) {
     return(
@@ -105,7 +118,7 @@ ig_unwrap_control <- function(
   }
   check_control_extractable(
     x,
-    "bs_input_group()"
+    what
   )
   ctrl <- find_first_tag(
     x,
@@ -140,13 +153,52 @@ bs_input_group_text <- function(
   ...,
   class = NULL
 ) {
-  htmltools::tags$span(
-    class = bs_classes(
-      "input-group-text",
-      class
-    ),
-    ...
+  do.call(
+    htmltools::tags$span,
+    c(
+      list(
+        class = bs_classes(
+          "input-group-text",
+          class
+        )
+      ),
+      lapply(
+        rlang::list2(
+          ...
+        ),
+        input_group_addon
+      )
+    )
   )
+}
+
+#' Reduce a `bs_*_input()` passed to `bs_input_group_text()` to a bare control.
+#'
+#' Bootstrap's "Checkboxes and radios" addon is a lone
+#' `.form-check-input.mt-0` inside the `.input-group-text` -- no
+#' `.shiny-input-container`, no `.form-check` (whose indent and margin are
+#' meant for a labelled control in a form, not for an addon). Anything that is
+#' not a shiny-wrapped control is left alone.
+#' @noRd
+input_group_addon <- function(
+  child
+) {
+  ctrl <- ig_unwrap_control(
+    child,
+    what = "bs_input_group_text()"
+  )
+  if (
+    has_class(
+      ctrl,
+      "form-check-input"
+    )
+  ) {
+    ctrl <- htmltools::tagAppendAttributes(
+      ctrl,
+      class = "mt-0"
+    )
+  }
+  ctrl
 }
 
 #' Bootstrap form element

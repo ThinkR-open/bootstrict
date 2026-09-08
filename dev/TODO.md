@@ -9,18 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 10. `bs_input_group_text()` contenant une checkbox est détruit
-
-`R/forms-layout.R:77-133`
-
-`ig_unwrap_control()` descend dans n'importe quel enfant contenant un
-`.shiny-input-container` et renvoie le premier contrôle trouvé en jetant tout autour. Le
-`<span class="input-group-text">` disparaît — c'est le motif « checkbox dans un input
-group » de la doc.
-
-À faire : ne déballer que les enfants de premier niveau qui sont eux-mêmes des wrappers
-`.shiny-input-container`, sauter ceux qui portent déjà `.input-group-text`.
-
 ### 11. `bs_table()` corrompt les tibbles
 
 `R/content.R:222-232`, `R/content.R:243-258`
