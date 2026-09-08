@@ -157,6 +157,7 @@ reference:
   - bs_page_item
   - bs_pagination_numbered
   - bs_dropdown
+  - bs_nav_dropdown
 
 - title: Overlays
   desc: >

@@ -101,7 +101,13 @@ bs_navbar(
   brand = bs_navbar_brand("Quake Watch", href = "/"),
   bs_navbar_nav(
     bs_nav_item(bs_nav_link("Monitor", active = TRUE)),
-    bs_nav_item(bs_nav_link("Docs", href = "#"))
+    bs_nav_item(bs_nav_link("Docs", href = "#")),
+    bs_nav_dropdown(
+      "More",
+      bs_dropdown_item("Settings", id = "settings"),
+      bs_dropdown_divider(),
+      bs_dropdown_item("Sign out", id = "signout")
+    )
   ),
   bs_navbar_text("Fiji region · 1964 →"),
   bg = "primary",
@@ -181,3 +187,19 @@ Other options: `size` (`"sm"`/`"lg"`), `split = TRUE` for a split button,
 `direction` (`"down"`/`"up"`/`"end"`/`"start"`), `align` (right-align the menu,
 or a responsive `list(lg = "end")`), and `dark = TRUE` for a dark menu (the 5.3
 `data-bs-theme` idiom).
+
+Inside a nav or a navbar, use `bs_nav_dropdown()` instead: Bootstrap's menu
+there is an `<li class="nav-item dropdown">` whose toggle is a `.nav-link`.
+`bs_dropdown()` would emit a `<div>` as a direct child of the
+`<ul class="navbar-nav">` — invalid HTML that renders as a grey button. The
+menu items are the same.
+
+```{r}
+bs_nav_dropdown(
+  "More",
+  bs_dropdown_item("Settings", id = "settings"),
+  bs_dropdown_divider(),
+  bs_dropdown_item("Sign out", id = "signout"),
+  align = "end"
+)
+```

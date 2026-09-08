@@ -282,3 +282,98 @@ test_that("the bootstrict dependency travels with the top-level dropdown", {
       names
   )
 })
+
+test_that("bs_nav_dropdown renders the reference nav markup", {
+  # bs_dropdown() emits a <div class="dropdown"> with a <button class="btn">,
+  # which is invalid as a direct child of <ul class="navbar-nav"> and renders
+  # as a grey button instead of a nav link.
+  out <- as.character(bs_nav_dropdown(
+    "More",
+    bs_dropdown_item(
+      "Settings"
+    )
+  ))
+  expect_match(
+    out,
+    "^<li class=\"nav-item dropdown\">"
+  )
+  expect_match(
+    out,
+    paste0(
+      "<a class=\"nav-link dropdown-toggle\" href=\"#\" role=\"button\" ",
+      "data-bs-toggle=\"dropdown\" aria-expanded=\"false\">More</a>"
+    )
+  )
+  expect_match(
+    out,
+    "<ul class=\"dropdown-menu\">"
+  )
+  expect_no_match(
+    out,
+    "btn",
+    fixed = TRUE
+  )
+})
+
+test_that("bs_nav_dropdown carries the nav-link states and menu options", {
+  active <- as.character(bs_nav_dropdown(
+    "More",
+    active = TRUE
+  ))
+  expect_match(
+    active,
+    "nav-link dropdown-toggle active"
+  )
+  expect_match(
+    active,
+    "aria-current=\"page\""
+  )
+
+  disabled <- as.character(bs_nav_dropdown(
+    "More",
+    disabled = TRUE
+  ))
+  expect_match(
+    disabled,
+    "aria-disabled=\"true\""
+  )
+
+  expect_match(
+    as.character(bs_nav_dropdown(
+      "More",
+      align = "end"
+    )),
+    "dropdown-menu dropdown-menu-end"
+  )
+  # Responsive alignment needs Popper's dynamic positioning turned off.
+  responsive <- as.character(bs_nav_dropdown(
+    "More",
+    align = list(
+      lg = "end"
+    )
+  ))
+  expect_match(
+    responsive,
+    "dropdown-menu-lg-end"
+  )
+  expect_match(
+    responsive,
+    "data-bs-display=\"static\""
+  )
+
+  expect_match(
+    as.character(bs_nav_dropdown(
+      "More",
+      dark = TRUE
+    )),
+    "data-bs-theme=\"dark\""
+  )
+  # Named `...` decorate the <li>.
+  expect_match(
+    as.character(bs_nav_dropdown(
+      "More",
+      `data-x` = "1"
+    )),
+    "data-x=\"1\""
+  )
+})

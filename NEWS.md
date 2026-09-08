@@ -2,6 +2,16 @@
 
 ## New widgets
 
+* `bs_nav_dropdown()` builds the menu a designer draws in a navbar: an
+  `<li class="nav-item dropdown">` whose toggle is a `.nav-link`, per the
+  Bootstrap reference. `bs_dropdown()` emits a standalone
+  `<div class="dropdown">` with a `<button class="btn">`, which is invalid as a
+  direct child of the `<ul class="navbar-nav">` that `bs_navbar_nav()` and
+  `bs_nav()` produce, and renders as a grey button rather than a nav link —
+  yet `bs_navbar()`'s own documentation used to recommend it. Takes the same
+  menu items, plus `active` / `disabled` / `align` / `dark`.
+
+
 * `bs_feedback()` and `set_bs_validation()` make validation feedback work.
   Bootstrap only displays a `.valid-feedback` / `.invalid-feedback` message
   when it is a *following sibling* of the control carrying `.is-valid` /

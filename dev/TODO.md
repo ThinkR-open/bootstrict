@@ -27,17 +27,6 @@ C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
 
 ## Ensuite
 
-### 13. Pas de dropdown de nav ni de navbar
-
-`R/navbar.R:7` recommande de composer avec `bs_dropdown()`, mais celui-ci rend toujours
-`<div class="dropdown"><button class="btn btn-secondary dropdown-toggle">`. Posé dans
-`bs_navbar_nav()`, ça donne un `<div>` enfant direct de `<ul class="navbar-nav">` (HTML
-invalide) et un bouton gris dans la navbar. C'est le composant le plus dessiné en maquette.
-
-À faire : un `bs_nav_dropdown(label, ...)`, ou un mode `nav = TRUE` sur `bs_dropdown()`,
-rendant `<li class="nav-item dropdown"><a class="nav-link dropdown-toggle" role="button">`
-plus `<ul class="dropdown-menu">`.
-
 ### 14. Aucun test navigateur sur les bindings
 
 937 lignes de JS, zéro test : `grep -rn "testServer|shinytest2|chromote" tests/` ne

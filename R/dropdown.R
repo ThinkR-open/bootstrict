@@ -160,26 +160,9 @@ bs_dropdown <- function(
     )
   }
 
-  align <- if (
-    is.list(
-      align
-    )
-  ) {
-    # e.g. list(lg = "end") -> "dropdown-menu-lg-end"
-    responsive_classes(
-      "dropdown-menu",
-      align
-    )
-  } else if (
-    identical(
-      align,
-      "end"
-    )
-  ) {
-    "dropdown-menu-end"
-  } else {
-    NULL
-  }
+  align <- dropdown_align_class(
+    align
+  )
 
   menu <- htmltools::tags$ul(
     class = bs_classes(
@@ -357,4 +340,171 @@ bs_dropdown_text <- function(
       ...
     )
   )
+}
+
+#' Bootstrap dropdown inside a nav or a navbar
+#'
+#' The dropdown a designer draws in a navbar: an `<li class="nav-item
+#' dropdown">` whose toggle is a `.nav-link`, not a button. [bs_dropdown()]
+#' builds the standalone, button-triggered menu, which is invalid as a direct
+#' child of the `<ul class="navbar-nav">` that [bs_navbar_nav()] and [bs_nav()]
+#' produce, and renders as a grey button rather than a nav link.
+#'
+#' Fill it with the same items as [bs_dropdown()]: [bs_dropdown_item()],
+#' [bs_dropdown_header()], [bs_dropdown_divider()], [bs_dropdown_text()].
+#'
+#' @param label Toggle text.
+#' @param ... Menu content (unnamed) and named HTML attributes applied to the
+#'   `<li>`.
+#' @param active If `TRUE`, mark the toggle as the active page (`.active` and
+#'   `aria-current="page"`).
+#' @param disabled If `TRUE`, mark the toggle disabled.
+#' @param align Menu alignment: `"end"`, or a named list per breakpoint (e.g.
+#'   `list(lg = "end")`).
+#' @param dark If `TRUE`, render a dark menu (`data-bs-theme="dark"`, the
+#'   Bootstrap 5.3 idiom).
+#' @param id Optional id for the toggle.
+#' @param class Extra classes for the `<li>`.
+#'
+#' @return An `<li>` tag, ready to drop into [bs_navbar_nav()] or [bs_nav()].
+#' @seealso [bs_dropdown()], [bs_navbar_nav()], [bs_nav()]
+#' @export
+#'
+#' @examples
+#' bs_navbar_nav(
+#'   bs_nav_item(bs_nav_link("Home", active = TRUE)),
+#'   bs_nav_dropdown("More", bs_dropdown_item("Settings"))
+#' )
+bs_nav_dropdown <- function(
+  label,
+  ...,
+  active = FALSE,
+  disabled = FALSE,
+  align = NULL,
+  dark = FALSE,
+  id = NULL,
+  class = NULL
+) {
+  dots <- split_dots(
+    ...
+  )
+  responsive_align <- is.list(
+    align
+  )
+
+  toggle <- htmltools::tags$a(
+    class = bs_classes(
+      "nav-link",
+      "dropdown-toggle",
+      if (
+        isTRUE(
+          active
+        )
+      )
+        "active",
+      if (
+        isTRUE(
+          disabled
+        )
+      )
+        "disabled"
+    ),
+    href = "#",
+    id = id,
+    role = "button",
+    `data-bs-toggle` = "dropdown",
+    `data-bs-display` = if (
+      responsive_align
+    )
+      "static",
+    `aria-expanded` = "false",
+    `aria-current` = if (
+      isTRUE(
+        active
+      )
+    )
+      "page",
+    `aria-disabled` = if (
+      isTRUE(
+        disabled
+      )
+    )
+      "true",
+    label
+  )
+
+  menu <- htmltools::tags$ul(
+    class = bs_classes(
+      "dropdown-menu",
+      dropdown_align_class(
+        align
+      )
+    ),
+    dots$children
+  )
+
+  root <- htmltools::tags$li(
+    class = bs_classes(
+      "nav-item",
+      "dropdown",
+      class
+    ),
+    # Bootstrap 5.3 colour modes (.dropdown-menu-dark is deprecated).
+    `data-bs-theme` = if (
+      isTRUE(
+        dark
+      )
+    )
+      "dark",
+    toggle,
+    menu
+  )
+  if (
+    length(
+      dots$attribs
+    ) >
+      0L
+  ) {
+    root <- do.call(
+      htmltools::tagAppendAttributes,
+      c(
+        list(
+          root
+        ),
+        dots$attribs
+      )
+    )
+  }
+  attach_deps(
+    root
+  )
+}
+
+#' Alignment classes for a `.dropdown-menu`.
+#'
+#' A scalar `"end"` gives `.dropdown-menu-end`; a named list such as
+#' `list(lg = "end")` gives the responsive `.dropdown-menu-lg-end`. Responsive
+#' alignment only takes effect when Popper's dynamic positioning is turned off
+#' on the toggle, which is why the caller also emits `data-bs-display="static"`.
+#' @noRd
+dropdown_align_class <- function(
+  align
+) {
+  if (
+    is.list(
+      align
+    )
+  ) {
+    responsive_classes(
+      "dropdown-menu",
+      align
+    )
+  } else if (
+    identical(
+      align,
+      "end"
+    )
+  ) {
+    "dropdown-menu-end"
+  }
 }

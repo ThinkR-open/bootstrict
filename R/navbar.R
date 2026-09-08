@@ -4,7 +4,9 @@
 #'
 #' A responsive navigation header. Compose with [bs_navbar_brand()],
 #' [bs_navbar_nav()] (containing `bs_nav_item()` / `bs_nav_link()` from the
-#' nav-tabs group), [bs_navbar_text()] and, optionally, `bs_dropdown()`. The
+#' nav-tabs group), [bs_navbar_text()] and, for a menu, [bs_nav_dropdown()]
+#' (not [bs_dropdown()], which builds the standalone button-triggered menu and
+#' is invalid inside `<ul class="navbar-nav">`). The
 #' navbar collapses behind a toggler below the `expand` breakpoint.
 #'
 #' @param ... Navbar content (brand, nav lists, text, ...) placed inside the

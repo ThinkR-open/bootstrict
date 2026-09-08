@@ -70,7 +70,9 @@ A navbar tag.
 \description{
 A responsive navigation header. Compose with \code{\link[=bs_navbar_brand]{bs_navbar_brand()}},
 \code{\link[=bs_navbar_nav]{bs_navbar_nav()}} (containing \code{bs_nav_item()} / \code{bs_nav_link()} from the
-nav-tabs group), \code{\link[=bs_navbar_text]{bs_navbar_text()}} and, optionally, \code{bs_dropdown()}. The
+nav-tabs group), \code{\link[=bs_navbar_text]{bs_navbar_text()}} and, for a menu, \code{\link[=bs_nav_dropdown]{bs_nav_dropdown()}}
+(not \code{\link[=bs_dropdown]{bs_dropdown()}}, which builds the standalone button-triggered menu and
+is invalid inside \verb{<ul class="navbar-nav">}). The
 navbar collapses behind a toggler below the \code{expand} breakpoint.
 }
 \examples{
