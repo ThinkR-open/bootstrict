@@ -12,6 +12,7 @@ bs_date_range_input(
   ...,
   min = NULL,
   max = NULL,
+  size = NULL,
   help = NULL,
   width = NULL
 )
@@ -26,6 +27,9 @@ bs_date_range_input(
 \item{...}{Extra attributes applied to each radio \verb{<input>}.}
 
 \item{min, max}{Minimum / maximum selectable date.}
+
+\item{size}{Control size: \code{"sm"} or \code{"lg"}. shiny hardcodes the small
+variant on the group; this argument is what decides it.}
 
 \item{help}{Help text rendered below the control (\code{.form-text}).}
 

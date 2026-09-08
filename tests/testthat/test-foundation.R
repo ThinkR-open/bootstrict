@@ -211,25 +211,25 @@ test_that("numeric input tolerates NULL min/max/step (regression)", {
   )
 })
 
-test_that("file input is overlaid (no off-screen scroll) and keeps its binding", {
+test_that("the file input is a plain .form-control and keeps its binding", {
   out <- render(bs_file_input(
     "up",
     "File"
   ))
-  # the cause of the scroll-to-top: shiny's off-screen positioning, removed.
+  # shiny hid the real input off-screen so a Bootstrap 3 button could stand in
+  # for it; Bootstrap 5.3 has no such button, the input is the control.
   expect_false(grepl(
     "99999",
     out
   ))
-  expect_match(
-    out,
-    "opacity:0"
-  )
-  # real BS5 button, not the unstyled BS3 .btn-default
-  expect_match(
-    out,
-    "btn-secondary"
-  )
+  expect_false(grepl(
+    "opacity:0",
+    out
+  ))
+  expect_false(grepl(
+    "btn-file",
+    out
+  ))
   expect_false(grepl(
     "btn-default",
     out

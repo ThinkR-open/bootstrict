@@ -10,8 +10,8 @@ bs_file_input(
   ...,
   multiple = FALSE,
   accept = NULL,
-  button_label = "Browse...",
-  placeholder = "No file selected",
+  size = NULL,
+  help = NULL,
   width = NULL
 )
 }
@@ -21,15 +21,15 @@ bs_file_input(
 \item{label}{Input label.}
 
 \item{...}{Extra attributes applied to the \verb{<input type="file">} element
-itself (e.g. \code{capture}, \code{webkitdirectory}).}
+(e.g. \code{capture}, \code{webkitdirectory}).}
 
 \item{multiple}{Allow selecting more than one file.}
 
 \item{accept}{Character vector of accepted MIME types / extensions.}
 
-\item{button_label}{Label shown on the browse button.}
+\item{size}{Control size: \code{"sm"} or \code{"lg"}.}
 
-\item{placeholder}{Placeholder text shown before a file is chosen.}
+\item{help}{Help text rendered below the control (\code{.form-text}).}
 
 \item{width}{CSS width (e.g. \code{"100\%"}, \code{"200px"}).}
 }
@@ -37,16 +37,16 @@ itself (e.g. \code{capture}, \code{webkitdirectory}).}
 A form control tag.
 }
 \description{
-Delegates to \code{\link[shiny:fileInput]{shiny::fileInput()}} and adapts its markup to Bootstrap 5.
+Delegates to \code{\link[shiny:fileInput]{shiny::fileInput()}} for the upload plumbing, then emits the
+Bootstrap 5.3 markup: a plain \verb{<input class="form-control" type="file">}.
 }
 \details{
-shiny hides the real \verb{<input type="file">} off-screen (\verb{top: -99999px}) and
-relies on Bootstrap 3 \code{.btn-file} CSS to bring it back over the browse
-button. That CSS is absent under Bootstrap 5, so clicking the button focuses
-the off-screen input and the browser scrolls the page to the top. We fix this
-by overlaying the input on the button (invisible, \code{opacity: 0}) so a click
-lands on it directly, and restyle the browse button as a real Bootstrap 5
-button.
+shiny builds the Bootstrap 3 compound widget instead -- a "Browse" button
+next to a readonly text box showing the file name, with the real input
+hidden off-screen -- which is not in the Bootstrap 5.3 docs at all. Only
+shiny's own element is kept, so uploads, the progress bar and
+\code{input$id} are unchanged; the browser draws the button and the file name
+itself, which is what the 5.3 reference relies on.
 }
 \examples{
 bs_file_input("upload", "Upload a file", accept = ".csv")

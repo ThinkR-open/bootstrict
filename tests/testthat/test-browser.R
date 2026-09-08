@@ -369,6 +369,50 @@ test_that("a navbar dropdown is valid markup and opens", {
   ))
 })
 
+test_that("a file input keeps shiny's plumbing behind the 5.3 markup", {
+  # shiny's Bootstrap 3 compound widget is gone; only its own
+  # <input type="file"> and progress bar are kept, so the binding must still
+  # find them. Driving a real upload from here proved unreliable (CDP's
+  # setFileInputFiles and a scripted DataTransfer both end up cleared by
+  # shiny's own change handler), so the upload itself is covered by the
+  # markup contract below plus a manual check.
+  expect_match(
+    js(
+      app,
+      'document.getElementById("up").className'
+    ),
+    "form-control"
+  )
+  expect_equal(
+    binding_of(
+      app,
+      "up"
+    ),
+    "shiny.fileInputBinding"
+  )
+  # The binding walks up to .form-group to find the progress bar, and reads
+  # the id off the input itself.
+  expect_true(js(
+    app,
+    'document.getElementById("up").closest("div.form-group").querySelector(".progress") !== null'
+  ))
+  expect_equal(
+    js(
+      app,
+      'document.getElementById("up").name'
+    ),
+    "up"
+  )
+  # Nothing of the Bootstrap 3 widget is left.
+  expect_equal(
+    js(
+      app,
+      'document.querySelectorAll("#up ~ input[readonly], .btn-file").length'
+    ),
+    0
+  )
+})
+
 test_that("toggle button groups report their selection", {
   # .btn-check markup: the input is a sibling of its label, so clicking the
   # label is what a user actually does.

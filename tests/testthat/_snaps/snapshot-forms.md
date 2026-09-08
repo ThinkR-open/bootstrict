@@ -264,14 +264,8 @@
       snap(bs_file_input("f", "Upload"))
     Output
       <div class="form-group shiny-input-container">
-        <label class="control-label form-label" for="f" id="f-label">Upload</label>
-        <div class="input-group">
-          <span class="btn btn-file btn-secondary">
-            Browse...
-            <input id="f" class="shiny-input-file" name="f" type="file" style="position:absolute;top:0;left:0;width:100%;height:100%; margin:0;padding:0;opacity:0;cursor:pointer;"/>
-          </span>
-          <input type="text" class="form-control" placeholder="No file selected" readonly="readonly"/>
-        </div>
+        <label class="form-label" for="f" id="f-label">Upload</label>
+        <input class="shiny-input-file form-control" id="f" name="f" type="file"/>
         <div id="f_progress" class="progress active shiny-file-input-progress">
           <div class="progress-bar progress-bar-striped progress-bar-animated"></div>
         </div>
@@ -294,11 +288,9 @@
     Output
       <div id="dr" class="shiny-date-range-input form-group shiny-input-container">
         <label class="control-label form-label" for="dr" id="dr-label">Range</label>
-        <div class="input-daterange input-group input-group-sm">
+        <div class="input-daterange input-group">
           <input class="form-control" type="text" aria-labelledby="dr-label" title="Date format: yyyy-mm-dd" data-date-language="en" data-date-week-start="0" data-date-format="yyyy-mm-dd" data-date-start-view="month" data-date-autoclose="true"/>
-          <span class="input-group-addon input-group-prepend input-group-append">
-            <span class="input-group-text"> to </span>
-          </span>
+          <span class="input-group-text"> to </span>
           <input class="form-control" type="text" aria-labelledby="dr-label" title="Date format: yyyy-mm-dd" data-date-language="en" data-date-week-start="0" data-date-format="yyyy-mm-dd" data-date-start-view="month" data-date-autoclose="true"/>
         </div>
       </div> 

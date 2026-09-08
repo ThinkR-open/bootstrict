@@ -539,23 +539,23 @@ bs_color_input <- function(
 
 #' Bootstrap file input
 #'
-#' Delegates to [shiny::fileInput()] and adapts its markup to Bootstrap 5.
+#' Delegates to [shiny::fileInput()] for the upload plumbing, then emits the
+#' Bootstrap 5.3 markup: a plain `<input class="form-control" type="file">`.
 #'
-#' shiny hides the real `<input type="file">` off-screen (`top: -99999px`) and
-#' relies on Bootstrap 3 `.btn-file` CSS to bring it back over the browse
-#' button. That CSS is absent under Bootstrap 5, so clicking the button focuses
-#' the off-screen input and the browser scrolls the page to the top. We fix this
-#' by overlaying the input on the button (invisible, `opacity: 0`) so a click
-#' lands on it directly, and restyle the browse button as a real Bootstrap 5
-#' button.
+#' shiny builds the Bootstrap 3 compound widget instead -- a "Browse" button
+#' next to a readonly text box showing the file name, with the real input
+#' hidden off-screen -- which is not in the Bootstrap 5.3 docs at all. Only
+#' shiny's own element is kept, so uploads, the progress bar and
+#' `input$id` are unchanged; the browser draws the button and the file name
+#' itself, which is what the 5.3 reference relies on.
 #'
 #' @inheritParams bs_radio_input
 #' @param ... Extra attributes applied to the `<input type="file">` element
-#'   itself (e.g. `capture`, `webkitdirectory`).
+#'   (e.g. `capture`, `webkitdirectory`).
 #' @param multiple Allow selecting more than one file.
 #' @param accept Character vector of accepted MIME types / extensions.
-#' @param button_label Label shown on the browse button.
-#' @param placeholder Placeholder text shown before a file is chosen.
+#' @param size Control size: `"sm"` or `"lg"`.
+#' @param help Help text rendered below the control (`.form-text`).
 #'
 #' @return A form control tag.
 #' @seealso [shiny::fileInput()]
@@ -569,25 +569,31 @@ bs_file_input <- function(
   ...,
   multiple = FALSE,
   accept = NULL,
-  button_label = "Browse...",
-  placeholder = "No file selected",
+  size = NULL,
+  help = NULL,
   width = NULL
 ) {
-  ctrl <- shiny::fileInput(
+  size <- match_arg(
+    size,
+    c(
+      "sm",
+      "lg"
+    )
+  )
+  built <- shiny::fileInput(
     id,
     label,
     multiple = multiple,
     accept = accept,
-    width = width,
-    buttonLabel = button_label,
-    placeholder = placeholder
+    width = width
   )
 
-  # Overlay the file <input> on its button instead of shiny's off-screen
-  # position (the cause of the scroll-to-top). Replacing the inline style is the
-  # only way to win against shiny's inline `!important`.
-  ctrl <- tag_modify_where(
-    ctrl,
+  # Keep shiny's own <input type="file"> -- it carries the id, name and the
+  # .shiny-input-file class the binding finds -- and its progress bar, which
+  # the binding locates by walking up to .form-group. Everything else is the
+  # Bootstrap 3 compound widget and goes.
+  control <- find_first_tag(
+    built,
     function(
       t
     ) {
@@ -596,144 +602,48 @@ bs_file_input <- function(
         "input"
       ) &&
         identical(
-          unname(
-            t$attribs$type
+          htmltools::tagGetAttribute(
+            t,
+            "type"
           ),
           "file"
         )
-    },
-    function(
-      t
-    ) {
-      t$attribs[
-        names(
-          t$attribs
-        ) ==
-          "style"
-      ] <- NULL
-      htmltools::tagAppendAttributes(
-        t,
-        style = paste(
-          "position:absolute;top:0;left:0;width:100%;height:100%;",
-          "margin:0;padding:0;opacity:0;cursor:pointer;"
-        )
-      )
     }
   )
-
-  # Browse button: BS3 `.btn-default` has no styling under BS5 -> use a real one.
-  ctrl <- tag_modify_where(
-    ctrl,
+  progress <- find_first_tag(
+    built,
     function(
       t
     )
       has_class(
         t,
-        "btn-default"
-      ),
-    function(
-      t
-    ) {
-      keep <- setdiff(
-        unlist(strsplit(
-          paste(
-            unlist(
-              t$attribs$class
-            ),
-            collapse = " "
-          ),
-          "\\s+"
-        )),
-        "btn-default"
-      )
-      t$attribs[
-        names(
-          t$attribs
-        ) ==
-          "class"
-      ] <- NULL
-      htmltools::tagAppendAttributes(
-        t,
-        class = bs_classes(
-          keep,
-          "btn-secondary"
-        )
-      )
-    }
-  )
-
-  ctrl <- tag_modify_where(
-    ctrl,
-    function(
-      t
-    )
-      has_class(
-        t,
-        "control-label"
-      ),
-    function(
-      t
-    )
-      htmltools::tagAppendAttributes(
-        t,
-        class = "form-label"
+        "shiny-file-input-progress"
       )
   )
 
-  # shiny wraps the browse button in a BS3/BS4 `<label class="input-group-btn
-  # input-group-prepend">`; those classes have no styles under Bootstrap 5 and
-  # add-ons must be *direct* children of `.input-group` for the corner-rounding
-  # rules to apply. Unwrap the button.
-  ctrl <- tag_modify_where(
-    ctrl,
-    function(
-      t
-    )
-      identical(
-        t$name,
-        "label"
-      ) &&
-        (has_class(
-          t,
-          "input-group-btn"
-        ) ||
-          has_class(
-            t,
-            "input-group-prepend"
-          )),
-    function(
-      t
-    ) {
-      inner <- Filter(
-        function(
-          ch
-        )
-          inherits(
-            ch,
-            "shiny.tag"
-          ),
-        t$children
+  # shiny positions the input off-screen so its Bootstrap 3 button can stand
+  # in for it; here the input is the control.
+  control$attribs$style <- NULL
+  control <- htmltools::tagAppendAttributes(
+    control,
+    class = bs_classes(
+      "form-control",
+      mod(
+        "form-control",
+        size
       )
-      if (
-        length(
-          inner
-        ) ==
-          1L
-      ) {
-        inner[[
-          1
-        ]]
-      } else {
-        t
-      }
-    }
+    )
+  )
+  control <- add_control_attribs(
+    control,
+    ...
   )
 
   # shiny's upload progress bar uses the BS3 animation classes; Bootstrap 5
-  # puts stripes/animation on the bar itself (invisible while idle, so the
-  # classes can be set unconditionally).
-  ctrl <- tag_modify_where(
-    ctrl,
+  # puts stripes and animation on the bar itself (invisible while idle, so
+  # they can be set unconditionally).
+  progress <- tag_modify_where(
+    progress,
     function(
       t
     )
@@ -743,70 +653,52 @@ bs_file_input <- function(
       ),
     function(
       t
-    )
+    ) {
       htmltools::tagAppendAttributes(
         t,
         class = "progress-bar-striped progress-bar-animated"
       )
+    }
   )
 
-  # `...` goes to the real `<input type="file">` (not the readonly display
-  # box, which is the `.form-control` here).
-  dots <- rlang::list2(
-    ...
-  )
-  if (
-    length(
-      dots
-    ) >
-      0L
-  ) {
-    ctrl <- tag_modify_where(
-      ctrl,
-      function(
-        t
+  ctrl <- htmltools::div(
+    class = "form-group shiny-input-container",
+    style = if (
+      !is.null(
+        width
       )
-        identical(
-          t$name,
-          "input"
-        ) &&
-          identical(
-            htmltools::tagGetAttribute(
-              t,
-              "type"
-            ),
-            "file"
-          ),
-      function(
-        t
-      ) {
-        replace_nms <- setdiff(
-          names(
-            dots
-          ),
-          "class"
-        )
-        t$attribs[
-          names(
-            t$attribs
-          ) %in%
-            replace_nms
-        ] <- NULL
-        do.call(
-          htmltools::tagAppendAttributes,
-          c(
-            list(
-              t
-            ),
-            dots
-          )
-        )
-      }
-    )
-  }
-  attach_deps(
-    ctrl
+    ) {
+      paste0(
+        "width: ",
+        htmltools::validateCssUnit(
+          width
+        ),
+        ";"
+      )
+    },
+    if (
+      !is.null(
+        label
+      )
+    ) {
+      htmltools::tags$label(
+        class = "form-label",
+        `for` = id,
+        id = paste0(
+          id,
+          "-label"
+        ),
+        label
+      )
+    },
+    control,
+    progress
   )
+  attach_deps(add_form_help(
+    ctrl,
+    help,
+    id = id
+  ))
 }
 
 #' Bootstrap date input
@@ -866,6 +758,8 @@ bs_date_input <- function(
 #'
 #' @inheritParams bs_date_input
 #' @param start,end Initial start / end dates.
+#' @param size Control size: `"sm"` or `"lg"`. shiny hardcodes the small
+#'   variant on the group; this argument is what decides it.
 #'
 #' @return A form control tag.
 #' @seealso [shiny::dateRangeInput()]
@@ -881,6 +775,7 @@ bs_date_range_input <- function(
   ...,
   min = NULL,
   max = NULL,
+  size = NULL,
   help = NULL,
   width = NULL
 ) {
@@ -894,7 +789,12 @@ bs_date_range_input <- function(
     width = width
   )
   ctrl <- enhance_form_control(
-    ctrl
+    ctrl,
+    size = size
+  )
+  ctrl <- date_range_repair(
+    ctrl,
+    size
   )
   ctrl <- add_control_attribs(
     ctrl,
@@ -907,6 +807,100 @@ bs_date_range_input <- function(
   )
   attach_deps(
     ctrl
+  )
+}
+
+#' Bring shiny's date-range group up to Bootstrap 5.
+#'
+#' shiny hardcodes `.input-group-sm` on the group, so the control was always
+#' small whatever the caller asked for, and wraps the " to " separator in a
+#' Bootstrap 3 `<span class="input-group-addon input-group-prepend
+#' input-group-append">`. Add-ons must be *direct* children of `.input-group`
+#' under Bootstrap 5, or the corner rounding between the fields breaks.
+#' @noRd
+date_range_repair <- function(
+  tag,
+  size
+) {
+  tag <- tag_modify_where(
+    tag,
+    function(
+      t
+    )
+      has_class(
+        t,
+        "input-daterange"
+      ),
+    function(
+      t
+    ) {
+      keep <- setdiff(
+        unlist(strsplit(
+          paste(
+            unlist(
+              t$attribs$class
+            ),
+            collapse = " "
+          ),
+          "\\s+"
+        )),
+        c(
+          "input-group-sm",
+          "input-group-lg"
+        )
+      )
+      t$attribs$class <- bs_classes(
+        keep,
+        mod(
+          "input-group",
+          size
+        )
+      )
+      t
+    }
+  )
+  tag_modify_where(
+    tag,
+    function(
+      t
+    ) {
+      has_class(
+        t,
+        "input-group-addon"
+      ) ||
+        has_class(
+          t,
+          "input-group-prepend"
+        ) ||
+        has_class(
+          t,
+          "input-group-append"
+        )
+    },
+    function(
+      t
+    ) {
+      inner <- Filter(
+        function(
+          ch
+        )
+          inherits(
+            ch,
+            "shiny.tag"
+          ),
+        t$children
+      )
+      if (
+        length(
+          inner
+        ) ==
+          1L
+      )
+        inner[[
+          1
+        ]] else
+        t
+    }
   )
 }
 

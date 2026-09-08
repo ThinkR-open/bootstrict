@@ -218,7 +218,9 @@ test_that("bs_file_input adds form-control to the file input", {
     html,
     "form-label"
   )
-  expect_true(grepl(
+  # No "Browse" button: Bootstrap 5.3's file input is the control itself, and
+  # the browser draws the button.
+  expect_false(grepl(
     "Browse",
     html
   ))
@@ -570,5 +572,95 @@ test_that("update_bs_toggle_buttons distinguishes absent from empty", {
       names(
         store
       )
+  )
+})
+
+test_that("bs_file_input emits the reference 5.3 markup", {
+  out <- as.character(bs_file_input(
+    "f",
+    "Upload",
+    accept = ".csv"
+  ))
+  # Bootstrap 5.3 is a plain .form-control, not shiny's Bootstrap 3 compound
+  # widget (a Browse button plus a readonly text box showing the file name).
+  expect_match(
+    out,
+    "<input[^>]*class=\"shiny-input-file form-control\"[^>]*type=\"file\"/>"
+  )
+  expect_no_match(
+    out,
+    "btn-file",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "input-group",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "readonly",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "No file selected",
+    fixed = TRUE
+  )
+  # shiny's upload plumbing is untouched.
+  expect_match(
+    out,
+    "id=\"f\""
+  )
+  expect_match(
+    out,
+    "name=\"f\""
+  )
+  expect_match(
+    out,
+    "accept=\".csv\""
+  )
+  expect_match(
+    out,
+    "id=\"f_progress\""
+  )
+})
+
+test_that("bs_date_range_input no longer forces a small group or a BS3 addon", {
+  out <- as.character(bs_date_range_input(
+    "dr",
+    "Range"
+  ))
+  # shiny hardcodes .input-group-sm, so the control was always small.
+  expect_no_match(
+    out,
+    "input-group-sm",
+    fixed = TRUE
+  )
+  # Add-ons must be direct children of .input-group under Bootstrap 5, or the
+  # corner rounding between the two fields breaks.
+  expect_no_match(
+    out,
+    "input-group-addon",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "input-group-prepend",
+    fixed = TRUE
+  )
+  expect_match(
+    out,
+    "<span class=\"input-group-text\"> to </span>"
+  )
+
+  sized <- as.character(bs_date_range_input(
+    "dr",
+    "Range",
+    size = "sm"
+  ))
+  expect_match(
+    sized,
+    "input-daterange input-group input-group-sm"
   )
 })

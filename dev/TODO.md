@@ -27,15 +27,21 @@ C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
 
 ## Ensuite
 
-### 19. `bs_file_input()` rend du Bootstrap 3
+### 19. Les inputs date embarquent bootstrap-datepicker
 
-`R/forms-controls.R:535-720` — motif « bouton Browse » (`span.btn-file` +
-`input[type=text]` en lecture seule) au lieu du `<input class="form-control" type="file">`
-de 5.3.
+`R/forms-controls.R` — `bs_date_input()` et `bs_date_range_input()` deleguent a
+shiny, qui charge bootstrap-datepicker. Son popup n'est pas du markup 5.3 : il
+n'est nulle part dans la doc Bootstrap. Une designer qui dessine un champ date
+dessine un `.form-control` et compte sur le selecteur natif du navigateur.
 
-Même famille : `bs_date_input()` / `bs_date_range_input()` embarquent
-bootstrap-datepicker, dont le popup n'est pas du markup 5.3, et le range laisse fuir
-`.input-group-addon` et force `input-group-sm`.
+Le markup du champ lui-meme est desormais propre (taille pilotee, add-on 5.3
+pour le separateur du range) ; c'est le widget de selection qui reste hors
+perimetre Bootstrap.
+
+Passer a `<input type="date">` reglerait le probleme mais c'est une decision
+d'API : on perd `shiny::updateDateInput()`, les arguments `format` /
+`language` / `datesdisabled`, et `input$id` change de semantique. A trancher
+avant de le faire.
 
 ### 20. Les constructeurs à panneaux refusent `lapply()`
 

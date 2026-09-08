@@ -107,6 +107,18 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Breaking changes
 
+* `bs_file_input()` emits the Bootstrap 5.3 markup: a plain
+  `<input class="form-control" type="file">`. shiny builds the Bootstrap 3
+  compound widget instead — a "Browse" button beside a readonly text box
+  showing the file name, with the real input hidden off-screen — which is not
+  in the Bootstrap 5.3 docs at all, so a designer had no way to draw it. Only
+  shiny's own element and its progress bar are kept, so uploads and `input$id`
+  are unchanged; the browser draws the button and the file name itself. The
+  `button_label` and `placeholder` arguments are gone with the widget they
+  configured, and `size` and `help` are now accepted like on the other
+  controls.
+
+
 * `bs_nav_dropdown(id =)` now sets the id on the root `<li>` rather than on
   the toggle `<a>`, so it addresses the widget the way every other interactive
   constructor does and the new state reporting and server helpers can find it.
@@ -143,6 +155,15 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
   or `[object Object]`), and its `...` must be empty.
 
 ## Bug fixes
+
+* `bs_date_range_input()` no longer renders small whatever you asked, and its
+  separator is a real Bootstrap 5 add-on. shiny hardcodes `.input-group-sm` on
+  the group, and wraps the " to " text in a Bootstrap 3
+  `<span class="input-group-addon input-group-prepend input-group-append">`;
+  add-ons must be *direct* children of `.input-group` under Bootstrap 5, or
+  the corner rounding between the two fields breaks. The size is now decided
+  by a `size` argument.
+
 
 * `shiny::updateRadioButtons()` and `shiny::updateCheckboxGroupInput()` no
   longer strip the Bootstrap 5 markup off `bs_radio_input()` and

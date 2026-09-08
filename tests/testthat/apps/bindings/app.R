@@ -65,6 +65,8 @@ ui <- bs_page(
     verbatimTextOutput("tbc_type"),
     uiOutput("dyn"),
 
+    bs_file_input("up", "Upload", accept = ".csv"),
+
     bs_radio_button_input("tbr", "Size", c(Small = "s", Large = "l")),
     bs_checkbox_button_input("tbc", "Options", c("a", "b")),
     bs_button("pick_l", "Pick large"),
