@@ -23,7 +23,24 @@ ui <- bs_page(
     bs_tabset(
       "tabs",
       bs_tab_panel("One", "first", value = "one"),
-      bs_tab_panel("Two", "second", value = "two")
+      bs_tab_panel(
+        "Two",
+        bs_nav(
+          bs_nav_item(bs_nav_link("S1", href = "#sec1")),
+          bs_nav_item(bs_nav_link("S2", href = "#sec2")),
+          id = "spynav"
+        ),
+        bs_scrollspy(
+          htmltools::tags$h4(id = "sec1", "One"),
+          htmltools::div(style = "height: 400px", "..."),
+          htmltools::tags$h4(id = "sec2", "Two"),
+          htmltools::div(style = "height: 400px", "..."),
+          target = "spynav",
+          id = "spy",
+          style = "height: 150px; overflow-y: auto"
+        ),
+        value = "two"
+      )
     ),
     bs_accordion(
       "acc",

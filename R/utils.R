@@ -721,6 +721,77 @@ enhance_form_control <- function(
   tag
 }
 
+#' The visible text of a tag tree, for deriving a default value.
+#'
+#' `as.character()` on a tag gives its *markup*, so a tag title used as a
+#' panel value produced an escaped `&lt;span&gt;Home&lt;/span&gt;`.
+#' @noRd
+tag_text <- function(
+  x
+) {
+  if (
+    is.character(
+      x
+    )
+  ) {
+    return(paste(
+      x,
+      collapse = ""
+    ))
+  }
+  if (
+    inherits(
+      x,
+      "shiny.tag"
+    )
+  ) {
+    return(tag_text(
+      x$children
+    ))
+  }
+  if (
+    is.list(
+      x
+    )
+  ) {
+    return(paste(
+      vapply(
+        x,
+        tag_text,
+        character(
+          1
+        )
+      ),
+      collapse = ""
+    ))
+  }
+  ""
+}
+
+#' Split `...` into the children and the named HTML attributes.
+#'
+#' `split_dots()` works on a tag's `...`; panel constructors keep their `...`
+#' for later, so they need the same split without building a tag.
+#' @noRd
+split_panel_dots <- function(
+  ...
+) {
+  dots <- rlang::list2(
+    ...
+  )
+  named <- nzchar(rlang::names2(
+    dots
+  ))
+  list(
+    children = dots[
+      !named
+    ],
+    attribs = dots[
+      named
+    ]
+  )
+}
+
 #' Validate the leading `id` of an interactive widget.
 #'
 #' These constructors take their id first, so a forgotten one silently turns

@@ -100,6 +100,67 @@ bs_modal <- function(
     )
   }
 
+  # A composed dialog carries its own bs_modal_title(); without this the modal
+  # has no accessible name at all, since aria-labelledby was only ever set by
+  # the `title` shortcut.
+  if (
+    is.null(
+      title
+    )
+  ) {
+    composed_title <- find_first_tag(
+      dots$children,
+      function(
+        t
+      )
+        has_class(
+          t,
+          "modal-title"
+        )
+    )
+    if (
+      !is.null(
+        composed_title
+      )
+    ) {
+      title_id <- htmltools::tagGetAttribute(
+        composed_title,
+        "id"
+      ) %||%
+        paste0(
+          id,
+          "-title"
+        )
+      dots$children <- tag_modify_where(
+        dots$children,
+        function(
+          t
+        )
+          has_class(
+            t,
+            "modal-title"
+          ),
+        function(
+          t
+        ) {
+          if (
+            is.null(htmltools::tagGetAttribute(
+              t,
+              "id"
+            ))
+          ) {
+            htmltools::tagAppendAttributes(
+              t,
+              id = title_id
+            )
+          } else {
+            t
+          }
+        }
+      )
+    }
+  }
+
   dialog <- htmltools::div(
     class = bs_classes(
       "modal-dialog",

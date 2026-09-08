@@ -8,7 +8,7 @@
 \usage{
 bs_figure(..., class = NULL)
 
-bs_figure_img(src, ..., alt = NULL, class = NULL)
+bs_figure_img(src, ..., alt = "", class = NULL)
 
 bs_figure_caption(..., class = NULL)
 }
@@ -19,7 +19,9 @@ bs_figure_caption(..., class = NULL)
 
 \item{src}{Image source URL.}
 
-\item{alt}{Alternative text.}
+\item{alt}{Alternative text. Defaults to \code{""}, which marks the image
+decorative; an \verb{<img>} with no \code{alt} at all is announced by its file
+name instead.}
 }
 \value{
 A figure tag.

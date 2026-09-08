@@ -74,6 +74,25 @@
 
   // Bootstrap only scans [data-bs-spy] once, on window.load, so a scrollspy
   // inserted via renderUI would otherwise never initialise.
+  // A scrollspy inside a hidden tab pane measures a zero-height container, so
+  // it never activates anything and reports nothing. Bootstrap has no idea the
+  // pane became visible: refresh it when the tab is shown.
+  $(document).on("shown.bs.tab", function (event) {
+    var pane = document.querySelector(
+      event.target.getAttribute("data-bs-target") ||
+        event.target.getAttribute("href") ||
+        ""
+    );
+    if (!pane) return;
+    pane.querySelectorAll("[data-bootstrict='scrollspy']").forEach(function (el) {
+      var inst =
+        window.bootstrap &&
+        window.bootstrap.ScrollSpy &&
+        window.bootstrap.ScrollSpy.getInstance(el);
+      if (inst) inst.refresh();
+    });
+  });
+
   bootstrict.eventBinding({
     name: "bootstrict.scrollspy",
     selector: "[data-bootstrict='scrollspy']",

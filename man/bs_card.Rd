@@ -33,7 +33,7 @@ bs_card_link(..., href = "#", class = NULL)
 bs_card_img(
   src,
   position = c("top", "bottom", "overlay"),
-  alt = NULL,
+  alt = "",
   ...,
   class = NULL
 )

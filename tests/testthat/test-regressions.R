@@ -1478,3 +1478,193 @@ test_that("bs_list_group keeps taking a leading item instead of an id", {
     fixed = TRUE
   )
 })
+
+test_that("panel constructors apply named ... as attributes, not body text", {
+  expect_match(
+    as.character(bs_tabset(
+      "t",
+      bs_tab_panel(
+        "T",
+        "body",
+        value = "v",
+        `data-x` = "1"
+      )
+    )),
+    "data-value=\"v\" data-x=\"1\">body</div>"
+  )
+  expect_match(
+    as.character(bs_accordion(
+      "a",
+      bs_accordion_panel(
+        "T",
+        "body",
+        value = "v",
+        `data-x` = "1"
+      )
+    )),
+    "data-x=\"1\""
+  )
+})
+
+test_that("a tag title yields readable text as its value, not escaped markup", {
+  # as.character() on a tag gives its markup, so the value used to be
+  # data-value="&lt;span&gt;Home&lt;/span&gt;".
+  expect_match(
+    as.character(bs_tabset(
+      "t",
+      bs_tab_panel(
+        htmltools::span(
+          "Home"
+        ),
+        "c"
+      )
+    )),
+    "data-value=\"Home\""
+  )
+  expect_match(
+    as.character(bs_accordion(
+      "a",
+      bs_accordion_panel(
+        htmltools::span(
+          "Home"
+        ),
+        "c"
+      )
+    )),
+    "data-value=\"Home\""
+  )
+  # A title with no text at all cannot yield one: say so instead of guessing.
+  expect_error(
+    bs_tab_panel(
+      htmltools::tags$i(
+        class = "icon"
+      ),
+      "c"
+    ),
+    "needs a `value`"
+  )
+})
+
+test_that("small markup defects are fixed", {
+  # The .form-text node stays with the container the input group discards.
+  expect_no_match(
+    as.character(bs_input_group(
+      bs_input_group_text(
+        "@"
+      ),
+      bs_text_input(
+        "u",
+        NULL,
+        help = "hint"
+      )
+    )),
+    "aria-describedby",
+    fixed = TRUE
+  )
+  # A <select> has no placeholder attribute.
+  expect_no_match(
+    as.character(bs_floating_label(bs_select_input(
+      "s",
+      "Sel",
+      c(
+        "a",
+        "b"
+      )
+    ))),
+    "placeholder",
+    fixed = TRUE
+  )
+  expect_match(
+    as.character(bs_floating_label(bs_text_input(
+      "e",
+      "Email"
+    ))),
+    "placeholder"
+  )
+  # Bootstrap resolves a collapse target with querySelectorAll: several
+  # targets are a comma-separated selector, not just the first one.
+  expect_match(
+    as.character(bs_collapse_trigger(
+      c(
+        "a",
+        "b"
+      ),
+      "Toggle"
+    )),
+    "data-bs-target=\"#a, #b\""
+  )
+  # A disabled nav link must leave the keyboard tab order.
+  expect_match(
+    as.character(bs_nav_link(
+      "B",
+      disabled = TRUE
+    )),
+    "tabindex=\"-1\""
+  )
+  expect_no_match(
+    as.character(bs_nav_link(
+      "B"
+    )),
+    "tabindex",
+    fixed = TRUE
+  )
+  # An unvalidated align became a class that does not exist.
+  expect_error(
+    bs_table(
+      data.frame(
+        a = 1
+      ),
+      align = "bogus"
+    ),
+    "`align` must be"
+  )
+  # An <img> with no alt at all is announced by its file name.
+  expect_match(
+    as.character(bs_img(
+      "a.png"
+    )),
+    "alt=\"\""
+  )
+  expect_match(
+    as.character(bs_card_img(
+      "a.png"
+    )),
+    "alt=\"\""
+  )
+})
+
+test_that("a hand-composed modal gets an accessible name", {
+  # aria-labelledby was only ever set by the `title` shortcut.
+  expect_match(
+    as.character(bs_modal(
+      "m",
+      bs_modal_header(bs_modal_title(
+        "Titre"
+      )),
+      bs_modal_body(
+        "b"
+      )
+    )),
+    "aria-labelledby=\"m-title\".*id=\"m-title\""
+  )
+  # An id the caller set wins.
+  expect_match(
+    as.character(bs_modal(
+      "m",
+      bs_modal_header(bs_modal_title(
+        "Titre",
+        id = "mine"
+      ))
+    )),
+    "aria-labelledby=\"mine\""
+  )
+  # No title, no claim.
+  expect_no_match(
+    as.character(bs_modal(
+      "m",
+      "body"
+    )),
+    "aria-labelledby",
+    fixed = TRUE
+  )
+})

@@ -174,6 +174,23 @@ bs_accordion <- function(
           p$body
         )
       )
+      # Named `...` decorate the collapse element; they used to be rendered as
+      # body text.
+      if (
+        length(
+          p$attribs
+        )
+      ) {
+        collapse <- do.call(
+          htmltools::tagAppendAttributes,
+          c(
+            list(
+              collapse
+            ),
+            p$attribs
+          )
+        )
+      }
 
       htmltools::div(
         class = bs_classes(
@@ -220,17 +237,36 @@ bs_accordion_panel <- function(
   class = NULL,
   body_class = NULL
 ) {
+  dots <- split_panel_dots(
+    ...
+  )
+  # A tag title has no text of its own to fall back on: as.character()
+  # would give its markup.
+  value <- as.character(
+    value %||%
+      tag_text(
+        title
+      )
+  )
+  if (
+    !length(
+      value
+    ) ||
+      !nzchar(
+        value
+      )
+  ) {
+    rlang::abort(
+      "`bs_accordion_panel()` needs a `value` when its `title` carries no text."
+    )
+  }
   structure(
     list(
       title = title,
-      value = as.character(
-        value %||%
-          title
-      ),
+      value = value,
       icon = icon,
-      body = rlang::list2(
-        ...
-      ),
+      body = dots$children,
+      attribs = dots$attribs,
       class = class,
       body_class = body_class
     ),

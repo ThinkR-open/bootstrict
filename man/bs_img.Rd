@@ -11,7 +11,7 @@ bs_img(
   thumbnail = FALSE,
   rounded = FALSE,
   object_fit = NULL,
-  alt = NULL,
+  alt = "",
   class = NULL
 )
 }
@@ -30,7 +30,9 @@ bs_img(
 \verb{.object-fit-*} utility): \code{"contain"}, \code{"cover"}, \code{"fill"}, \code{"scale"}
 (scale-down) or \code{"none"}.}
 
-\item{alt}{Alternative text.}
+\item{alt}{Alternative text. Defaults to \code{""}, which marks the image
+decorative; an \verb{<img>} with no \code{alt} at all is announced by its file
+name instead.}
 
 \item{class}{Extra classes.}
 }

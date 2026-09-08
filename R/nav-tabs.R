@@ -179,6 +179,14 @@ bs_nav_link <- function(
       )
     )
       "true",
+    # Without this a disabled link keeps its href and stays reachable, and
+    # activatable, with the keyboard.
+    tabindex = if (
+      isTRUE(
+        disabled
+      )
+    )
+      "-1",
     `data-value` = if (
       nzchar(
         value
@@ -474,7 +482,7 @@ bs_tabset <- function(
         p$value,
         selected
       )
-      htmltools::div(
+      pane <- htmltools::div(
         class = bs_classes(
           "tab-pane",
           "fade",
@@ -499,6 +507,23 @@ bs_tabset <- function(
         `data-value` = p$value,
         p$body
       )
+      # Named `...` decorate the pane; they used to be rendered as body text.
+      if (
+        length(
+          p$attribs
+        )
+      ) {
+        pane <- do.call(
+          htmltools::tagAppendAttributes,
+          c(
+            list(
+              pane
+            ),
+            p$attribs
+          )
+        )
+      }
+      pane
     }
   )
 
@@ -545,17 +570,36 @@ bs_tab_panel <- function(
   icon = NULL,
   class = NULL
 ) {
+  dots <- split_panel_dots(
+    ...
+  )
+  # A tag title has no text of its own to fall back on: as.character()
+  # would give its markup.
+  value <- as.character(
+    value %||%
+      tag_text(
+        title
+      )
+  )
+  if (
+    !length(
+      value
+    ) ||
+      !nzchar(
+        value
+      )
+  ) {
+    rlang::abort(
+      "`bs_tab_panel()` needs a `value` when its `title` carries no text."
+    )
+  }
   structure(
     list(
       title = title,
-      value = as.character(
-        value %||%
-          title
-      ),
+      value = value,
       icon = icon,
-      body = rlang::list2(
-        ...
-      ),
+      body = dots$children,
+      attribs = dots$attribs,
       class = class
     ),
     class = "bs_tab_panel"

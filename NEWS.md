@@ -107,6 +107,12 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Breaking changes
 
+* `bs_img()`, `bs_card_img()` and `bs_figure_img()` default `alt` to `""`
+  rather than `NULL`. An `<img>` with no `alt` attribute at all is announced
+  by its file name; an empty one marks the image decorative, which is the
+  right default for one the caller did not describe.
+
+
 * `bs_file_input()` emits the Bootstrap 5.3 markup: a plain
   `<input class="form-control" type="file">`. shiny builds the Bootstrap 3
   compound widget instead — a "Browse" button beside a readonly text box
@@ -155,6 +161,34 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
   or `[object Object]`), and its `...` must be empty.
 
 ## Bug fixes
+
+* A batch of small markup defects:
+  - `bs_tab_panel()` and `bs_accordion_panel()` applied their *named* `...` as
+    body text instead of attributes, so `data-bs-theme = "dark"` showed up as
+    visible text in the panel.
+  - A tag title gave an escaped value:
+    `bs_tab_panel(span("Home"), …)` reported
+    `data-value="&lt;span&gt;Home&lt;/span&gt;"`. The value is now taken from
+    the title's text, and a title with no text asks for an explicit `value`.
+  - `bs_input_group()` dropped the `.form-text` node but kept the control's
+    `aria-describedby`, leaving a dangling ARIA reference.
+  - `bs_floating_label()` put a `placeholder` on a `<select>`, which has no
+    such attribute.
+  - `bs_collapse_trigger()` given several targets kept only the first in
+    `data-bs-target` while listing them all in `aria-controls`; Bootstrap
+    resolves that attribute with `querySelectorAll`, so the documented
+    multiple-target pattern now works.
+  - `bs_scrollspy()` inside a hidden tab pane never activated and reported
+    nothing: Bootstrap measured a zero-height container. It is refreshed when
+    its tab is shown.
+  - `bs_nav_link(disabled = TRUE)` kept `href="#"` without `tabindex="-1"`, so
+    a disabled link stayed keyboard-activatable.
+  - `bs_table(align =)` was not validated, so any string became a
+    non-existent `.align-*` class.
+  - A hand-composed `bs_modal()` had no accessible name at all;
+    `aria-labelledby` was only ever set by the `title` shortcut, and now
+    points at a composed `bs_modal_title()`.
+
 
 * Forgetting the leading `id` of an interactive widget now raises an error
   instead of rendering silently. `bs_tabset()`, `bs_accordion()`,

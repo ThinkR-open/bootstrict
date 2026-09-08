@@ -143,8 +143,47 @@ ig_unwrap_control <- function(
         )
     }
   )
-  ctrl %||%
-    x
+  if (
+    is.null(
+      ctrl
+    )
+  ) {
+    return(
+      x
+    )
+  }
+  # The `.form-text` node stays behind with the container we just discarded,
+  # so the control must stop pointing at it.
+  described <- htmltools::tagGetAttribute(
+    ctrl,
+    "aria-describedby"
+  )
+  if (
+    !is.null(
+      described
+    ) &&
+      tag_contains(
+        x,
+        function(
+          t
+        )
+          identical(
+            htmltools::tagGetAttribute(
+              t,
+              "id"
+            ),
+            described
+          )
+      )
+  ) {
+    ctrl$attribs[
+      names(
+        ctrl$attribs
+      ) ==
+        "aria-describedby"
+    ] <- NULL
+  }
+  ctrl
 }
 
 #' @rdname bs_input_group
@@ -669,11 +708,17 @@ bs_floating_label <- function(
     )
   }
 
-  # Floating labels need a placeholder on the control for the CSS to animate.
+  # Floating labels need a placeholder on the control for the CSS to animate --
+  # except on a <select>, which has no placeholder attribute at all (Bootstrap's
+  # own floating select example carries none).
   if (
     is.null(
       ctrl$attribs$placeholder
-    )
+    ) &&
+      !identical(
+        ctrl$name,
+        "select"
+      )
   ) {
     ctrl <- htmltools::tagAppendAttributes(
       ctrl,

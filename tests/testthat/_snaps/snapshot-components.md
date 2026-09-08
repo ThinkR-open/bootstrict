@@ -452,7 +452,7 @@
           <a class="nav-link active" href="#" aria-current="page" data-value="Home">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link disabled" href="#" aria-disabled="true" data-value="Away">Away</a>
+          <a class="nav-link disabled" href="#" aria-disabled="true" tabindex="-1" data-value="Away">Away</a>
         </li>
       </ul> 
 
@@ -632,11 +632,11 @@
       snap(bs_modal("m2", bs_modal_header(bs_modal_title("Title")), bs_modal_body(
         "Body"), bs_modal_footer("Footer")))
     Output
-      <div id="m2" class="modal fade" tabindex="-1" aria-hidden="true" data-bootstrict="modal">
+      <div id="m2" class="modal fade" tabindex="-1" aria-hidden="true" aria-labelledby="m2-title" data-bootstrict="modal">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5">Title</h1>
+              <h1 class="modal-title fs-5" id="m2-title">Title</h1>
               <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">Body</div>

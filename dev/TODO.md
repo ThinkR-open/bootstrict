@@ -43,30 +43,6 @@ d'API : on perd `shiny::updateDateInput()`, les arguments `format` /
 `language` / `datesdisabled`, et `input$id` change de semantique. A trancher
 avant de le faire.
 
-### 22. Bugs localisés restants
-
-- `bs_accordion_panel()` et `bs_tab_panel()` rendent les `...` **nommés** comme du texte
-  de corps au lieu d'attributs : `data-bs-theme = "dark"` s'affiche littéralement.
-- `bs_tab_panel()` avec un titre en tag produit du HTML échappé comme valeur :
-  `data-value="&lt;span&gt;Home&lt;/span&gt;"`. Idem `bs_accordion_panel()`
-  (`value = as.character(value %||% title)`).
-- `bs_input_group()` retire le nœud `.form-text` mais garde `aria-describedby` :
-  référence ARIA orpheline.
-- `bs_floating_label()` pose un `placeholder` invalide sur un `<select>`.
-- `bs_collapse_trigger()` avec un vecteur de cibles n'en garde que la première dans
-  `data-bs-target`, tout en listant les deux dans `aria-controls`.
-- `bs_scrollspy()` ne s'active jamais et ne remonte rien quand il est initialisé dans un
-  onglet masqué (vérifié en navigateur sur l'app de démo).
-- `bs_nav_link(disabled = TRUE)` garde `href="#"` sans `tabindex="-1"` : le lien reste
-  activable au clavier.
-- Une modal composée à la main n'a pas de nom accessible : `aria-labelledby`
-  n'est posé que par le raccourci `title=`. Refléter l'id d'un
-  `bs_modal_title()` présent dans les enfants.
-- `bs_table(align=)` n'est pas validé : n'importe quelle chaîne devient une classe
-  `align-*` inexistante.
-- `bs_img()` et `bs_card_img()` émettent un `<img>` sans attribut `alt` du tout quand
-  `alt = NULL`.
-
 ### 23. Documentation manquante côté développeur
 
 - Le `ns()` dans les modules : le serveur namespace tout seul, mais la moitié UI exige un

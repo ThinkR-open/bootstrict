@@ -776,6 +776,37 @@ test_that("a dropdown reports its open state and is driven from the server", {
   ))
 })
 
+test_that("a scrollspy inside a hidden tab pane activates once shown", {
+  # Bootstrap measures a zero-height container while the pane is hidden, so
+  # the scrollspy never activated anything and reported nothing.
+  js(
+    app,
+    'document.querySelector("#tabs [data-value=\'two\']").click()'
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "tabs"
+      ),
+      '=== "two"'
+    )
+  ))
+  expect_true(wait_until(
+    app,
+    'document.querySelector("#spynav .nav-link.active") !== null'
+  ))
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "spy"
+      ),
+      "!== null"
+    )
+  ))
+})
+
 test_that("a dismissible alert reports its state and closes from the server", {
   expect_true(wait_until(
     app,

@@ -98,7 +98,7 @@ bs_collapse_trigger <- function(
       ),
       type = "button",
       `data-bs-toggle` = "collapse",
-      `data-bs-target` = css_id_selector(
+      `data-bs-target` = collapse_target_selector(
         target
       ),
       `aria-expanded` = if (
@@ -167,5 +167,27 @@ update_bs_collapse <- function(
     ),
     action = action,
     session = session
+  )
+}
+
+#' A `data-bs-target` selector for one or several collapse targets.
+#'
+#' Bootstrap resolves a collapse trigger's target with `querySelectorAll`, so
+#' the documented "multiple targets" pattern is a comma-separated selector.
+#' `css_id_selector()` takes a single id, and silently kept only the first.
+#' @noRd
+collapse_target_selector <- function(
+  target
+) {
+  paste(
+    vapply(
+      target,
+      css_id_selector,
+      character(
+        1
+      ),
+      USE.NAMES = FALSE
+    ),
+    collapse = ", "
   )
 }

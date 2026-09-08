@@ -55,6 +55,17 @@ bs_table <- function(
     variant,
     arg_nm = "variant"
   )
+  align <- match_arg(
+    align,
+    c(
+      "baseline",
+      "top",
+      "middle",
+      "bottom",
+      "text-top",
+      "text-bottom"
+    )
+  )
 
   table_class <- bs_classes(
     "table",
@@ -388,7 +399,9 @@ format_cell <- function(
 #' @param object_fit How the image fills its box (Bootstrap 5.3
 #'   `.object-fit-*` utility): `"contain"`, `"cover"`, `"fill"`, `"scale"`
 #'   (scale-down) or `"none"`.
-#' @param alt Alternative text.
+#' @param alt Alternative text. Defaults to `""`, which marks the image
+#'   decorative; an `<img>` with no `alt` at all is announced by its file
+#'   name instead.
 #' @param class Extra classes.
 #'
 #' @return An image tag.
@@ -403,7 +416,7 @@ bs_img <- function(
   thumbnail = FALSE,
   rounded = FALSE,
   object_fit = NULL,
-  alt = NULL,
+  alt = "",
   class = NULL
 ) {
   object_fit <- match_arg(
@@ -479,12 +492,14 @@ bs_figure <- function(
 
 #' @rdname bs_figure
 #' @param src Image source URL.
-#' @param alt Alternative text.
+#' @param alt Alternative text. Defaults to `""`, which marks the image
+#'   decorative; an `<img>` with no `alt` at all is announced by its file
+#'   name instead.
 #' @export
 bs_figure_img <- function(
   src,
   ...,
-  alt = NULL,
+  alt = "",
   class = NULL
 ) {
   htmltools::tags$img(

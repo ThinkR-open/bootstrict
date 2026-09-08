@@ -200,7 +200,7 @@ bs_card_img <- function(
     "bottom",
     "overlay"
   ),
-  alt = NULL,
+  alt = "",
   ...,
   class = NULL
 ) {
