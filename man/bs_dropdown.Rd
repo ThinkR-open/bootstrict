@@ -11,6 +11,7 @@
 bs_dropdown(
   label,
   ...,
+  id = NULL,
   color = "secondary",
   outline = FALSE,
   size = NULL,
@@ -42,6 +43,9 @@ bs_dropdown_text(..., class = NULL)
 \item{...}{Menu contents (dropdown items, dividers, headers, text) and named
 HTML attributes (forwarded to the wrapper).}
 
+\item{id}{Optional input id. When set, the item becomes a Shiny action
+button and its click count is reported as \code{input$id}.}
+
 \item{color}{Toggle button theme colour, one of the Bootstrap theme colours
 or \code{"link"}.}
 
@@ -64,9 +68,6 @@ responsive alignment (\code{.dropdown-menu-lg-end}).}
 
 \item{class}{Extra classes for the wrapper.}
 
-\item{id}{Optional input id. When set, the item becomes a Shiny action
-button and its click count is reported as \code{input$id}.}
-
 \item{href}{Link target.}
 
 \item{active}{If \code{TRUE}, mark the item active (\code{.active}).}
@@ -84,6 +85,15 @@ A toggleable menu of links, headers and dividers. Compose the menu with
 \code{\link[=bs_dropdown_text]{bs_dropdown_text()}}. Bootstrap drives the toggle; give an item an \code{id} to
 wire it as a Shiny action button (\code{input$id}).
 }
+\details{
+Give the dropdown itself an \code{id} and its open state is reported as
+\code{input$id} (\code{TRUE} while the menu is open), and it can be driven from the
+server with \code{\link[=show_bs_dropdown]{show_bs_dropdown()}}, \code{\link[=hide_bs_dropdown]{hide_bs_dropdown()}} and
+\code{\link[=toggle_bs_dropdown]{toggle_bs_dropdown()}}.
+}
 \examples{
 bs_dropdown("Menu", bs_dropdown_item("Action", id = "act"))
+}
+\seealso{
+\code{\link[=show_bs_dropdown]{show_bs_dropdown()}}, \code{\link[=bs_nav_dropdown]{bs_nav_dropdown()}}
 }

@@ -32,7 +32,8 @@ bs_nav_dropdown(
 \item{dark}{If \code{TRUE}, render a dark menu (\code{data-bs-theme="dark"}, the
 Bootstrap 5.3 idiom).}
 
-\item{id}{Optional id for the toggle.}
+\item{id}{Optional dropdown id. Its open state is reported as \code{input$id},
+and it can be driven with \code{\link[=show_bs_dropdown]{show_bs_dropdown()}} and friends.}
 
 \item{class}{Extra classes for the \verb{<li>}.}
 }

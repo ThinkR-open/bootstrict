@@ -377,3 +377,85 @@ test_that("bs_nav_dropdown carries the nav-link states and menu options", {
     "data-x=\"1\""
   )
 })
+
+test_that("a dropdown reports its state only when given an id", {
+  expect_match(
+    as.character(bs_dropdown(
+      "Menu",
+      id = "dd"
+    )),
+    "id=\"dd\" data-bootstrict=\"dropdown\""
+  )
+  expect_match(
+    as.character(bs_nav_dropdown(
+      "More",
+      id = "nd"
+    )),
+    "id=\"nd\" data-bootstrict=\"dropdown\""
+  )
+  # bs_nav_dropdown()'s id belongs on the root, like every other interactive
+  # constructor: it is what the binding and the server helpers address.
+  expect_no_match(
+    as.character(bs_nav_dropdown(
+      "More",
+      id = "nd"
+    )),
+    "dropdown-toggle\" href=\"#\" id=",
+    fixed = TRUE
+  )
+  expect_no_match(
+    as.character(bs_dropdown(
+      "Menu"
+    )),
+    "data-bootstrict",
+    fixed = TRUE
+  )
+})
+
+test_that("the dropdown server helpers dispatch namespaced messages", {
+  s <- list(
+    sendCustomMessage = function(
+      type,
+      message
+    ) {
+      store <<- message
+      invisible()
+    },
+    ns = function(
+      x
+    )
+      paste0(
+        "mod-",
+        x
+      )
+  )
+  store <- NULL
+  show_bs_dropdown(
+    "dd",
+    session = s
+  )
+  expect_equal(
+    store$method,
+    "dropdown.show"
+  )
+  expect_equal(
+    store$id,
+    "mod-dd"
+  )
+  hide_bs_dropdown(
+    "dd",
+    session = s
+  )
+  expect_equal(
+    store$method,
+    "dropdown.hide"
+  )
+  toggle_bs_dropdown(
+    "dd",
+    session = s
+  )
+  expect_equal(
+    store$method,
+    "dropdown.toggle"
+  )
+})

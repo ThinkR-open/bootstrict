@@ -2,6 +2,12 @@
 
 ## New widgets
 
+* `bs_dropdown(id =)` and `bs_nav_dropdown(id =)` report their open state as
+  `input$id`, and `show_bs_dropdown()` / `hide_bs_dropdown()` /
+  `toggle_bs_dropdown()` drive them from the server. Bootstrap emits
+  `shown.bs.dropdown` and exposes the methods; neither was reachable.
+
+
 * `bs_alert(id =)` reports whether the alert is still on the page as
   `input$id`, and `close_bs_alert()` dismisses it from the server. Alerts are
   interactive in Bootstrap, but reported nothing and had no server helper.
@@ -80,6 +86,12 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
   `help =` text is wired to its control via `aria-describedby`.
 
 ## Breaking changes
+
+* `bs_nav_dropdown(id =)` now sets the id on the root `<li>` rather than on
+  the toggle `<a>`, so it addresses the widget the way every other interactive
+  constructor does and the new state reporting and server helpers can find it.
+  This only affects code written against the unreleased `bs_nav_dropdown()`.
+
 
 * `bs_table(data)` now renders a data frame's row names as the reference
   `<th scope="row">` header cell, so `bs_table(head(mtcars))` keeps the car

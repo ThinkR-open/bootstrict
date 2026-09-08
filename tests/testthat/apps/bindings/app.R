@@ -12,7 +12,7 @@ ui <- bs_page(
     brand = bs_navbar_brand("Fixture"),
     bs_navbar_nav(
       bs_nav_item(bs_nav_link("Home", active = TRUE)),
-      bs_nav_dropdown("menu", bs_dropdown_item("Settings", id = "menu_item"))
+      bs_nav_dropdown("menu", bs_dropdown_item("Settings", id = "menu_item"), id = "navdd")
     )
   ),
   bs_container(
@@ -64,6 +64,9 @@ ui <- bs_page(
     bs_button("swap", "Re-render"),
     uiOutput("dyn"),
 
+    bs_dropdown("Menu", bs_dropdown_item("Edit", id = "dd_item"), id = "dd"),
+    bs_button("open_dd", "Open dropdown"),
+
     bs_alert("Saved", id = "al", color = "success", dismissible = TRUE),
     bs_button("close_alert", "Close alert"),
 
@@ -85,6 +88,7 @@ server <- function(input, output, session) {
     set_bs_validation("user", "invalid", "Deja pris.")
   })
   observeEvent(input$close_alert, close_bs_alert("al"))
+  observeEvent(input$open_dd, show_bs_dropdown("dd"))
 }
 
 shinyApp(ui, server)

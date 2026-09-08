@@ -12,9 +12,15 @@
 #' [bs_dropdown_text()]. Bootstrap drives the toggle; give an item an `id` to
 #' wire it as a Shiny action button (`input$id`).
 #'
+#' Give the dropdown itself an `id` and its open state is reported as
+#' `input$id` (`TRUE` while the menu is open), and it can be driven from the
+#' server with [show_bs_dropdown()], [hide_bs_dropdown()] and
+#' [toggle_bs_dropdown()].
+#'
 #' @param label Toggle button label (text or tags).
 #' @param ... Menu contents (dropdown items, dividers, headers, text) and named
 #'   HTML attributes (forwarded to the wrapper).
+#' @param id Optional dropdown id. Its open state is reported as `input$id`.
 #' @param color Toggle button theme colour, one of the Bootstrap theme colours
 #'   or `"link"`.
 #' @param outline If `TRUE`, an outline toggle button (`.btn-outline-*`).
@@ -31,6 +37,7 @@
 #' @param class Extra classes for the wrapper.
 #'
 #' @return A dropdown tag.
+#' @seealso [show_bs_dropdown()], [bs_nav_dropdown()]
 #' @export
 #'
 #' @examples
@@ -38,6 +45,7 @@
 bs_dropdown <- function(
   label,
   ...,
+  id = NULL,
   color = "secondary",
   outline = FALSE,
   size = NULL,
@@ -191,6 +199,13 @@ bs_dropdown <- function(
         "btn-group",
       class
     ),
+    id = id,
+    `data-bootstrict` = if (
+      !is.null(
+        id
+      )
+    )
+      "dropdown",
     # Bootstrap 5.3 colour modes (.dropdown-menu-dark is deprecated).
     `data-bs-theme` = if (
       isTRUE(
@@ -363,7 +378,8 @@ bs_dropdown_text <- function(
 #'   `list(lg = "end")`).
 #' @param dark If `TRUE`, render a dark menu (`data-bs-theme="dark"`, the
 #'   Bootstrap 5.3 idiom).
-#' @param id Optional id for the toggle.
+#' @param id Optional dropdown id. Its open state is reported as `input$id`,
+#'   and it can be driven with [show_bs_dropdown()] and friends.
 #' @param class Extra classes for the `<li>`.
 #'
 #' @return An `<li>` tag, ready to drop into [bs_navbar_nav()] or [bs_nav()].
@@ -410,7 +426,6 @@ bs_nav_dropdown <- function(
         "disabled"
     ),
     href = "#",
-    id = id,
     role = "button",
     `data-bs-toggle` = "dropdown",
     `data-bs-display` = if (
@@ -449,6 +464,13 @@ bs_nav_dropdown <- function(
       "dropdown",
       class
     ),
+    id = id,
+    `data-bootstrict` = if (
+      !is.null(
+        id
+      )
+    )
+      "dropdown",
     # Bootstrap 5.3 colour modes (.dropdown-menu-dark is deprecated).
     `data-bs-theme` = if (
       isTRUE(
@@ -507,4 +529,64 @@ dropdown_align_class <- function(
   ) {
     "dropdown-menu-end"
   }
+}
+
+#' Open, close or toggle a dropdown from the server
+#'
+#' Drives the [bs_dropdown()] or [bs_nav_dropdown()] registered under `id`.
+#' Its open state is reported back as `input$id`.
+#'
+#' @param id Dropdown id.
+#' @param session The Shiny session.
+#'
+#' @return Nothing, called for their side effect.
+#' @seealso [bs_dropdown()]
+#' @export
+#'
+#' @examples
+#' if (interactive()) show_bs_dropdown("menu")
+show_bs_dropdown <- function(
+  id,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  bs_send(
+    "dropdown.show",
+    id = bs_ns(
+      id,
+      session
+    ),
+    session = session
+  )
+}
+
+#' @rdname show_bs_dropdown
+#' @export
+hide_bs_dropdown <- function(
+  id,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  bs_send(
+    "dropdown.hide",
+    id = bs_ns(
+      id,
+      session
+    ),
+    session = session
+  )
+}
+
+#' @rdname show_bs_dropdown
+#' @export
+toggle_bs_dropdown <- function(
+  id,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  bs_send(
+    "dropdown.toggle",
+    id = bs_ns(
+      id,
+      session
+    ),
+    session = session
+  )
 }

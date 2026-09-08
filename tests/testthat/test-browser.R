@@ -369,6 +369,49 @@ test_that("a navbar dropdown is valid markup and opens", {
   ))
 })
 
+test_that("a dropdown reports its open state and is driven from the server", {
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "dd"
+      ),
+      "=== false"
+    )
+  ))
+  click(
+    app,
+    "open_dd"
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "dd"
+      ),
+      "=== true"
+    )
+  ))
+  expect_true(js(
+    app,
+    'document.querySelector("#dd .dropdown-menu").classList.contains("show")'
+  ))
+  # Clicking away closes it, and that is reported too.
+  js(
+    app,
+    "document.body.click()"
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "dd"
+      ),
+      "=== false"
+    )
+  ))
+})
+
 test_that("a dismissible alert reports its state and closes from the server", {
   expect_true(wait_until(
     app,
