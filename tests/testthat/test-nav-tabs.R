@@ -300,3 +300,74 @@ test_that("bs_tabset validates panel type and unique values", {
     "unique"
   )
 })
+
+test_that("bs_nav reports its active link only when given an id", {
+  out <- as.character(bs_nav(
+    bs_nav_item(bs_nav_link(
+      "Home",
+      active = TRUE
+    )),
+    bs_nav_item(bs_nav_link(
+      "Profile",
+      value = "prof"
+    )),
+    id = "nv"
+  ))
+  expect_match(
+    out,
+    "id=\"nv\" data-bootstrict=\"nav\""
+  )
+  # The value defaults to the link's text, and an explicit one wins.
+  expect_match(
+    out,
+    "data-value=\"Home\""
+  )
+  expect_match(
+    out,
+    "data-value=\"prof\""
+  )
+  expect_no_match(
+    as.character(bs_nav(bs_nav_item(bs_nav_link(
+      "Home"
+    )))),
+    "data-bootstrict",
+    fixed = TRUE
+  )
+})
+
+test_that("update_bs_nav dispatches a namespaced message", {
+  store <- NULL
+  session <- list(
+    sendCustomMessage = function(
+      type,
+      message
+    ) {
+      store <<- message
+      invisible()
+    },
+    ns = function(
+      x
+    )
+      paste0(
+        "mod-",
+        x
+      )
+  )
+  update_bs_nav(
+    "nv",
+    selected = "prof",
+    session = session
+  )
+  expect_equal(
+    store$method,
+    "nav.update"
+  )
+  expect_equal(
+    store$id,
+    "mod-nv"
+  )
+  expect_equal(
+    store$selected,
+    "prof"
+  )
+})

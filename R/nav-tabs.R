@@ -2,12 +2,19 @@
 
 #' Bootstrap navigation list
 #'
-#' A static navigation container rendered as a Bootstrap `<ul class="nav">`.
-#' Compose it with [bs_nav_item()] and [bs_nav_link()]. For an interactive,
-#' server-reporting tabset use [bs_tabset()] instead.
+#' A navigation container rendered as a Bootstrap `<ul class="nav">`. Compose
+#' it with [bs_nav_item()] and [bs_nav_link()]. For tabs that also switch
+#' panels use [bs_tabset()] instead.
+#'
+#' Given an `id`, the nav reports the `value` of the active link as `input$id`
+#' and is driven from the server with [update_bs_nav()]. Clicking a link makes
+#' it active without leaving the page, so a nav becomes a plain selector; give
+#' each link a `value`.
 #'
 #' @param ... Navigation items ([bs_nav_item()] / [bs_nav_link()]) and named
 #'   HTML attributes.
+#' @param id Optional nav id. The active link's `value` is reported as
+#'   `input$id`.
 #' @param type Visual style: `"tabs"`, `"pills"` or `"underline"`
 #'   (Bootstrap 5.3) — default `NULL` for a plain
 #'   nav).
@@ -17,6 +24,7 @@
 #' @param class Extra classes.
 #'
 #' @return A nav tag.
+#' @seealso [update_bs_nav()], [bs_tabset()]
 #' @export
 #'
 #' @examples
@@ -27,6 +35,7 @@
 #' )
 bs_nav <- function(
   ...,
+  id = NULL,
   type = NULL,
   fill = FALSE,
   justified = FALSE,
@@ -42,6 +51,13 @@ bs_nav <- function(
     )
   )
   attach_deps(htmltools::tags$ul(
+    id = id,
+    `data-bootstrict` = if (
+      !is.null(
+        id
+      )
+    )
+      "nav",
     class = bs_classes(
       "nav",
       mod(
@@ -93,6 +109,8 @@ bs_nav_item <- function(
 #'   (adds `.active` and `aria-current="page"`).
 #' @param disabled If `TRUE`, mark the link disabled (`.disabled`).
 #' @param id Optional element id.
+#' @param value Value reported as `input$id` by the enclosing [bs_nav()] when
+#'   this link is active. Defaults to the link's text.
 #' @export
 bs_nav_link <- function(
   ...,
@@ -100,8 +118,36 @@ bs_nav_link <- function(
   active = FALSE,
   disabled = FALSE,
   id = NULL,
+  value = NULL,
   class = NULL
 ) {
+  dots <- rlang::list2(
+    ...
+  )
+  value <- value %||%
+    paste(
+      vapply(
+        Filter(
+          is.character,
+          dots[
+            !nzchar(rlang::names2(
+              dots
+            ))
+          ]
+        ),
+        function(
+          x
+        )
+          paste(
+            x,
+            collapse = " "
+          ),
+        character(
+          1
+        )
+      ),
+      collapse = " "
+    )
   htmltools::tags$a(
     class = bs_classes(
       "nav-link",
@@ -133,7 +179,44 @@ bs_nav_link <- function(
       )
     )
       "true",
+    `data-value` = if (
+      nzchar(
+        value
+      )
+    )
+      value,
     ...
+  )
+}
+
+#' Set the active link of a nav from the server
+#'
+#' Activates the [bs_nav_link()] carrying `selected` as its `value` inside the
+#' [bs_nav()] registered under `id`, and reports the change back as `input$id`.
+#'
+#' @param id Nav id, as passed to [bs_nav()].
+#' @param selected `value` of the link to activate.
+#' @param session The Shiny session.
+#'
+#' @return Nothing, called for its side effect.
+#' @seealso [bs_nav()]
+#' @export
+#'
+#' @examples
+#' if (interactive()) update_bs_nav("menu", selected = "profile")
+update_bs_nav <- function(
+  id,
+  selected = NULL,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  bs_send(
+    "nav.update",
+    id = bs_ns(
+      id,
+      session
+    ),
+    selected = selected,
+    session = session
   )
 }
 

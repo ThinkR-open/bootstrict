@@ -8,6 +8,7 @@
 \usage{
 bs_nav(
   ...,
+  id = NULL,
   type = NULL,
   fill = FALSE,
   justified = FALSE,
@@ -23,12 +24,15 @@ bs_nav_link(
   active = FALSE,
   disabled = FALSE,
   id = NULL,
+  value = NULL,
   class = NULL
 )
 }
 \arguments{
 \item{...}{Navigation items (\code{\link[=bs_nav_item]{bs_nav_item()}} / \code{\link[=bs_nav_link]{bs_nav_link()}}) and named
 HTML attributes.}
+
+\item{id}{Optional element id.}
 
 \item{type}{Visual style: \code{"tabs"}, \code{"pills"} or \code{"underline"}
 (Bootstrap 5.3) — default \code{NULL} for a plain
@@ -49,15 +53,22 @@ nav).}
 
 \item{disabled}{If \code{TRUE}, mark the link disabled (\code{.disabled}).}
 
-\item{id}{Optional element id.}
+\item{value}{Value reported as \code{input$id} by the enclosing \code{\link[=bs_nav]{bs_nav()}} when
+this link is active. Defaults to the link's text.}
 }
 \value{
 A nav tag.
 }
 \description{
-A static navigation container rendered as a Bootstrap \verb{<ul class="nav">}.
-Compose it with \code{\link[=bs_nav_item]{bs_nav_item()}} and \code{\link[=bs_nav_link]{bs_nav_link()}}. For an interactive,
-server-reporting tabset use \code{\link[=bs_tabset]{bs_tabset()}} instead.
+A navigation container rendered as a Bootstrap \verb{<ul class="nav">}. Compose
+it with \code{\link[=bs_nav_item]{bs_nav_item()}} and \code{\link[=bs_nav_link]{bs_nav_link()}}. For tabs that also switch
+panels use \code{\link[=bs_tabset]{bs_tabset()}} instead.
+}
+\details{
+Given an \code{id}, the nav reports the \code{value} of the active link as \code{input$id}
+and is driven from the server with \code{\link[=update_bs_nav]{update_bs_nav()}}. Clicking a link makes
+it active without leaving the page, so a nav becomes a plain selector; give
+each link a \code{value}.
 }
 \examples{
 bs_nav(
@@ -65,4 +76,7 @@ bs_nav(
   bs_nav_item(bs_nav_link("Link")),
   type = "tabs"
 )
+}
+\seealso{
+\code{\link[=update_bs_nav]{update_bs_nav()}}, \code{\link[=bs_tabset]{bs_tabset()}}
 }

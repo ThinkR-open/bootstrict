@@ -8,6 +8,7 @@ bs_pagination_numbered(
   n,
   current = 1,
   ...,
+  id = NULL,
   href_template = NULL,
   size = NULL,
   align = NULL,
@@ -22,6 +23,9 @@ bs_pagination_numbered(
 
 \item{...}{Additional named HTML attributes forwarded to \code{\link[=bs_pagination]{bs_pagination()}}'s
 \verb{<ul>}.}
+
+\item{id}{Optional pager id. The active page number is reported as
+\code{input$id} and can be set with \code{\link[=update_bs_pagination]{update_bs_pagination()}}.}
 
 \item{href_template}{Optional \code{sprintf()}-style template used to build each
 page's \code{href} from its page number, e.g. \code{"?page=\%d"}. When \code{NULL}, every

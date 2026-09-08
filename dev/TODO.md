@@ -27,16 +27,6 @@ C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
 
 ## Ensuite
 
-### 16. Quatre composants interactifs ne remontent rien
-
-Bootstrap émet des événements pour eux, une designer les dessinera, et ils n'ont ni `id`
-ni valeur ni helper serveur :
-
-- **dropdown** — ouverture, item choisi (`shown.bs.dropdown`) ;
-- **pagination** — page active ; le composant est purement `href`, totalement inerte ;
-- **nav** — lien actif hors tabset (`R/nav-tabs.R:95` documente un `id` qui ne sert à rien) ;
-- **alert** — fermeture (`closed.bs.alert`), et pas de fermeture depuis le serveur.
-
 ### 17. Les `updateXxx()` de shiny cassent le markup des groupes
 
 `shiny:::generateOptions` n'a pas de branche par thème et sort toujours

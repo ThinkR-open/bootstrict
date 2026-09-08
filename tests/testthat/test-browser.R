@@ -369,6 +369,114 @@ test_that("a navbar dropdown is valid markup and opens", {
   ))
 })
 
+test_that("a nav reports its active link and takes one from the server", {
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "nv"
+      ),
+      '=== "home"'
+    )
+  ))
+  js(
+    app,
+    'document.querySelector("#nv [data-value=\'prof\']").click()'
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "nv"
+      ),
+      '=== "prof"'
+    )
+  ))
+  # href="#" must not jump to the top of the page.
+  expect_equal(
+    js(
+      app,
+      "window.location.hash"
+    ),
+    ""
+  )
+})
+
+test_that("a pager reports its page, steps with the arrows, and takes one from the server", {
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "pg"
+      ),
+      '=== "1"'
+    )
+  ))
+  # Prev is disabled on the first page.
+  expect_true(js(
+    app,
+    'document.querySelector("#pg [data-bootstrict-step=\'prev\']").closest(".page-item").classList.contains("disabled")'
+  ))
+  js(
+    app,
+    'document.querySelector("#pg [data-bootstrict-step=\'next\']").click()'
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "pg"
+      ),
+      '=== "2"'
+    )
+  ))
+  js(
+    app,
+    'document.querySelector("#pg [data-value=\'3\'] .page-link").click()'
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "pg"
+      ),
+      '=== "3"'
+    )
+  ))
+  # Next is disabled on the last page.
+  expect_true(js(
+    app,
+    'document.querySelector("#pg [data-bootstrict-step=\'next\']").closest(".page-item").classList.contains("disabled")'
+  ))
+
+  js(
+    app,
+    'document.querySelector("#pg [data-bootstrict-step=\'prev\']").click()'
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "pg"
+      ),
+      '=== "2"'
+    )
+  ))
+  click(
+    app,
+    "goto3"
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "pg"
+      ),
+      '=== "3"'
+    )
+  ))
+})
+
 test_that("a dropdown reports its open state and is driven from the server", {
   expect_true(wait_until(
     app,

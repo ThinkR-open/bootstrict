@@ -449,10 +449,10 @@
     Output
       <ul class="nav nav-underline">
         <li class="nav-item">
-          <a class="nav-link active" href="#" aria-current="page">Home</a>
+          <a class="nav-link active" href="#" aria-current="page" data-value="Home">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link disabled" href="#" aria-disabled="true">Away</a>
+          <a class="nav-link disabled" href="#" aria-disabled="true" data-value="Away">Away</a>
         </li>
       </ul> 
 
@@ -494,7 +494,7 @@
           <div class="collapse navbar-collapse" id="nav-collapse">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link active" href="#" aria-current="page">Home</a>
+                <a class="nav-link active" href="#" aria-current="page" data-value="Home">Home</a>
               </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">More</a>
@@ -533,10 +533,10 @@
     Output
       <nav aria-label="Page navigation">
         <ul class="pagination">
-          <li class="page-item active">
+          <li data-value="1" class="page-item active">
             <a class="page-link" href="#" aria-current="page">1</a>
           </li>
-          <li class="page-item">
+          <li data-value="2" class="page-item">
             <a class="page-link" href="#">2</a>
           </li>
         </ul>
@@ -550,19 +550,19 @@
       <nav aria-label="Page navigation">
         <ul class="pagination">
           <li class="page-item">
-            <a class="page-link" href="#">Previous</a>
+            <a class="page-link" href="#" data-bootstrict-step="prev">Previous</a>
           </li>
-          <li class="page-item">
+          <li data-value="1" class="page-item">
             <a class="page-link" href="#">1</a>
           </li>
-          <li class="page-item active">
+          <li data-value="2" class="page-item active">
             <a class="page-link" href="#" aria-current="page">2</a>
           </li>
-          <li class="page-item">
+          <li data-value="3" class="page-item">
             <a class="page-link" href="#">3</a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="#">Next</a>
+            <a class="page-link" href="#" data-bootstrict-step="next">Next</a>
           </li>
         </ul>
       </nav> 

@@ -297,3 +297,101 @@ test_that("bs_pagination attaches the bootstrict dependency", {
     )
   )))
 })
+
+test_that("bs_pagination reports its active page only when given an id", {
+  out <- as.character(bs_pagination(
+    bs_page_item(
+      "1",
+      active = TRUE
+    ),
+    bs_page_item(
+      "2"
+    ),
+    id = "pg"
+  ))
+  expect_match(
+    out,
+    "id=\"pg\" data-bootstrict=\"pagination\""
+  )
+  expect_match(
+    out,
+    "<li data-value=\"1\" class=\"page-item active\">"
+  )
+  expect_no_match(
+    as.character(bs_pagination(bs_page_item(
+      "1"
+    ))),
+    "data-bootstrict=",
+    fixed = TRUE
+  )
+})
+
+test_that("a numbered pager numbers its pages and marks its arrows", {
+  out <- as.character(bs_pagination_numbered(
+    3,
+    current = 2,
+    id = "pg"
+  ))
+  expect_match(
+    out,
+    "data-value=\"2\" class=\"page-item active\""
+  )
+  # The arrows step through the pages instead of being a page of their own,
+  # so they carry no value.
+  expect_match(
+    out,
+    "data-bootstrict-step=\"prev\""
+  )
+  expect_match(
+    out,
+    "data-bootstrict-step=\"next\""
+  )
+  expect_no_match(
+    out,
+    "data-value=\"Previous\"",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "data-value=\"Next\"",
+    fixed = TRUE
+  )
+})
+
+test_that("update_bs_pagination coerces and dispatches", {
+  store <- NULL
+  session <- list(
+    sendCustomMessage = function(
+      type,
+      message
+    ) {
+      store <<- message
+      invisible()
+    },
+    ns = function(
+      x
+    )
+      paste0(
+        "mod-",
+        x
+      )
+  )
+  update_bs_pagination(
+    "pg",
+    selected = 3,
+    session = session
+  )
+  expect_equal(
+    store$method,
+    "pagination.update"
+  )
+  expect_equal(
+    store$id,
+    "mod-pg"
+  )
+  # Page values reach the DOM as strings.
+  expect_equal(
+    store$selected,
+    "3"
+  )
+})

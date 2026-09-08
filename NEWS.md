@@ -2,6 +2,18 @@
 
 ## New widgets
 
+* `bs_nav(id =)` reports the `value` of its active link as `input$id` and
+  takes one from the server with `update_bs_nav()`; `bs_nav_link()` gains a
+  `value` (defaulting to its text). Clicking a link activates it without
+  jumping to the top of the page, so a nav can be used as a selector.
+
+* `bs_pagination(id =)` and `bs_pagination_numbered(id =)` report the active
+  page as `input$id` and take one from `update_bs_pagination()`;
+  `bs_page_item()` gains a `value`. In a numbered pager the arrows now step
+  through the pages and disable themselves at either end, instead of being
+  inert links.
+
+
 * `bs_dropdown(id =)` and `bs_nav_dropdown(id =)` report their open state as
   `input$id`, and `show_bs_dropdown()` / `hide_bs_dropdown()` /
   `toggle_bs_dropdown()` drive them from the server. Bootstrap emits

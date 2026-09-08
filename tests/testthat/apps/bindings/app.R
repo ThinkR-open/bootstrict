@@ -64,6 +64,15 @@ ui <- bs_page(
     bs_button("swap", "Re-render"),
     uiOutput("dyn"),
 
+    bs_nav(
+      bs_nav_item(bs_nav_link("Home", active = TRUE, value = "home")),
+      bs_nav_item(bs_nav_link("Profile", value = "prof")),
+      id = "nv",
+      type = "pills"
+    ),
+    bs_pagination_numbered(3, current = 1, id = "pg"),
+    bs_button("goto3", "Go to page 3"),
+
     bs_dropdown("Menu", bs_dropdown_item("Edit", id = "dd_item"), id = "dd"),
     bs_button("open_dd", "Open dropdown"),
 
@@ -89,6 +98,7 @@ server <- function(input, output, session) {
   })
   observeEvent(input$close_alert, close_bs_alert("al"))
   observeEvent(input$open_dd, show_bs_dropdown("dd"))
+  observeEvent(input$goto3, update_bs_pagination("pg", selected = "3"))
 }
 
 shinyApp(ui, server)

@@ -150,6 +150,7 @@ reference:
   desc: Navs & tabsets, the navbar, breadcrumbs, pagination and dropdowns.
   contents:
   - bs_nav
+  - update_bs_nav
   - bs_tabset
   - update_bs_tabset
   - bs_navbar
@@ -157,6 +158,7 @@ reference:
   - bs_pagination
   - bs_page_item
   - bs_pagination_numbered
+  - update_bs_pagination
   - bs_dropdown
   - bs_nav_dropdown
   - show_bs_dropdown

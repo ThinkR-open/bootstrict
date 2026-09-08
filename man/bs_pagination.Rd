@@ -6,6 +6,7 @@
 \usage{
 bs_pagination(
   ...,
+  id = NULL,
   size = NULL,
   align = NULL,
   label = "Page navigation",
@@ -15,6 +16,9 @@ bs_pagination(
 \arguments{
 \item{...}{Page items built with \code{\link[=bs_page_item]{bs_page_item()}}, plus named HTML
 attributes applied to the \verb{<ul>}.}
+
+\item{id}{Optional pager id. The active item's \code{value} is reported as
+\code{input$id}.}
 
 \item{size}{Size modifier: \code{"sm"} or \code{"lg"} (\code{.pagination-sm}/\code{.pagination-lg}).}
 
@@ -32,6 +36,12 @@ A \verb{<nav>} pagination tag.
 A list of page links, built from \code{\link[=bs_page_item]{bs_page_item()}}s. For a quick numbered
 pager use \code{\link[=bs_pagination_numbered]{bs_pagination_numbered()}}.
 }
+\details{
+Given an \code{id}, the pager reports the \code{value} of the active item as
+\code{input$id} and is driven from the server with \code{\link[=update_bs_pagination]{update_bs_pagination()}}.
+Clicking an item makes it active without leaving the page, so the pager
+drives the app rather than a URL.
+}
 \examples{
 bs_pagination(
   bs_page_item("Previous", href = "#"),
@@ -39,4 +49,7 @@ bs_pagination(
   bs_page_item("2", href = "#"),
   bs_page_item("Next", href = "#")
 )
+}
+\seealso{
+\code{\link[=update_bs_pagination]{update_bs_pagination()}}
 }

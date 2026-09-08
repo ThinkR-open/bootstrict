@@ -4,11 +4,21 @@
 \alias{bs_page_item}
 \title{Bootstrap pagination item}
 \usage{
-bs_page_item(..., href = "#", active = FALSE, disabled = FALSE, class = NULL)
+bs_page_item(
+  ...,
+  value = NULL,
+  href = "#",
+  active = FALSE,
+  disabled = FALSE,
+  class = NULL
+)
 }
 \arguments{
 \item{...}{Link content (text or tags) and named HTML attributes applied to
 the \verb{<a class="page-link">}.}
+
+\item{value}{Value reported as \code{input$id} by the enclosing \code{\link[=bs_pagination]{bs_pagination()}}
+when this item is active. Defaults to the item's text.}
 
 \item{href}{Link target.}
 
