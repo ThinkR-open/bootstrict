@@ -49,6 +49,33 @@
         b
       </div> 
 
+# accented table markup is stable
+
+    Code
+      snap(bs_table(data.frame(a = 1:2, b = c("x", "y")), rownames = FALSE, striped = "columns",
+      head_variant = "dark", group_divider = TRUE, row_variant = c(NA, "success"),
+      caption = "Cars", caption_top = TRUE))
+    Output
+      <table class="table table-striped-columns caption-top">
+        <caption>Cars</caption>
+        <thead class="table-dark">
+          <tr>
+            <th scope="col">a</th>
+            <th scope="col">b</th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+          <tr>
+            <td>1</td>
+            <td>x</td>
+          </tr>
+          <tr class="table-success">
+            <td>2</td>
+            <td>y</td>
+          </tr>
+        </tbody>
+      </table> 
+
 # content markup is stable
 
     Code

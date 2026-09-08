@@ -16,6 +16,10 @@ bs_table(
   responsive = FALSE,
   align = NULL,
   caption = NULL,
+  caption_top = FALSE,
+  head_variant = NULL,
+  group_divider = FALSE,
+  row_variant = NULL,
   rownames = NULL,
   class = NULL
 )
@@ -27,7 +31,8 @@ bs_table(
 \item{...}{Manual table children (when \code{data} is \code{NULL}) and named HTML
 attributes applied to the \verb{<table>} element.}
 
-\item{striped}{Add zebra-striping to table rows (\code{.table-striped}).}
+\item{striped}{Zebra-striping: \code{TRUE} or \code{"rows"} for \code{.table-striped},
+\code{"columns"} for \code{.table-striped-columns}.}
 
 \item{bordered}{Add borders on all sides (\code{.table-bordered}).}
 
@@ -48,6 +53,19 @@ Bootstrap theme colours.}
 \code{"top"}, \code{"bottom"}.}
 
 \item{caption}{Optional table caption text rendered in a \verb{<caption>}.}
+
+\item{caption_top}{If \code{TRUE}, place the caption above the table
+(\code{.caption-top}).}
+
+\item{head_variant}{Theme colour for the generated \verb{<thead>}
+(\code{.table-light}, \code{.table-dark}, or any theme colour).}
+
+\item{group_divider}{If \code{TRUE}, add a thicker border between the header and
+the body (\code{.table-group-divider} on the generated \verb{<tbody>}).}
+
+\item{row_variant}{Per-row theme colour for the generated rows
+(\verb{.table-*} on the \verb{<tr>}). A character vector recycled to the number of
+rows; \code{NA} leaves a row unstyled. \code{"active"} is also accepted.}
 
 \item{rownames}{Render each row's name as the reference \verb{<th scope="row">}
 header cell. \code{NULL} (the default) does so when \code{data} carries real row

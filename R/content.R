@@ -11,7 +11,8 @@
 #'   `...` arguments are used as the table's children instead.
 #' @param ... Manual table children (when `data` is `NULL`) and named HTML
 #'   attributes applied to the `<table>` element.
-#' @param striped Add zebra-striping to table rows (`.table-striped`).
+#' @param striped Zebra-striping: `TRUE` or `"rows"` for `.table-striped`,
+#'   `"columns"` for `.table-striped-columns`.
 #' @param bordered Add borders on all sides (`.table-bordered`).
 #' @param borderless Remove all borders (`.table-borderless`).
 #' @param hover Enable a hover state on rows (`.table-hover`).
@@ -24,6 +25,15 @@
 #' @param align Vertical alignment of cells (`.align-*`), e.g. `"middle"`,
 #'   `"top"`, `"bottom"`.
 #' @param caption Optional table caption text rendered in a `<caption>`.
+#' @param caption_top If `TRUE`, place the caption above the table
+#'   (`.caption-top`).
+#' @param head_variant Theme colour for the generated `<thead>`
+#'   (`.table-light`, `.table-dark`, or any theme colour).
+#' @param group_divider If `TRUE`, add a thicker border between the header and
+#'   the body (`.table-group-divider` on the generated `<tbody>`).
+#' @param row_variant Per-row theme colour for the generated rows
+#'   (`.table-*` on the `<tr>`). A character vector recycled to the number of
+#'   rows; `NA` leaves a row unstyled. `"active"` is also accepted.
 #' @param rownames Render each row's name as the reference `<th scope="row">`
 #'   header cell. `NULL` (the default) does so when `data` carries real row
 #'   names, as `mtcars` does; `TRUE` forces it (numbering the rows when there
@@ -48,6 +58,10 @@ bs_table <- function(
   responsive = FALSE,
   align = NULL,
   caption = NULL,
+  caption_top = FALSE,
+  head_variant = NULL,
+  group_divider = FALSE,
+  row_variant = NULL,
   rownames = NULL,
   class = NULL
 ) {
@@ -55,6 +69,38 @@ bs_table <- function(
     variant,
     arg_nm = "variant"
   )
+  head_variant <- check_color(
+    head_variant,
+    values = c(
+      bs_theme_colors,
+      "active"
+    ),
+    arg_nm = "head_variant"
+  )
+  striped <- if (
+    isTRUE(
+      striped
+    )
+  ) {
+    "rows"
+  } else if (
+    isFALSE(
+      striped
+    ) ||
+      is.null(
+        striped
+      )
+  ) {
+    NULL
+  } else {
+    match_arg(
+      striped,
+      c(
+        "rows",
+        "columns"
+      )
+    )
+  }
   align <- match_arg(
     align,
     c(
@@ -70,11 +116,19 @@ bs_table <- function(
   table_class <- bs_classes(
     "table",
     if (
-      isTRUE(
-        striped
+      identical(
+        striped,
+        "rows"
       )
     )
       "table-striped",
+    if (
+      identical(
+        striped,
+        "columns"
+      )
+    )
+      "table-striped-columns",
     if (
       isTRUE(
         bordered
@@ -107,6 +161,12 @@ bs_table <- function(
       "align",
       align
     ),
+    if (
+      isTRUE(
+        caption_top
+      )
+    )
+      "caption-top",
     class
   )
 
@@ -127,7 +187,10 @@ bs_table <- function(
   ) {
     body <- bs_table_from_data(
       data,
-      rownames
+      rownames,
+      head_variant = head_variant,
+      group_divider = group_divider,
+      row_variant = row_variant
     )
     parts <- split_dots(
       ...
@@ -202,7 +265,10 @@ bs_table <- function(
 #' @noRd
 bs_table_from_data <- function(
   data,
-  rownames = NULL
+  rownames = NULL,
+  head_variant = NULL,
+  group_divider = FALSE,
+  row_variant = NULL
 ) {
   if (
     is.matrix(
@@ -258,6 +324,10 @@ bs_table_from_data <- function(
   }
 
   head <- htmltools::tags$thead(
+    class = mod(
+      "table",
+      head_variant
+    ),
     htmltools::tags$tr(
       if (
         !is.null(
@@ -283,6 +353,45 @@ bs_table_from_data <- function(
   n_rows <- NROW(
     data
   )
+  # One variant per row, recycled; NA leaves a row unstyled.
+  row_variants <- rep(
+    NA_character_,
+    n_rows
+  )
+  if (
+    !is.null(
+      row_variant
+    )
+  ) {
+    supplied <- as.character(
+      row_variant
+    )
+    unknown <- setdiff(
+      stats::na.omit(
+        supplied
+      ),
+      c(
+        bs_theme_colors,
+        "active"
+      )
+    )
+    if (
+      length(
+        unknown
+      )
+    ) {
+      rlang::abort(sprintf(
+        "`row_variant` must be a theme colour or \"active\"; \"%s\" is not.",
+        unknown[[
+          1
+        ]]
+      ))
+    }
+    row_variants <- rep(
+      supplied,
+      length.out = n_rows
+    )
+  }
   rows <- lapply(
     seq_len(
       n_rows
@@ -309,6 +418,18 @@ bs_table_from_data <- function(
         }
       )
       htmltools::tags$tr(
+        class = if (
+          !is.na(row_variants[[
+            i
+          ]])
+        ) {
+          mod(
+            "table",
+            row_variants[[
+              i
+            ]]
+          )
+        },
         # The reference markup opens each body row with a row header.
         if (
           !is.null(
@@ -326,6 +447,12 @@ bs_table_from_data <- function(
     }
   )
   body <- htmltools::tags$tbody(
+    class = if (
+      isTRUE(
+        group_divider
+      )
+    )
+      "table-group-divider",
     rows
   )
 

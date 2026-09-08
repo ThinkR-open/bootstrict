@@ -497,3 +497,112 @@ test_that("bs_table keeps real row names as the reference row header", {
     fixed = TRUE
   )
 })
+
+test_that("bs_table covers the accented-table surface", {
+  d <- data.frame(
+    a = 1:3,
+    b = c(
+      "x",
+      "y",
+      "z"
+    )
+  )
+  out <- as.character(bs_table(
+    d,
+    rownames = FALSE,
+    striped = "columns",
+    head_variant = "dark",
+    group_divider = TRUE,
+    row_variant = c(
+      NA,
+      "success",
+      "active"
+    ),
+    caption = "Cap",
+    caption_top = TRUE
+  ))
+  expect_match(
+    out,
+    "class=\"table table-striped-columns caption-top\""
+  )
+  expect_match(
+    out,
+    "<thead class=\"table-dark\">"
+  )
+  expect_match(
+    out,
+    "<tbody class=\"table-group-divider\">"
+  )
+  expect_match(
+    out,
+    "<tr class=\"table-success\">"
+  )
+  expect_match(
+    out,
+    "<tr class=\"table-active\">"
+  )
+  # An NA row is left unstyled, not given a class that does not exist.
+  expect_no_match(
+    out,
+    "table-NA",
+    fixed = TRUE
+  )
+
+  # striped stays a switch as well as a choice.
+  expect_match(
+    as.character(bs_table(
+      d,
+      striped = TRUE
+    )),
+    "class=\"table table-striped\""
+  )
+  expect_no_match(
+    as.character(bs_table(
+      d
+    )),
+    "table-striped",
+    fixed = TRUE
+  )
+})
+
+test_that("bs_table validates its new arguments", {
+  d <- data.frame(
+    a = 1
+  )
+  expect_error(
+    bs_table(
+      d,
+      striped = "bogus"
+    ),
+    "`striped` must be one of"
+  )
+  expect_error(
+    bs_table(
+      d,
+      head_variant = "bogus"
+    ),
+    "`head_variant` must be"
+  )
+  expect_error(
+    bs_table(
+      d,
+      row_variant = "bogus"
+    ),
+    "theme colour"
+  )
+  # A single variant is recycled across the rows.
+  expect_equal(
+    length(gregexpr(
+      "table-info",
+      as.character(bs_table(
+        data.frame(
+          a = 1:2
+        ),
+        row_variant = "info"
+      ))
+    )[[
+      1
+    ]]),
+    2L
+  )
+})

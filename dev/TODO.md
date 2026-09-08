@@ -43,12 +43,6 @@ d'API : on perd `shiny::updateDateInput()`, les arguments `format` /
 `language` / `datesdisabled`, et `input$id` change de semantique. A trancher
 avant de le faire.
 
-### 24. `bs_table()` incomplet face à la doc
-
-Pas de variante `.table-light` / `.table-dark` sur le `<thead>` généré, pas de
-`.table-striped-columns` (`striped` est booléen), pas de `.table-group-divider`, pas de
-variantes de ligne ou de cellule, pas de `.caption-top`.
-
 ---
 
 ## Plus tard

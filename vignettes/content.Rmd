@@ -34,15 +34,20 @@ pass tag children instead to hand-build the rows.
 bs_table(
   data = NULL,
   ...,                 # manual children when `data` is NULL
-  striped = FALSE,     # zebra-striped rows
+  striped = FALSE,     # TRUE / "rows", or "columns"
   bordered = FALSE,    # borders on all sides
   borderless = FALSE,  # remove all borders
   hover = FALSE,       # hover highlight
   small = FALSE,       # condensed padding
-  variant = NULL,      # a theme colour: .table-{colour}
+  variant = NULL,      # a theme colour for the whole table
   responsive = FALSE,  # TRUE, or a breakpoint "sm"/"md"/… for horizontal scroll
   align = NULL,        # vertical alignment: "middle"/"top"/"bottom"
   caption = NULL,
+  caption_top = FALSE, # put the caption above the table
+  head_variant = NULL, # a theme colour for the <thead>
+  group_divider = FALSE, # thicker border under the header
+  row_variant = NULL,  # per-row theme colour, recycled; NA leaves a row plain
+  rownames = NULL,     # row names as the reference <th scope="row">
   class = NULL
 )
 ```
@@ -52,6 +57,24 @@ The most common form — a styled data-frame table:
 ```{r}
 bs_table(head(mtcars), striped = TRUE, hover = TRUE)
 ```
+
+The accented variants from the Bootstrap tables page are arguments rather than
+classes you have to remember, and they compose:
+
+```{r}
+bs_table(
+  head(mtcars, 4),
+  head_variant = "dark",
+  group_divider = TRUE,
+  row_variant = c(NA, "success", NA, "danger"),
+  caption = "Four cars",
+  caption_top = TRUE
+)
+```
+
+`row_variant` is recycled to the number of rows, so a single value colours them
+all, and `NA` leaves a row alone. `"active"` is accepted alongside the theme
+colours.
 
 `responsive = TRUE` wraps the table so it scrolls horizontally on narrow
 screens (or pass a breakpoint to only do so below it):

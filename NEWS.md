@@ -2,6 +2,14 @@
 
 ## New widgets
 
+* `bs_table()` covers the rest of the Bootstrap tables page: `striped` now
+  takes `"columns"` as well as `TRUE`/`"rows"` (`.table-striped-columns`),
+  and `head_variant`, `group_divider`, `row_variant` and `caption_top` give
+  the generated markup its `<thead>` colour, the `.table-group-divider`, the
+  per-row `.table-*` accents and `.caption-top`. `row_variant` is recycled
+  across the rows, and `NA` leaves one unstyled.
+
+
 * `bs_navbar_nav(id =)` reports its active link as `input$id`, like
   `bs_nav(id =)`, and takes one from `update_bs_nav()`. Bootstrap has no
   "navbar page" component -- switching content is the application's job -- and
