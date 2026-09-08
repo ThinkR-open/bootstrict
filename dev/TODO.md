@@ -27,14 +27,6 @@ C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
 
 ## Ensuite
 
-### 15. Aucun test de snapshot
-
-`grep -rn "expect_snapshot" tests/` renvoie 0, `tests/testthat/_snaps` n'existe pas. Le
-contrat unique du package est la fidélité du markup à l'octet près.
-
-À faire : un `expect_snapshot()` du HTML rendu par constructeur, pour que toute
-régression de fidélité sorte en diff.
-
 ### 16. Quatre composants interactifs ne remontent rien
 
 Bootstrap émet des événements pour eux, une designer les dessinera, et ils n'ont ni `id`
