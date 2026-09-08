@@ -25,6 +25,20 @@ accepts a designer's exported SASS variable sheet. Variables from
 \code{variables} are merged with (and overridden by) any variables passed through
 \code{...}, then handed to \code{bslib}.
 }
+\details{
+Values are placed in the Sass layer that can actually compile them. A value
+built only from literals or from the sheet's own variables (\verb{$primary: #ff6600}, \verb{$link-color: $primary}) goes to the \emph{defaults} layer, where it is
+set before Bootstrap derives \verb{$theme-colors} and the rest from it. A value
+referring to one of Bootstrap's own variables (\verb{$link-hover-color: shade-color($primary, 20\%)}, with no \verb{$primary} in the sheet) cannot go
+there — Bootstrap's variables are not defined yet — so it goes to the
+\emph{declarations} layer, which \code{bslib} provides for exactly that.
+
+One consequence is worth knowing: a theme colour redefined from one of
+Bootstrap's own variables (\verb{$secondary: $gray-600}) lands in the
+declarations layer, after \verb{$theme-colors} has been built, so it will not
+restyle \code{.btn-secondary}. Give the sheet its own literal (or define the
+variable it refers to) when that matters.
+}
 \examples{
 if (interactive()) {
   bootstrict_theme(primary = "#ff6600", "font-size-base" = "1rem")

@@ -422,6 +422,21 @@ scss_statements <- function(
 #' `variables` are merged with (and overridden by) any variables passed through
 #' `...`, then handed to `bslib`.
 #'
+#' Values are placed in the Sass layer that can actually compile them. A value
+#' built only from literals or from the sheet's own variables (`$primary:
+#' #ff6600`, `$link-color: $primary`) goes to the *defaults* layer, where it is
+#' set before Bootstrap derives `$theme-colors` and the rest from it. A value
+#' referring to one of Bootstrap's own variables (`$link-hover-color:
+#' shade-color($primary, 20%)`, with no `$primary` in the sheet) cannot go
+#' there — Bootstrap's variables are not defined yet — so it goes to the
+#' *declarations* layer, which `bslib` provides for exactly that.
+#'
+#' One consequence is worth knowing: a theme colour redefined from one of
+#' Bootstrap's own variables (`$secondary: $gray-600`) lands in the
+#' declarations layer, after `$theme-colors` has been built, so it will not
+#' restyle `.btn-secondary`. Give the sheet its own literal (or define the
+#' variable it refers to) when that matters.
+#'
 #' @param ... Sass variables / arguments forwarded to [bslib::bs_theme()].
 #'   Named values like `primary = "#ff6600"` override Bootstrap defaults.
 #' @param variables Optional path to a `.scss` variable sheet, or a named list
@@ -486,31 +501,170 @@ bootstrict_theme <- function(
     dots
   )
 
-  args <- c(
-    list(
-      version = 5
+  # A handful of bs_theme() arguments are not Sass variables: they take R
+  # objects (font_google(), a preset name) or expand into several variables.
+  # Everything else is a plain Sass variable and goes through
+  # bs_add_variables(), which keeps the sheet's order -- bs_theme()'s own
+  # arguments are emitted *after* an added defaults block, so splitting them
+  # would break a sheet whose `$link-color: $primary` follows its `$primary`.
+  special <- intersect(
+    names(
+      merged
     ),
-    if (
-      !is.null(
-        bootswatch
-      )
+    intersect(
+      theme_only_args,
+      names(formals(
+        bslib::bs_theme
+      ))
     )
-      list(
-        bootswatch = bootswatch
-      ),
-    if (
-      !is.null(
-        preset
-      )
-    )
-      list(
-        preset = preset
-      ),
-    merged
   )
-  do.call(
+  vars <- merged[setdiff(
+    names(
+      merged
+    ),
+    special
+  )]
+
+  theme <- do.call(
     bslib::bs_theme,
-    args
+    c(
+      list(
+        version = 5
+      ),
+      if (
+        !is.null(
+          bootswatch
+        )
+      )
+        list(
+          bootswatch = bootswatch
+        ),
+      if (
+        !is.null(
+          preset
+        )
+      )
+        list(
+          preset = preset
+        ),
+      merged[
+        special
+      ]
+    )
+  )
+
+  if (
+    !length(
+      vars
+    )
+  ) {
+    return(
+      theme
+    )
+  }
+
+  # A value that only refers to the sheet's own variables belongs in the
+  # defaults layer, where it is set before Bootstrap derives $theme-colors and
+  # friends from it. A value referring to one of Bootstrap's own variables
+  # cannot go there (they are not defined yet) and belongs in the declarations
+  # layer, which is exactly what bslib provides it for.
+  own <- names(
+    vars
+  )
+  derived <- vapply(
+    vars,
+    function(
+      value
+    )
+      any(
+        !(scss_variable_refs(
+          value
+        ) %in%
+          own)
+      ),
+    logical(
+      1
+    )
+  )
+  if (
+    any(
+      !derived
+    )
+  ) {
+    theme <- do.call(
+      bslib::bs_add_variables,
+      c(
+        list(
+          theme
+        ),
+        vars[
+          !derived
+        ],
+        list(
+          .where = "defaults"
+        )
+      )
+    )
+  }
+  if (
+    any(
+      derived
+    )
+  ) {
+    theme <- do.call(
+      bslib::bs_add_variables,
+      c(
+        list(
+          theme
+        ),
+        vars[
+          derived
+        ],
+        list(
+          .where = "declarations"
+        )
+      )
+    )
+  }
+  theme
+}
+
+# bs_theme() arguments that are not Sass variables.
+theme_only_args <- c(
+  "version",
+  "preset",
+  "bootswatch",
+  "brand",
+  "bg",
+  "fg",
+  "base_font",
+  "code_font",
+  "heading_font",
+  "font_scale"
+)
+
+#' The Sass variables a value refers to, without their `$`.
+#' @noRd
+scss_variable_refs <- function(
+  value
+) {
+  if (
+    !is.character(
+      value
+    )
+  ) {
+    return(character())
+  }
+  sub(
+    "^\\$",
+    "",
+    unlist(regmatches(
+      value,
+      gregexpr(
+        "\\$[A-Za-z0-9_-]+",
+        value
+      )
+    ))
   )
 }
 

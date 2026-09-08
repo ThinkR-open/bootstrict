@@ -9,27 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 4. `bootstrict_theme()` ne tient pas la promesse de son roxygen
-
-`R/theme.R:9-10` et `R/theme.R:190-215`
-
-Le roxygen promet que « maps, functions et colour expressions passent tout droit ». En
-réalité les valeurs partent en arguments nommés de `bs_theme()`, donc dans la couche
-*defaults*, compilée avant les variables Bootstrap :
-
-```r
-bootstrict_theme(secondary = "$gray-600")
-#> Error: Invalid HTML color strings for argument(s) 'secondary'
-bootstrict_theme(primary = "#ff6600", "link-hover-color" = "shade-color($primary, 20%)")
-#> Error: Undefined variable: "$primary"
-```
-
-`$secondary: $gray-600` est la valeur par défaut de Bootstrap lui-même.
-
-À faire : router les littéraux vers `bs_theme()` et les expressions (commençant par `$`
-ou contenant `(`) vers `bslib::bs_add_variables(.where = "declarations")`. Corriger la
-promesse du roxygen dans tous les cas.
-
 ### 5. Rejouer une modal ou un offcanvas ouvert fige la page
 
 `inst/assets/js/binding-modal.js:15-29`, `inst/assets/js/binding-offcanvas.js:20-32`

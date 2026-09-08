@@ -1063,3 +1063,182 @@ test_that("parse_scss_variables reads Bootstrap's own variable sheet", {
       )
   ))
 })
+
+test_that("bootstrict_theme accepts a value built from another Sass variable", {
+  # bslib validates its colour arguments as literal HTML colours, so passing
+  # them a reference -- the form Bootstrap ships its own defaults in --
+  # aborted with "Invalid HTML color strings".
+  expect_s3_class(
+    bootstrict_theme(
+      secondary = "$gray-600"
+    ),
+    "bs_theme"
+  )
+  expect_s3_class(
+    bootstrict_theme(
+      "link-hover-color" = "shade-color($primary, 20%)"
+    ),
+    "bs_theme"
+  )
+})
+
+test_that("bootstrict_theme routes each value to a layer that compiles", {
+  skip_on_cran()
+  compiled <- function(
+    theme
+  ) {
+    deps <- bslib::bs_theme_dependencies(
+      theme
+    )
+    for (dep in deps) {
+      if (
+        !is.null(
+          dep$stylesheet
+        )
+      ) {
+        return(paste(
+          readLines(
+            file.path(
+              dep$src$file,
+              dep$stylesheet
+            ),
+            warn = FALSE
+          ),
+          collapse = "\n"
+        ))
+      }
+    }
+    NA_character_
+  }
+  var_of <- function(
+    css,
+    name
+  ) {
+    m <- regmatches(
+      css,
+      regexpr(
+        paste0(
+          "--bs-",
+          name,
+          ":[^;]+"
+        ),
+        css
+      )
+    )
+    if (
+      length(
+        m
+      )
+    )
+      trimws(sub(
+        ".*:",
+        "",
+        m
+      )) else
+      NA_character_
+  }
+
+  # A sheet that refers to its own variables must keep working end to end: the
+  # values land in the defaults layer, in sheet order, so Bootstrap still
+  # derives everything from them.
+  tmp <- tempfile(
+    fileext = ".scss"
+  )
+  writeLines(
+    c(
+      "$brand-orange: #ff6600;",
+      "$primary: $brand-orange;",
+      "$gray-700: #aa0000;",
+      "$secondary: $gray-700;"
+    ),
+    tmp
+  )
+  css <- compiled(bootstrict_theme(
+    variables = tmp
+  ))
+  expect_equal(
+    var_of(
+      css,
+      "primary"
+    ),
+    "#f60"
+  )
+  expect_equal(
+    var_of(
+      css,
+      "secondary"
+    ),
+    "#a00"
+  )
+
+  # A multi-line map naming one of the sheet's own colours: the designer's
+  # entry generates its own theme colour.
+  map_sheet <- tempfile(
+    fileext = ".scss"
+  )
+  writeLines(
+    c(
+      "$primary: #ff6600;",
+      "$theme-colors: (",
+      '  "primary": $primary,',
+      '  "brand": #00aa88',
+      ");"
+    ),
+    map_sheet
+  )
+  mapped <- compiled(bootstrict_theme(
+    variables = map_sheet
+  ))
+  expect_equal(
+    var_of(
+      mapped,
+      "primary"
+    ),
+    "#f60"
+  )
+  expect_equal(
+    var_of(
+      mapped,
+      "brand"
+    ),
+    "#0a8"
+  )
+
+  # A value derived from one of Bootstrap's variables goes to the declarations
+  # layer, where that variable exists, and takes effect.
+  derived <- compiled(bootstrict_theme(
+    primary = "#ff6600",
+    "link-hover-color" = "shade-color($primary, 40%)"
+  ))
+  expect_equal(
+    var_of(
+      derived,
+      "link-hover-color"
+    ),
+    "#993d00"
+  )
+})
+
+test_that("scss_variable_refs lists the variables a value refers to", {
+  expect_equal(
+    bootstrict:::scss_variable_refs(
+      "#ff6600"
+    ),
+    character()
+  )
+  expect_equal(
+    bootstrict:::scss_variable_refs(
+      "map-merge($spacers, (6: $gap))"
+    ),
+    c(
+      "spacers",
+      "gap"
+    )
+  )
+  expect_equal(
+    bootstrict:::scss_variable_refs(
+      TRUE
+    ),
+    character()
+  )
+})

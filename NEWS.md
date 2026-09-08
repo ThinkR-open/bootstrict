@@ -90,6 +90,26 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* `bootstrict_theme()` now puts each value in the Sass layer that can compile
+  it, instead of handing everything to `bslib::bs_theme()` as a named
+  argument. Two forms used to fail outright: a theme colour defined from
+  another variable — the way Bootstrap ships its own defaults —
+  (`bootstrict_theme(secondary = "$gray-600")`) aborted on bslib's HTML-colour
+  validation, and any value derived from a Bootstrap variable
+  (`"link-hover-color" = "shade-color($primary, 20%)"`) aborted at compile
+  time with `Undefined variable: "$primary"`, because named arguments land in
+  the *defaults* layer, which is emitted before Bootstrap's own variables.
+
+  Values built from literals or from the sheet's own variables now go to the
+  defaults layer, in sheet order, so `$primary: $brand-orange` works and still
+  feeds `$theme-colors`; values referring to one of Bootstrap's variables go to
+  the *declarations* layer, where those exist. `bs_theme()` keeps the arguments
+  that are not Sass variables (`bg`, `fg`, the fonts, `preset`, `bootswatch`).
+  A theme colour redefined from one of Bootstrap's own variables now compiles
+  but lands after `$theme-colors` is built, so it does not restyle
+  `.btn-secondary`; this is documented on `bootstrict_theme()`.
+
+
 * `parse_scss_variables()` no longer drops most of a designer's sheet. It
   matched `$name: value;` line by line, so any declaration spanning several
   lines matched nothing and was discarded without a warning — that is the
