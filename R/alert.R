@@ -19,6 +19,11 @@
 #' @examples
 #' bs_alert("Well done!", color = "success")
 #' bs_alert("Heads up.", color = "warning", dismissible = TRUE)
+#' bs_alert(
+#'   bs_alert_heading("Well done"),
+#'   "You read ", bs_alert_link("the docs", href = "#"), ".",
+#'   color = "success"
+#' )
 bs_alert <- function(
   ...,
   id = NULL,
@@ -155,6 +160,10 @@ bs_alert_link <- function(
 #'
 #' @return A button tag.
 #' @export
+#'
+#' @examples
+#' bs_close_button()
+#' bs_close_button(`data-bs-dismiss` = "alert", white = TRUE)
 bs_close_button <- function(
   ...,
   label = "Close",

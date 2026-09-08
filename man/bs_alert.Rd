@@ -38,6 +38,11 @@ closed from the server with \code{\link[=close_bs_alert]{close_bs_alert()}}.
 \examples{
 bs_alert("Well done!", color = "success")
 bs_alert("Heads up.", color = "warning", dismissible = TRUE)
+bs_alert(
+  bs_alert_heading("Well done"),
+  "You read ", bs_alert_link("the docs", href = "#"), ".",
+  color = "success"
+)
 }
 \seealso{
 \code{\link[=close_bs_alert]{close_bs_alert()}}

@@ -40,6 +40,9 @@ A form control tag.
 \description{
 Bootstrap numeric input
 }
+\examples{
+bs_numeric_input("n", "How many?", value = 1, min = 0, max = 10)
+}
 \seealso{
 \code{\link[shiny:numericInput]{shiny::numericInput()}}
 }

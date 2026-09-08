@@ -154,6 +154,10 @@ bs_button <- function(
 #'
 #' @examples
 #' bs_button_group(bs_button(label = "Left"), bs_button(label = "Right"))
+#' bs_button_toolbar(
+#'   bs_button_group(bs_button(label = "Cut")),
+#'   bs_button_group(bs_button(label = "Copy"))
+#' )
 bs_button_group <- function(
   ...,
   size = NULL,

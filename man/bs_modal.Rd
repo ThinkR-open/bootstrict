@@ -78,4 +78,12 @@ For full control over the dialog structure (in place of the \code{title} and
 }
 \examples{
 bs_modal("info", "Modal body text.", title = "Heads up")
+
+# Or compose the dialog yourself.
+bs_modal(
+  "info",
+  bs_modal_header(bs_modal_title("Heads up")),
+  bs_modal_body("Modal body text."),
+  bs_modal_footer(bs_button("ok", "OK", color = "primary"))
+)
 }

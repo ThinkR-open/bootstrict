@@ -178,6 +178,45 @@ replaces the deprecated `.navbar-dark` / `.dropdown-menu-dark` /
 bs_navbar(brand = bs_navbar_brand("Acme"), bg = "primary", theme = "dark")
 ```
 
+## Utilities
+
+Bootstrap's [utility classes](https://getbootstrap.com/docs/5.3/utilities/) --
+spacing, colour, display, flex, borders, text -- are the other half of what a
+designer works with, and bootstrict deliberately exposes none of them as
+arguments. Every constructor takes a trailing `class` and forwards named `...`
+as HTML attributes, so a utility is written as itself:
+
+```{r}
+bs_card(
+  bs_card_body("Padded, centred, muted."),
+  class = "p-4 text-center text-body-secondary"
+)
+bs_row(
+  bs_col("Left", md = 6),
+  bs_col("Right", md = 6),
+  class = "gy-3 align-items-center"
+)
+```
+
+That is the whole story: there is no `padding =` argument to learn, and the
+mockup's class list transfers verbatim. It also means a utility that Bootstrap
+adds in a future release works here on the day it ships.
+
+The
+[Utility API](https://getbootstrap.com/docs/5.3/utilities/api/) belongs to the
+theme rather than to the markup: extend or disable utilities from the SASS
+sheet, alongside the variables.
+
+```scss
+$utilities: map-merge(
+  $utilities,
+  ("cursor": (property: cursor, class: cursor, values: pointer grab))
+);
+```
+
+`parse_scss_variables()` reads that map like any other declaration, so it
+reaches `bootstrict_theme()` with the rest of the sheet.
+
 ## The golem hook
 
 If you scaffold Shiny apps with [`golem`](https://thinkr-open.github.io/golem/),

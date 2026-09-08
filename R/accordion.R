@@ -285,6 +285,12 @@ bs_accordion_panel <- function(
 #'
 #' @return Invisibly `NULL`, called for its side effect.
 #' @export
+#'
+#' @examples
+#' if (interactive()) {
+#'   update_bs_accordion("acc", open = "two")
+#'   update_bs_accordion("acc", close = TRUE)
+#' }
 update_bs_accordion <- function(
   id,
   open = NULL,

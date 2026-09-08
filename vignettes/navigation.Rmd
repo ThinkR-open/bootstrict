@@ -118,6 +118,40 @@ bs_navbar(
 `bs_navbar_nav()` can scroll a long link list: `scroll = TRUE` with an optional
 `scroll_height = "75vh"`.
 
+## A navbar that switches pages
+
+Bootstrap has no "navbar page" component: a navbar is a header, and switching
+content is the application's job. There is no `navbarPage()` equivalent here on
+purpose, but the pattern is short. Give the navbar's links values with
+`bs_nav_dropdown()` or drive a hidden tabset, and swap the content yourself.
+
+```{r}
+ui <- bs_page(
+  bs_navbar(
+    brand = bs_navbar_brand("My app"),
+    bs_navbar_nav(
+      bs_nav_item(bs_nav_link("Monitor", active = TRUE, value = "monitor")),
+      bs_nav_item(bs_nav_link("Docs", value = "docs")),
+      id = "nav"
+    )
+  ),
+  bs_container(uiOutput("page"))
+)
+
+server <- function(input, output, session) {
+  output$page <- renderUI({
+    switch(input$nav %||% "monitor",
+      monitor = bs_card(bs_card_body("The monitor")),
+      docs = bs_card(bs_card_body("The docs"))
+    )
+  })
+}
+```
+
+`bs_navbar_nav(id =)` reports its active link the same way `bs_nav(id =)`
+does, and `update_bs_nav()` sets it. Without an `id` the links stay inert, which
+is what a navbar of plain anchors should be.
+
 ## Breadcrumbs
 
 `bs_breadcrumb()` composes `bs_breadcrumb_item()`s; the last item is usually

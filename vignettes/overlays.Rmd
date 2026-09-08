@@ -80,6 +80,31 @@ Options: `size` (`"sm"`/`"lg"`/`"xl"`), `centered`, `scrollable`,
 `bs_modal_header()`, `bs_modal_title()`, `bs_modal_body()` and
 `bs_modal_footer()` are there when you want to hand-build the dialog.
 
+### Dynamic content
+
+An overlay is declared once, but its content need not be fixed: put a
+`uiOutput()` in the body and render into it. This is how you show a record the
+user just picked, without rebuilding the modal.
+
+```{r}
+ui <- bs_page(
+  bs_container(
+    bs_button("show", "Show details"),
+    bs_modal("details", uiOutput("details_body"), title = "Details")
+  )
+)
+
+server <- function(input, output, session) {
+  output$details_body <- renderUI({
+    bs_table(head(mtcars, input$show %% 5 + 1))
+  })
+  observeEvent(input$show, show_bs_modal("details"))
+}
+```
+
+Re-rendering while the overlay is open is safe: the widget is torn down after
+its hide transition, so the page is never left scroll-locked.
+
 ### Opening without a server round trip
 
 `bs_modal_trigger()` opens a modal declaratively from the UI — no `observeEvent`
@@ -197,6 +222,43 @@ bs_scrollspy(
   offset = 100
 )
 ```
+
+## Inside a Shiny module
+
+The two halves are not symmetric, and it is the one place bootstrict asks you
+to think.
+
+**Server helpers namespace for you.** `show_bs_modal("info")` inside a
+`moduleServer()` resolves to the module's `info`, because the helper reads the
+session's namespace. Never wrap them in `ns()`.
+
+**UI triggers do not.** `bs_modal_trigger()`, `bs_offcanvas_trigger()` and
+`bs_collapse_trigger()` take the id of a *target element*, which is a plain
+string at UI build time with no session to consult. Wrap those in `ns()`
+yourself, exactly as you would a `tabPanel` id.
+
+```{r}
+panel_ui <- function(id) {
+  ns <- NS(id)
+  bs_container(
+    # The widget's own id: namespaced, like any input.
+    bs_modal(ns("info"), "Body", title = "Heads up"),
+    # A trigger points at that element, so it needs the same treatment.
+    bs_modal_trigger(ns("info"), "Open"),
+    bs_button(ns("open"), "Open from the server")
+  )
+}
+
+panel_server <- function(id) {
+  moduleServer(id, function(input, output, session) {
+    # No ns() here: the helper takes it from the session.
+    observeEvent(input$open, show_bs_modal("info"))
+  })
+}
+```
+
+The same rule covers `bs_collapse_trigger()` pointing at a `bs_collapse()`, and
+`bs_scrollspy(target =)` pointing at a nav.
 
 ## The pattern, in one place
 

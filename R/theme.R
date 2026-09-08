@@ -677,6 +677,9 @@ scss_variable_refs <- function(
 #'
 #' @return An [htmltools::htmlDependency].
 #' @export
+#'
+#' @examples
+#' shiny::fluidPage(use_bootstrict(), bs_card(bs_card_body("Hello")))
 use_bootstrict <- function() {
   bootstrict_dep()
 }

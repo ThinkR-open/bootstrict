@@ -18,3 +18,6 @@ new binding is just a matter of dropping a \code{.js} file in that directory.
 The dependency is built once per session and cached (every widget calls
 this, and the installed files cannot change mid-session).
 }
+\examples{
+bootstrict_dep()
+}

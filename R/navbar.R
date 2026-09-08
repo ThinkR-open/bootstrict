@@ -225,15 +225,37 @@ bs_navbar_brand <- function(
 #'   `"75vh"` or `"200px"`. Only applies when `scroll = TRUE`.
 #' @export
 #'
+#' @param id Optional id. When set, the active link's `value` is reported as
+#'   `input$id` and can be set with [update_bs_nav()], exactly as for
+#'   [bs_nav()].
+#'
 #' @examples
 #' bs_navbar_nav(bs_nav_item(bs_nav_link("Home", active = TRUE)))
 bs_navbar_nav <- function(
   ...,
+  id = NULL,
   scroll = FALSE,
   scroll_height = NULL,
   class = NULL
 ) {
+  if (
+    !is.null(
+      id
+    )
+  ) {
+    check_widget_id(
+      id
+    )
+  }
   htmltools::tags$ul(
+    id = id,
+    # Same binding as bs_nav(): the active link's value is input$id.
+    `data-bootstrict` = if (
+      !is.null(
+        id
+      )
+    )
+      "nav",
     class = bs_classes(
       "navbar-nav",
       if (

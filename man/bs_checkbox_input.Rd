@@ -52,6 +52,7 @@ Bootstrap checkbox input
 }
 \examples{
 bs_checkbox_input("agree", "I agree", TRUE)
+bs_switch_input("dark", "Dark mode")
 bs_checkbox_input("dark", "Dark mode", switch = TRUE)
 }
 \seealso{

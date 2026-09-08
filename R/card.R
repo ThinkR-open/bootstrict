@@ -24,6 +24,19 @@
 #'     bs_card_text("Some quick example text.")
 #'   )
 #' )
+#'
+#' bs_card_group(
+#'   bs_card(
+#'     bs_card_img("cap.png", alt = ""),
+#'     bs_card_body(
+#'       bs_card_title("Title"),
+#'       bs_card_subtitle("Subtitle"),
+#'       bs_card_link("More", href = "#")
+#'     ),
+#'     bs_card_footer("2 days ago")
+#'   )
+#' )
+#' bs_card(bs_card_img("cap.png", alt = ""), bs_card_img_overlay("Over"))
 bs_card <- function(
   ...,
   color = NULL,

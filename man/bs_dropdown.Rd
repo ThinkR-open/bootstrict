@@ -93,6 +93,13 @@ server with \code{\link[=show_bs_dropdown]{show_bs_dropdown()}}, \code{\link[=hi
 }
 \examples{
 bs_dropdown("Menu", bs_dropdown_item("Action", id = "act"))
+bs_dropdown(
+  "Menu",
+  bs_dropdown_header("Actions"),
+  bs_dropdown_item("Edit", id = "edit"),
+  bs_dropdown_divider(),
+  bs_dropdown_text("Signed in as Colin")
+)
 }
 \seealso{
 \code{\link[=show_bs_dropdown]{show_bs_dropdown()}}, \code{\link[=bs_nav_dropdown]{bs_nav_dropdown()}}

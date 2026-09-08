@@ -315,3 +315,31 @@ test_that("bs_navbar_text accepts extra class and named ...", {
     "id=\"t1\""
   )
 })
+
+test_that("bs_navbar_nav reports its active link when given an id", {
+  # There is no navbar-page component in Bootstrap: switching content is the
+  # app's job, and this is what makes the documented pattern work.
+  out <- as.character(bs_navbar_nav(
+    bs_nav_item(bs_nav_link(
+      "Home",
+      active = TRUE,
+      value = "h"
+    )),
+    id = "nav"
+  ))
+  expect_match(
+    out,
+    "id=\"nav\" data-bootstrict=\"nav\""
+  )
+  expect_match(
+    out,
+    "data-value=\"h\""
+  )
+  expect_no_match(
+    as.character(bs_navbar_nav(bs_nav_item(bs_nav_link(
+      "Home"
+    )))),
+    "data-bootstrict",
+    fixed = TRUE
+  )
+})

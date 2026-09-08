@@ -25,7 +25,11 @@ Drives the \code{\link[=bs_dropdown]{bs_dropdown()}} or \code{\link[=bs_nav_drop
 Its open state is reported back as \code{input$id}.
 }
 \examples{
-if (interactive()) show_bs_dropdown("menu")
+if (interactive()) {
+  show_bs_dropdown("menu")
+  hide_bs_dropdown("menu")
+  toggle_bs_dropdown("menu")
+}
 }
 \seealso{
 \code{\link[=bs_dropdown]{bs_dropdown()}}

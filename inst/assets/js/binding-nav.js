@@ -19,7 +19,7 @@
   // and their own marker, so the two never overlap.
   bootstrict.eventBinding({
     name: "bootstrict.nav",
-    selector: ".nav[data-bootstrict='nav']",
+    selector: "[data-bootstrict='nav']",
     // Resubmitted on user clicks (below) and on server-driven updates, which
     // dispatch a synthetic event on the root.
     events: ["bootstrict:nav"],

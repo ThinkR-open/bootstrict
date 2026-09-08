@@ -58,5 +58,7 @@ if (interactive()) {
     theme = bootstrict_theme(primary = "#ff6600"),
     bs_container(bs_card(bs_card_body("Hello")))
   )
+  bs_page_fluid(bs_container("Full width", fluid = TRUE))
+  bs_page_fillable(bs_container("Fills the viewport"))
 }
 }

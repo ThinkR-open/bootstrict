@@ -2,6 +2,13 @@
 
 ## New widgets
 
+* `bs_navbar_nav(id =)` reports its active link as `input$id`, like
+  `bs_nav(id =)`, and takes one from `update_bs_nav()`. Bootstrap has no
+  "navbar page" component -- switching content is the application's job -- and
+  this is what makes that pattern expressible; the navigation vignette now
+  shows it.
+
+
 * `bs_radio_button_input()` and `bs_checkbox_button_input()` render Bootstrap's
   segmented control (`.btn-check`), which had no equivalent: its input is a
   *sibling* of its label, with `autocomplete="off"` and no wrapper, so it

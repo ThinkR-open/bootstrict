@@ -42,6 +42,9 @@ A form control tag.
 \description{
 Bootstrap textarea input
 }
+\examples{
+bs_textarea_input("bio", "Bio", rows = 3, placeholder = "A few words")
+}
 \seealso{
 \code{\link[shiny:textAreaInput]{shiny::textAreaInput()}}
 }

@@ -42,6 +42,13 @@
 #'
 #' @examples
 #' bs_dropdown("Menu", bs_dropdown_item("Action", id = "act"))
+#' bs_dropdown(
+#'   "Menu",
+#'   bs_dropdown_header("Actions"),
+#'   bs_dropdown_item("Edit", id = "edit"),
+#'   bs_dropdown_divider(),
+#'   bs_dropdown_text("Signed in as Colin")
+#' )
 bs_dropdown <- function(
   label,
   ...,
@@ -544,7 +551,11 @@ dropdown_align_class <- function(
 #' @export
 #'
 #' @examples
-#' if (interactive()) show_bs_dropdown("menu")
+#' if (interactive()) {
+#'   show_bs_dropdown("menu")
+#'   hide_bs_dropdown("menu")
+#'   toggle_bs_dropdown("menu")
+#' }
 show_bs_dropdown <- function(
   id,
   session = shiny::getDefaultReactiveDomain()

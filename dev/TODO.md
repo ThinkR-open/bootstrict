@@ -43,21 +43,6 @@ d'API : on perd `shiny::updateDateInput()`, les arguments `format` /
 `language` / `datesdisabled`, et `input$id` change de semantique. A trancher
 avant de le faire.
 
-### 23. Documentation manquante côté développeur
-
-- Le `ns()` dans les modules : le serveur namespace tout seul, mais la moitié UI exige un
-  `ns()` manuel (`bs_modal_trigger(ns("info"))`). `grep -rn "ns("` sur `vignettes/` et
-  `README.md` ne renvoie rien.
-- Le contenu de modal dynamique par `uiOutput` : cas courant, ni documenté ni supporté,
-  l'app vitrine s'en sort par un contournement (`inst/examples/quakewatch/app.R:1187-1196`).
-- Le motif de page à navbar qui change de contenu (équivalent `navbarPage()` /
-  `bslib::page_navbar()`) : c'est ce que dessine une maquette de navbar.
-- Une page sur les utilitaires et l'Utility API : la posture « les utilitaires, tu les
-  passes en `class=` » fonctionne mais n'est écrite nulle part.
-- 28 exports n'apparaissent dans aucun `\examples`, 8 topics Rd n'en ont aucun
-  (`bootstrict-package`, `bootstrict_dep`, `bs_close_button`, `bs_numeric_input`,
-  `bs_password_input`, `bs_textarea_input`, `update_bs_accordion`, `use_bootstrict`).
-
 ### 24. `bs_table()` incomplet face à la doc
 
 Pas de variante `.table-light` / `.table-dark` sur le `<thead>` généré, pas de

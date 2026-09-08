@@ -93,6 +93,7 @@ bs_spinner <- function(
 #'
 #' @examples
 #' bs_placeholder_glow(bs_placeholder(width = 6))
+#' bs_placeholder_wave(bs_placeholder(width = 4))
 bs_placeholder <- function(
   ...,
   width = NULL,

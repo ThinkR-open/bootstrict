@@ -28,4 +28,8 @@ Bootstrap button group / toolbar
 }
 \examples{
 bs_button_group(bs_button(label = "Left"), bs_button(label = "Right"))
+bs_button_toolbar(
+  bs_button_group(bs_button(label = "Cut")),
+  bs_button_group(bs_button(label = "Copy"))
+)
 }

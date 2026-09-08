@@ -15,3 +15,6 @@ CSS) so it can be dropped anywhere in a UI. Page constructors such as
 \code{\link[=bs_page]{bs_page()}} call this for you; use it directly when embedding bootstrict
 widgets into a UI you build by hand.
 }
+\examples{
+shiny::fluidPage(use_bootstrict(), bs_card(bs_card_body("Hello")))
+}

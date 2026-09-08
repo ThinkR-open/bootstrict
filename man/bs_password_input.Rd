@@ -35,6 +35,9 @@ A form control tag.
 \description{
 Bootstrap password input
 }
+\examples{
+bs_password_input("pw", "Password", help = "At least 8 characters.")
+}
 \seealso{
 \code{\link[shiny:passwordInput]{shiny::passwordInput()}}
 }

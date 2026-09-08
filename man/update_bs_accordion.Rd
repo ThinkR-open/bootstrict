@@ -28,3 +28,9 @@ Invisibly \code{NULL}, called for its side effect.
 \description{
 Control an accordion from the server
 }
+\examples{
+if (interactive()) {
+  update_bs_accordion("acc", open = "two")
+  update_bs_accordion("acc", close = TRUE)
+}
+}

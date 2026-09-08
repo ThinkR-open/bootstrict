@@ -12,6 +12,9 @@
 #'
 #' @return An [htmltools::htmlDependency].
 #' @export
+#'
+#' @examples
+#' bootstrict_dep()
 bootstrict_dep <- function() {
   dep <- bootstrict_dep_cache$dep
   if (

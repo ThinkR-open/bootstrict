@@ -65,6 +65,9 @@ bs_text_input <- function(
 #' @return A form control tag.
 #' @seealso [shiny::textAreaInput()]
 #' @export
+#'
+#' @examples
+#' bs_textarea_input("bio", "Bio", rows = 3, placeholder = "A few words")
 bs_textarea_input <- function(
   id,
   label = NULL,
@@ -112,6 +115,9 @@ bs_textarea_input <- function(
 #' @return A form control tag.
 #' @seealso [shiny::numericInput()]
 #' @export
+#'
+#' @examples
+#' bs_numeric_input("n", "How many?", value = 1, min = 0, max = 10)
 bs_numeric_input <- function(
   id,
   label = NULL,
@@ -163,6 +169,9 @@ bs_numeric_input <- function(
 #' @return A form control tag.
 #' @seealso [shiny::passwordInput()]
 #' @export
+#'
+#' @examples
+#' bs_password_input("pw", "Password", help = "At least 8 characters.")
 bs_password_input <- function(
   id,
   label = NULL,
@@ -265,6 +274,7 @@ bs_select_input <- function(
 #'
 #' @examples
 #' bs_checkbox_input("agree", "I agree", TRUE)
+#' bs_switch_input("dark", "Dark mode")
 #' bs_checkbox_input("dark", "Dark mode", switch = TRUE)
 bs_checkbox_input <- function(
   id,

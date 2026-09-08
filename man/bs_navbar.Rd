@@ -21,7 +21,13 @@ bs_navbar(
 
 bs_navbar_brand(..., href = "#", class = NULL)
 
-bs_navbar_nav(..., scroll = FALSE, scroll_height = NULL, class = NULL)
+bs_navbar_nav(
+  ...,
+  id = NULL,
+  scroll = FALSE,
+  scroll_height = NULL,
+  class = NULL
+)
 
 bs_navbar_text(..., class = NULL)
 }
@@ -32,9 +38,9 @@ collapsible container, plus named HTML attributes for the \verb{<nav>}.}
 \item{brand}{Optional brand element, typically \code{\link[=bs_navbar_brand]{bs_navbar_brand()}}, rendered
 before the toggler so it stays visible when collapsed.}
 
-\item{id}{Navbar id; used to wire the toggler to its collapsible region
-(\code{"<id>-collapse"}). Defaults to a unique auto-generated id so multiple
-navbars on a page never collide.}
+\item{id}{Optional id. When set, the active link's \code{value} is reported as
+\code{input$id} and can be set with \code{\link[=update_bs_nav]{update_bs_nav()}}, exactly as for
+\code{\link[=bs_nav]{bs_nav()}}.}
 
 \item{expand}{Breakpoint at which the navbar expands: one of
 \code{"sm"}, \code{"md"}, \code{"lg"}, \code{"xl"}, \code{"xxl"}, or \code{TRUE} to always expand

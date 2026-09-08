@@ -23,3 +23,7 @@ A button tag.
 \description{
 Bootstrap close button
 }
+\examples{
+bs_close_button()
+bs_close_button(`data-bs-dismiss` = "alert", white = TRUE)
+}

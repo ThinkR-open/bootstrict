@@ -37,4 +37,5 @@ more in \code{\link[=bs_placeholder_glow]{bs_placeholder_glow()}} or \code{\link
 }
 \examples{
 bs_placeholder_glow(bs_placeholder(width = 6))
+bs_placeholder_wave(bs_placeholder(width = 4))
 }
