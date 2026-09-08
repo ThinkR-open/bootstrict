@@ -27,15 +27,6 @@ C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
 
 ## Ensuite
 
-### 14. Aucun test navigateur sur les bindings
-
-937 lignes de JS, zéro test : `grep -rn "testServer|shinytest2|chromote" tests/` ne
-renvoie rien. Les 99,4 % de couverture ne concernent que `R/`. Les quatre bloquants
-ci-dessus sont tous du JS ou de la frontière R/JS, et aucun n'a été vu par 999 tests.
-
-À faire : un test `chromote` minimal sur `inst/examples/demo` qui vérifie l'absence
-d'exception JS, les valeurs initiales des inputs, et un aller-retour par widget interactif.
-
 ### 15. Aucun test de snapshot
 
 `grep -rn "expect_snapshot" tests/` renvoie 0, `tests/testthat/_snaps` n'existe pas. Le
