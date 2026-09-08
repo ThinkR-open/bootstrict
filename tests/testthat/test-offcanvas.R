@@ -236,3 +236,45 @@ test_that("the bootstrict dependency travels with the offcanvas", {
       names
   )
 })
+
+test_that("the header close button names its target", {
+  # A responsive offcanvas carries `.offcanvas-{bp}` instead of `.offcanvas`,
+  # and Bootstrap's dismiss handler resolves the target as
+  # `getElementFromSelector(this) || this.closest(".offcanvas")` -- with no
+  # explicit target it finds nothing and throws instead of closing.
+  responsive <- as.character(bs_offcanvas(
+    "oc",
+    "Corps",
+    title = "Filtres",
+    responsive = "lg"
+  ))
+  expect_match(
+    responsive,
+    "class=\"offcanvas-lg offcanvas-start\""
+  )
+  expect_match(
+    responsive,
+    "data-bs-dismiss=\"offcanvas\" data-bs-target=\"#oc\""
+  )
+
+  # Harmless on a plain offcanvas: it resolves to the same element.
+  expect_match(
+    as.character(bs_offcanvas(
+      "plain",
+      "Corps",
+      title = "T"
+    )),
+    "data-bs-target=\"#plain\""
+  )
+
+  # Module ids reach the DOM as a CSS selector, so they must be escaped.
+  expect_match(
+    as.character(bs_offcanvas(
+      "mod-oc.2",
+      "Corps",
+      title = "T"
+    )),
+    "data-bs-target=\"#mod-oc\\\\.2\"",
+    fixed = FALSE
+  )
+})

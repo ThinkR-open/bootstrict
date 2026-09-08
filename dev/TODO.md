@@ -9,17 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 7. Le bouton de fermeture d'un offcanvas responsive ne fait rien
-
-`R/offcanvas.R:112-115`
-
-Un offcanvas responsive reçoit `.offcanvas-lg` à la place de `.offcanvas` (correct), mais
-le bouton n'a que `data-bs-dismiss="offcanvas"`. Bootstrap résout la cible par
-`getElementFromSelector(this) || this.closest('.offcanvas')` : sans `data-bs-target` et
-sans la classe, la cible est `null`.
-
-À faire : toujours poser `data-bs-target = css_id_selector(id)` sur ce bouton.
-
 ### 8. `bs_progress(height=)` produit du CSS invalide sur les barres empilées
 
 `R/progress.R:160-167`

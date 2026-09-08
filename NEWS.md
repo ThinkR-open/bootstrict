@@ -90,6 +90,17 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* The close button of a responsive `bs_offcanvas()` now closes it. A
+  responsive panel carries `.offcanvas-{bp}` *instead of* `.offcanvas`, and
+  Bootstrap's dismiss handler resolves its target as
+  `getElementFromSelector(this) || this.closest(".offcanvas")`: with no
+  explicit target it found nothing, threw
+  `TypeError: Cannot read properties of undefined (reading 'backdrop')` and
+  left the panel open. The header close button now carries an explicit
+  `data-bs-target` (escaped, so module ids work), which is harmless on a plain
+  offcanvas since it resolves to the same element.
+
+
 * A hand-composed `bs_modal()` no longer nests its header and footer inside a
   `.modal-body`. `bs_modal()`'s own documentation invites composing the dialog
   with `bs_modal_header()` / `bs_modal_body()` / `bs_modal_footer()`, but every

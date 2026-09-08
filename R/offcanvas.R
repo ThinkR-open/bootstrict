@@ -110,8 +110,16 @@ bs_offcanvas <- function(
         id = title_id,
         title
       ),
+      # A responsive offcanvas carries `.offcanvas-{bp}` *instead of*
+      # `.offcanvas`, and Bootstrap's dismiss handler resolves its target as
+      # `getElementFromSelector(this) || this.closest(".offcanvas")`: without
+      # an explicit target the button has nothing to close. Harmless on a
+      # plain offcanvas, where it resolves to the same element.
       bs_close_button(
-        `data-bs-dismiss` = "offcanvas"
+        `data-bs-dismiss` = "offcanvas",
+        `data-bs-target` = css_id_selector(
+          id
+        )
       )
     )
   }
