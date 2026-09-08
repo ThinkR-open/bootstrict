@@ -26,7 +26,7 @@ The Bootstrap 5.3 runtime and SASS compilation are provided by [`bslib`](https:/
 
 Every widget mirrors the Bootstrap 5.3 HTML structure **one-to-one**, so a designer's mockup (for example in Figma) and exported SASS variables drop straight into a Shiny app. Interactive components report their state to the server and can be driven from the server with `update_*()` helpers.
 
-The motivating workflow: a designer works in Figma, stays strictly within [the Bootstrap 5.3 docs](https://getbootstrap.com/docs/5.3), and exports a `_variables.scss` sheet.
+The motivating workflow: a designer works in Figma, stays strictly within [the Bootstrap 5.3 docs](https://getbootstrap.com/docs/5.3/), and exports a `_variables.scss` sheet.
 
 You received a Figma mockup and the variables, and can implement this directly into shiny.
 

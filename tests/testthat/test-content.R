@@ -377,6 +377,9 @@ test_that("lists expand lapply()-built children", {
 })
 
 test_that("bs_table reads the column, not a 1x1 frame", {
+  skip_if_not_installed(
+    "tibble"
+  )
   # `data[i, j]` keeps a 1x1 tibble, so as.character() rendered the underlying
   # storage: a factor as its integer code, a Date as its day number.
   out <- as.character(bs_table(tibble::tibble(
@@ -444,6 +447,9 @@ test_that("bs_table formats numbers the way a reader expects", {
 })
 
 test_that("bs_table keeps real row names as the reference row header", {
+  skip_if_not_installed(
+    "tibble"
+  )
   out <- as.character(bs_table(head(
     mtcars,
     2

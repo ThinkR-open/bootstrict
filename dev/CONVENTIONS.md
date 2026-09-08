@@ -4,7 +4,7 @@ Read this before adding any component. The goal: a faithful, 1:1 Bootstrap 5
 implementation as Shiny UI functions, with **minimum deviation from Shiny**.
 The Bootstrap **5.3.8** runtime is provided by `bslib` and the designer
 targets the Bootstrap **5.3** docs — use exactly the classes/markup documented
-at <https://getbootstrap.com/docs/5.3>. This includes the 5.3 additions
+at <https://getbootstrap.com/docs/5.3/>. This includes the 5.3 additions
 (colour modes / `data-bs-theme`, `.nav-underline`, `.progress-stacked`,
 `.object-fit-*`, focus-ring utilities, `.icon-link`) and the patterns 5.3
 prescribes over their deprecated 5.2-era equivalents: `data-bs-theme="dark"`

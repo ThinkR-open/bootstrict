@@ -97,6 +97,12 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* The package tarball no longer ships an internal Posit Connect deployment
+  record (`inst/examples/quakewatch/rsconnect/…/quakewatch.dcf`, carrying a
+  server host name and a user name). `.Rbuildignore` now excludes any
+  `inst/examples/*/rsconnect` directory.
+
+
 * `bs_table()` no longer renders the wrong values for a tibble. Cells were
   extracted with `data[i, j]`, which drops to a vector for a `data.frame` but
   keeps a 1x1 frame for a tibble, so `as.character()` rendered the underlying

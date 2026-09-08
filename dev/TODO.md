@@ -9,17 +9,19 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 12. Nettoyage de publication
+### 12. Le site pkgdown annonce dans DESCRIPTION renvoie 404
 
-- `inst/examples/quakewatch/rsconnect/connect.thinkr.fr/colin/quakewatch.dcf` part dans
-  le tarball avec le nom du serveur et de l'utilisateur : ajouter
-  `^inst/examples/quakewatch/rsconnect$` à `.Rbuildignore` (vérifier avec `tar tzf`).
-- Le site annoncé dans `DESCRIPTION` renvoie 404 : aucune branche `gh-pages`, le workflow
-  pkgdown n'a jamais abouti, et `docs/` est à la fois non suivi par git et dans
-  `.Rbuildignore`. Choisir une stratégie, ou retirer l'URL en attendant.
-- `NEWS.md` n'a pas de section `0.2.0` alors que `DESCRIPTION` dit `0.2.0` : tout est sous
-  « (development version) ».
-- Ajouter `^\.\.Rcheck$` à `.Rbuildignore` (le dossier `..Rcheck` traîne à la racine).
+Rien a corriger dans le depot : `.github/workflows/pkgdown.yaml` a ete ajoute
+au commit `6dedde1`, qui n'est pas sur le distant (`origin/main` est a
+`e5b205d`, soit 14 commits en arriere). Le workflow n'a donc jamais tourne et
+la branche `gh-pages` n'existe pas.
+
+A faire : pousser, verifier que le run pkgdown aboutit et que GitHub Pages est
+active sur `gh-pages`. Si le site n'est pas prevu, retirer l'URL de
+`DESCRIPTION` et de `man/bootstrict-package.Rd`.
+
+C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
+« New submission » et la version de developpement).
 
 ---
 
