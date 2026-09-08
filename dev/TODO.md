@@ -9,26 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 11. `bs_table()` corrompt les tibbles
-
-`R/content.R:222-232`, `R/content.R:243-258`
-
-L'extraction par `data[i, j]` tombe en vecteur sur un data.frame mais renvoie un data
-frame 1×1 sur un tibble : `as.character()` sur une liste rend le stockage sous-jacent.
-
-```r
-bs_table(tibble::tibble(f = factor(c("a", "b")), d = as.Date("2020-01-01")))
-#> <td>1</td><td>18262</td>
-```
-
-Deux défauts voisins dans la même fonction : `as.character()` rend `100000` en `"1e+05"`
-et `1/3` en `"0.333333333333333"` ; les `row.names` sont jetés, donc
-`bs_table(head(mtcars))` perd les noms de voitures.
-
-À faire : indexer la colonne (`format_cell(data[[j]][[i]])`), utiliser `format()` plutôt
-que `as.character()`, ajouter un argument `rownames=` émettant le `<th scope="row">` de
-la référence.
-
 ### 12. Nettoyage de publication
 
 - `inst/examples/quakewatch/rsconnect/connect.thinkr.fr/colin/quakewatch.dcf` part dans

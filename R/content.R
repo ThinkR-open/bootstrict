@@ -24,6 +24,10 @@
 #' @param align Vertical alignment of cells (`.align-*`), e.g. `"middle"`,
 #'   `"top"`, `"bottom"`.
 #' @param caption Optional table caption text rendered in a `<caption>`.
+#' @param rownames Render each row's name as the reference `<th scope="row">`
+#'   header cell. `NULL` (the default) does so when `data` carries real row
+#'   names, as `mtcars` does; `TRUE` forces it (numbering the rows when there
+#'   are no names, like Bootstrap's own example); `FALSE` never does.
 #' @param class Extra classes.
 #'
 #' @return A table tag (wrapped in a responsive container when `responsive` is
@@ -44,6 +48,7 @@ bs_table <- function(
   responsive = FALSE,
   align = NULL,
   caption = NULL,
+  rownames = NULL,
   class = NULL
 ) {
   variant <- check_color(
@@ -110,7 +115,8 @@ bs_table <- function(
     )
   ) {
     body <- bs_table_from_data(
-      data
+      data,
+      rownames
     )
     parts <- split_dots(
       ...
@@ -184,7 +190,8 @@ bs_table <- function(
 #' Build `<thead>`/`<tbody>` from a data frame or matrix.
 #' @noRd
 bs_table_from_data <- function(
-  data
+  data,
+  rownames = NULL
 ) {
   if (
     is.matrix(
@@ -195,6 +202,33 @@ bs_table_from_data <- function(
       data,
       stringsAsFactors = FALSE
     )
+  }
+  # `.row_names_info()` is negative when the row names are the automatic
+  # 1..n, which is what a tibble or a freshly built data.frame carries.
+  named_rows <- is.data.frame(
+    data
+  ) &&
+    .row_names_info(
+      data
+    ) >
+      0L
+  row_labels <- if (
+    isTRUE(
+      rownames %||%
+        named_rows
+    )
+  ) {
+    if (
+      named_rows
+    ) {
+      rownames(
+        data
+      )
+    } else {
+      as.character(seq_len(NROW(
+        data
+      )))
+    }
   }
   cols <- colnames(
     data
@@ -214,6 +248,14 @@ bs_table_from_data <- function(
 
   head <- htmltools::tags$thead(
     htmltools::tags$tr(
+      if (
+        !is.null(
+          row_labels
+        )
+      )
+        htmltools::tags$th(
+          scope = "col"
+        ),
       lapply(
         cols,
         function(
@@ -244,13 +286,30 @@ bs_table_from_data <- function(
         function(
           j
         ) {
-          htmltools::tags$td(format_cell(data[
-            i,
+          # `data[i, j]` keeps a 1x1 data frame for a tibble (and anything
+          # else whose `[` does not drop), so as.character() would render the
+          # underlying storage: a factor as its integer code, a Date as its
+          # day number. Index the column instead.
+          htmltools::tags$td(format_cell(data[[
             j
-          ]))
+          ]][[
+            i
+          ]]))
         }
       )
       htmltools::tags$tr(
+        # The reference markup opens each body row with a row header.
+        if (
+          !is.null(
+            row_labels
+          )
+        )
+          htmltools::tags$th(
+            scope = "row",
+            row_labels[[
+              i
+            ]]
+          ),
         cells
       )
     }
@@ -278,6 +337,9 @@ format_cell <- function(
         x
       ) ==
         1L &&
+        !is.list(
+          x
+        ) &&
         is.na(
           x
         ))
@@ -286,7 +348,32 @@ format_cell <- function(
       ""
     )
   }
-  as.character(
+  if (
+    is.factor(
+      x
+    ) ||
+      is.character(
+        x
+      )
+  ) {
+    return(as.character(
+      x
+    ))
+  }
+  # as.character() renders 100000 as "1e+05" and 1/3 with 15 significant
+  # digits; format() is what a reader expects to see in a table.
+  if (
+    is.numeric(
+      x
+    )
+  ) {
+    return(format(
+      x,
+      scientific = FALSE,
+      trim = TRUE
+    ))
+  }
+  format(
     x
   )
 }
@@ -547,6 +634,68 @@ bs_lead <- function(
 #'
 #' @examples
 #' bs_list_unstyled("First", "Second", "Third")
+bs_list_unstyled <- function(
+  ...,
+  class = NULL
+) {
+  parts <- split_dots(
+    ...
+  )
+  items <- lapply(
+    flatten_list_children(
+      parts$children
+    ),
+    list_item
+  )
+  attach_deps(do.call(
+    htmltools::tags$ul,
+    c(
+      list(
+        class = bs_classes(
+          "list-unstyled",
+          class
+        )
+      ),
+      parts$attribs,
+      items
+    )
+  ))
+}
+
+#' @rdname bs_list_unstyled
+#' @export
+#'
+#' @examples
+#' bs_list_inline("One", "Two", "Three")
+bs_list_inline <- function(
+  ...,
+  class = NULL
+) {
+  parts <- split_dots(
+    ...
+  )
+  items <- lapply(
+    flatten_list_children(
+      parts$children
+    ),
+    list_item,
+    class = "list-inline-item"
+  )
+  attach_deps(do.call(
+    htmltools::tags$ul,
+    c(
+      list(
+        class = bs_classes(
+          "list-inline",
+          class
+        )
+      ),
+      parts$attribs,
+      items
+    )
+  ))
+}
+
 #' Expand bare lists among a list's children.
 #'
 #' `lapply()`-built items arrive as a single list child, which would otherwise
@@ -624,68 +773,6 @@ list_item <- function(
     class = class,
     child
   )
-}
-
-bs_list_unstyled <- function(
-  ...,
-  class = NULL
-) {
-  parts <- split_dots(
-    ...
-  )
-  items <- lapply(
-    flatten_list_children(
-      parts$children
-    ),
-    list_item
-  )
-  attach_deps(do.call(
-    htmltools::tags$ul,
-    c(
-      list(
-        class = bs_classes(
-          "list-unstyled",
-          class
-        )
-      ),
-      parts$attribs,
-      items
-    )
-  ))
-}
-
-#' @rdname bs_list_unstyled
-#' @export
-#'
-#' @examples
-#' bs_list_inline("One", "Two", "Three")
-bs_list_inline <- function(
-  ...,
-  class = NULL
-) {
-  parts <- split_dots(
-    ...
-  )
-  items <- lapply(
-    flatten_list_children(
-      parts$children
-    ),
-    list_item,
-    class = "list-inline-item"
-  )
-  attach_deps(do.call(
-    htmltools::tags$ul,
-    c(
-      list(
-        class = bs_classes(
-          "list-inline",
-          class
-        )
-      ),
-      parts$attribs,
-      items
-    )
-  ))
 }
 
 #' Bootstrap icon link

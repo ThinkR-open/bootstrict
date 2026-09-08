@@ -16,6 +16,7 @@ bs_table(
   responsive = FALSE,
   align = NULL,
   caption = NULL,
+  rownames = NULL,
   class = NULL
 )
 }
@@ -47,6 +48,11 @@ Bootstrap theme colours.}
 \code{"top"}, \code{"bottom"}.}
 
 \item{caption}{Optional table caption text rendered in a \verb{<caption>}.}
+
+\item{rownames}{Render each row's name as the reference \verb{<th scope="row">}
+header cell. \code{NULL} (the default) does so when \code{data} carries real row
+names, as \code{mtcars} does; \code{TRUE} forces it (numbering the rows when there
+are no names, like Bootstrap's own example); \code{FALSE} never does.}
 
 \item{class}{Extra classes.}
 }

@@ -66,6 +66,13 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Breaking changes
 
+* `bs_table(data)` now renders a data frame's row names as the reference
+  `<th scope="row">` header cell, so `bs_table(head(mtcars))` keeps the car
+  names it used to drop. This adds a leading column for frames that carry real
+  row names; automatic row names (a tibble, a freshly built data frame) are
+  unaffected. The new `rownames` argument forces the behaviour either way.
+
+
 * `bs_page_fillable()` loses its `fillable` argument: `bslib::page_fillable()`
   has no such parameter, so the value leaked into the page markup as an
   invalid `fillable` HTML attribute and controlled nothing.
@@ -89,6 +96,16 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
   or `[object Object]`), and its `...` must be empty.
 
 ## Bug fixes
+
+* `bs_table()` no longer renders the wrong values for a tibble. Cells were
+  extracted with `data[i, j]`, which drops to a vector for a `data.frame` but
+  keeps a 1x1 frame for a tibble, so `as.character()` rendered the underlying
+  storage: a factor as its integer code, a `Date` as its day number. Cells are
+  now read from the column.
+
+* `bs_table()` formats numbers the way a reader expects. `as.character()`
+  rendered `100000` as `"1e+05"` and `1/3` with fifteen significant digits.
+
 
 * An `.input-group-text` addon holding a checkbox is no longer destroyed.
   `bs_input_group()` descended into any child containing a

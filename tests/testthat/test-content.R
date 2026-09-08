@@ -375,3 +375,119 @@ test_that("lists expand lapply()-built children", {
     fixed = TRUE
   )
 })
+
+test_that("bs_table reads the column, not a 1x1 frame", {
+  # `data[i, j]` keeps a 1x1 tibble, so as.character() rendered the underlying
+  # storage: a factor as its integer code, a Date as its day number.
+  out <- as.character(bs_table(tibble::tibble(
+    f = factor(c(
+      "a",
+      "b"
+    )),
+    d = as.Date(c(
+      "2020-01-01",
+      "2020-02-01"
+    ))
+  )))
+  expect_match(
+    out,
+    "<td>a</td>",
+    fixed = TRUE
+  )
+  expect_match(
+    out,
+    "<td>2020-01-01</td>",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "<td>18262</td>",
+    fixed = TRUE
+  )
+})
+
+test_that("bs_table formats numbers the way a reader expects", {
+  out <- as.character(bs_table(data.frame(
+    x = c(
+      100000,
+      1e6,
+      1 /
+        3
+    )
+  )))
+  expect_match(
+    out,
+    "<td>100000</td>",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "1e+05",
+    fixed = TRUE
+  )
+  expect_no_match(
+    out,
+    "0.333333333333333",
+    fixed = TRUE
+  )
+  # NA still renders as an empty cell.
+  expect_match(
+    as.character(bs_table(data.frame(
+      x = c(
+        NA,
+        1
+      )
+    ))),
+    "<td></td>",
+    fixed = TRUE
+  )
+})
+
+test_that("bs_table keeps real row names as the reference row header", {
+  out <- as.character(bs_table(head(
+    mtcars,
+    2
+  )[,
+    1,
+    drop = FALSE
+  ]))
+  expect_match(
+    out,
+    "<th scope=\"row\">Mazda RX4</th>",
+    fixed = TRUE
+  )
+
+  # Automatic row names (a tibble, a fresh data.frame) are not row headers...
+  expect_no_match(
+    as.character(bs_table(tibble::tibble(
+      a = 1:2
+    ))),
+    "scope=\"row\"",
+    fixed = TRUE
+  )
+  # ...unless asked for, and then the rows are numbered as in the docs.
+  expect_match(
+    as.character(bs_table(
+      tibble::tibble(
+        a = 1:2
+      ),
+      rownames = TRUE
+    )),
+    "<th scope=\"row\">1</th>",
+    fixed = TRUE
+  )
+  expect_no_match(
+    as.character(bs_table(
+      head(
+        mtcars,
+        1
+      )[,
+        1,
+        drop = FALSE
+      ],
+      rownames = FALSE
+    )),
+    "scope=\"row\"",
+    fixed = TRUE
+  )
+})
