@@ -90,6 +90,14 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* `bs_progress(height =)` no longer wipes out a stacked group. Each segment
+  received two separate `style` attributes, and htmltools joins duplicated
+  attributes with a space rather than `"; "`, so the rendered attribute was
+  `style="width: 15% height: 10px"` — a single malformed declaration the
+  browser drops entirely. The segments came out zero-width (invisible) as soon
+  as `height` was supplied. Width and height are now one declaration.
+
+
 * The close button of a responsive `bs_offcanvas()` now closes it. A
   responsive panel carries `.offcanvas-{bp}` *instead of* `.offcanvas`, and
   Bootstrap's dismiss handler resolves its target as

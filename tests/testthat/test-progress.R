@@ -204,3 +204,44 @@ test_that("update_bs_progress requires a session", {
     session = NULL
   ))
 })
+
+test_that("a stacked progress merges width and height into one declaration", {
+  # htmltools joins duplicated attributes with a space, so emitting `style`
+  # twice produced `style="width: 15% height: 10px"` -- one malformed
+  # declaration the browser drops whole, leaving the segments zero-width.
+  out <- as.character(bs_progress(
+    bs_progress_bar(
+      15
+    ),
+    bs_progress_bar(
+      30
+    ),
+    height = "10px"
+  ))
+  expect_match(
+    out,
+    "style=\"width: 15%; height: 10px\""
+  )
+  expect_match(
+    out,
+    "style=\"width: 30%; height: 10px\""
+  )
+  expect_no_match(
+    out,
+    "width: 15% height",
+    fixed = TRUE
+  )
+
+  # No height: the width declaration stands alone, with no trailing separator.
+  expect_match(
+    as.character(bs_progress(
+      bs_progress_bar(
+        15
+      ),
+      bs_progress_bar(
+        30
+      )
+    )),
+    "style=\"width: 15%\""
+  )
+})

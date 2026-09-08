@@ -9,18 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 8. `bs_progress(height=)` produit du CSS invalide sur les barres empilées
-
-`R/progress.R:160-167`
-
-Chaque segment reçoit deux attributs `style` séparés ; htmltools les joint par une espace,
-pas par `"; "`. Le rendu est `style="width: 15% height: 10px"`, que le navigateur jette
-entièrement : le groupe empilé devient invisible dès qu'on passe `height`.
-
-À faire : une seule chaîne
-`paste(c(paste0("width: ", pct, "%"), height_style), collapse = "; ")` avant l'unique
-`tagAppendAttributes()`. Ajouter un test `bs_progress(bar, bar, height = "10px")`.
-
 ### 9. `bs_list_unstyled()` / `bs_list_inline()` imbriquent un `<li>` dans un `<li>`
 
 `R/content.R:562`, `R/content.R:598`, usage documenté en `vignettes/content.Rmd:141-147`

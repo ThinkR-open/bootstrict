@@ -156,14 +156,23 @@ bs_progress <- function(
             100
         )
       )
+      # One declaration, not two attributes: htmltools joins duplicated
+      # attributes with a space, so `style="width: 15% height: 10px"` is a
+      # single malformed declaration the browser drops whole -- the segments
+      # then render with no width at all.
       w <- htmltools::tagAppendAttributes(
         w,
-        style = paste0(
-          "width: ",
-          pct,
-          "%"
-        ),
-        style = height_style
+        style = paste(
+          c(
+            paste0(
+              "width: ",
+              pct,
+              "%"
+            ),
+            height_style
+          ),
+          collapse = "; "
+        )
       )
       w$children <- lapply(
         w$children,
