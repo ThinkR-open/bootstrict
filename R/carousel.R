@@ -49,7 +49,9 @@ bs_carousel <- function(
     Negate(
       is.null
     ),
-    dots$children
+    flatten_list_children(
+      dots$children
+    )
   )
   attribs <- dots$attribs
 

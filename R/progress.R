@@ -43,7 +43,9 @@ bs_progress <- function(
     Negate(
       is.null
     ),
-    dots$children
+    flatten_list_children(
+      dots$children
+    )
   )
   ok <- vapply(
     bars,

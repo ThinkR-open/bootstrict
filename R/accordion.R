@@ -37,9 +37,9 @@ bs_accordion <- function(
     Negate(
       is.null
     ),
-    rlang::list2(
+    flatten_list_children(rlang::list2(
       ...
-    )
+    ))
   )
   ok <- vapply(
     panels,

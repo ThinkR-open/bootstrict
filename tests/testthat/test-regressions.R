@@ -1242,3 +1242,154 @@ test_that("scss_variable_refs lists the variables a value refers to", {
     character()
   )
 })
+
+test_that("panel constructors accept lapply()-built children", {
+  # Generating panels in a loop is the usual thing to do in a data-driven app,
+  # and dev/CONVENTIONS.md says to let htmltools flatten lists. The type
+  # validation ran before any flattening, so it saw the list itself.
+  panels <- lapply(
+    1:3,
+    function(
+      i
+    )
+      bs_tab_panel(
+        paste(
+          "T",
+          i
+        ),
+        "body",
+        value = as.character(
+          i
+        )
+      )
+  )
+  expect_equal(
+    length(gregexpr(
+      "nav-link",
+      as.character(bs_tabset(
+        "t",
+        panels
+      ))
+    )[[
+      1
+    ]]),
+    3L
+  )
+
+  expect_match(
+    as.character(bs_accordion(
+      "a",
+      lapply(
+        1:2,
+        function(
+          i
+        )
+          bs_accordion_panel(
+            paste(
+              "P",
+              i
+            ),
+            "b",
+            value = as.character(
+              i
+            )
+          )
+      )
+    )),
+    "data-value=\"2\""
+  )
+  expect_match(
+    as.character(bs_carousel(
+      "c",
+      lapply(
+        1:2,
+        function(
+          i
+        )
+          bs_carousel_item(paste(
+            "S",
+            i
+          ))
+      )
+    )),
+    "carousel-item"
+  )
+  expect_match(
+    as.character(bs_progress(lapply(
+      c(
+        20,
+        30
+      ),
+      bs_progress_bar
+    ))),
+    "progress-stacked"
+  )
+
+  # Mixing a direct child with a list keeps document order, and a tagList is a
+  # container to open like any other.
+  expect_match(
+    as.character(bs_tabset(
+      "t",
+      bs_tab_panel(
+        "A",
+        "a",
+        value = "a"
+      ),
+      lapply(
+        2:3,
+        function(
+          i
+        )
+          bs_tab_panel(
+            paste(
+              "T",
+              i
+            ),
+            "b",
+            value = as.character(
+              i
+            )
+          )
+      )
+    )),
+    "data-value=\"a\".*data-value=\"2\".*data-value=\"3\""
+  )
+  expect_no_error(
+    bs_tabset(
+      "t",
+      htmltools::tagList(bs_tab_panel(
+        "A",
+        "a",
+        value = "a"
+      ))
+    )
+  )
+})
+
+test_that("flattening children does not take a panel object apart", {
+  # A bs_tab_panel is a classed list: descending into it would dismantle it,
+  # and the type check would then reject its pieces.
+  expect_true(bootstrict:::is_bare_list(list(
+    1,
+    2
+  )))
+  expect_true(bootstrict:::is_bare_list(htmltools::tagList()))
+  expect_false(bootstrict:::is_bare_list(bs_tab_panel(
+    "A",
+    "a",
+    value = "a"
+  )))
+  expect_false(bootstrict:::is_bare_list(htmltools::div()))
+  expect_false(bootstrict:::is_bare_list(
+    "text"
+  ))
+
+  # The type error is still raised for a genuinely wrong child.
+  expect_error(
+    bs_tabset(
+      "t",
+      "not a panel"
+    ),
+    "must be `bs_tab_panel"
+  )
+})

@@ -43,20 +43,6 @@ d'API : on perd `shiny::updateDateInput()`, les arguments `format` /
 `language` / `datesdisabled`, et `input$id` change de semantique. A trancher
 avant de le faire.
 
-### 20. Les constructeurs à panneaux refusent `lapply()`
-
-`R/nav-tabs.R:181-197`, `R/accordion.R:39-63`, `R/carousel.R:78-90`, `R/progress.R:52-66`
-
-```r
-bs_tabset("t", lapply(1:2, function(i) bs_tab_panel(paste("T", i), "body")))
-#> Error
-```
-
-Générer les panneaux en boucle est le cas d'usage principal dans une app pilotée par les
-données, et `dev/CONVENTIONS.md` demande de laisser htmltools aplatir les listes.
-
-À faire : aplatir les enfants de type `list` avant la validation de type.
-
 ### 21. Oublier l'`id` initial ne déclenche aucune erreur
 
 `bs_tabset(bs_tab_panel("A", "a"))` rend

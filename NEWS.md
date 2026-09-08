@@ -156,6 +156,16 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* `bs_tabset()`, `bs_accordion()`, `bs_carousel()` and `bs_progress()` accept
+  children built with `lapply()`. Generating panels in a loop is the usual
+  thing to do in a data-driven app, and `dev/CONVENTIONS.md` says to let
+  htmltools flatten lists, but each constructor validated the type of its
+  children first and so saw the list itself:
+  `bs_tabset("t", lapply(...))` failed with "All `...` arguments must be
+  `bs_tab_panel()`s". Children are now flattened before the check, without
+  descending into a panel object, which is itself a classed list.
+
+
 * `bs_date_range_input()` no longer renders small whatever you asked, and its
   separator is a real Bootstrap 5 add-on. shiny hardcodes `.input-group-sm` on
   the group, and wraps the " to " text in a Bootstrap 3

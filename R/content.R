@@ -696,43 +696,6 @@ bs_list_inline <- function(
   ))
 }
 
-#' Expand bare lists among a list's children.
-#'
-#' `lapply()`-built items arrive as a single list child, which would otherwise
-#' be wrapped whole in one `<li>`.
-#' @noRd
-flatten_list_children <- function(
-  children
-) {
-  out <- list()
-  for (child in children) {
-    if (
-      !inherits(
-        child,
-        "shiny.tag"
-      ) &&
-        is.list(
-          child
-        )
-    ) {
-      out <- c(
-        out,
-        flatten_list_children(
-          child
-        )
-      )
-    } else {
-      out <- c(
-        out,
-        list(
-          child
-        )
-      )
-    }
-  }
-  out
-}
-
 #' Turn a list child into an `<li>`.
 #'
 #' A child that is already an `<li>` is passed through: wrapping it would emit

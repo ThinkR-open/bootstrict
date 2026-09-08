@@ -721,6 +721,67 @@ enhance_form_control <- function(
   tag
 }
 
+#' Is this a plain container of children rather than a value in its own right?
+#'
+#' A `tagList()` is a container to open; a classed list such as the
+#' `bs_tab_panel` object a constructor hands back is a value, and descending
+#' into it would take it apart.
+#' @noRd
+is_bare_list <- function(
+  x
+) {
+  is.list(
+    x
+  ) &&
+    !inherits(
+      x,
+      "shiny.tag"
+    ) &&
+    (is.null(attr(
+      x,
+      "class"
+    )) ||
+      inherits(
+        x,
+        "shiny.tag.list"
+      ))
+}
+
+#' Expand bare lists among a constructor's children.
+#'
+#' `lapply()`-built children arrive as a single list argument. htmltools
+#' flattens those when rendering, but a constructor that validates the type of
+#' each child sees the list itself and rejects it -- so building panels in a
+#' loop, the usual thing to do in a data-driven app, failed.
+#' @noRd
+flatten_list_children <- function(
+  children
+) {
+  out <- list()
+  for (child in children) {
+    if (
+      is_bare_list(
+        child
+      )
+    ) {
+      out <- c(
+        out,
+        flatten_list_children(
+          child
+        )
+      )
+    } else {
+      out <- c(
+        out,
+        list(
+          child
+        )
+      )
+    }
+  }
+  out
+}
+
 #' Is this tag a Bootstrap form control (the element that carries the value)?
 #' @noRd
 is_form_control <- function(
