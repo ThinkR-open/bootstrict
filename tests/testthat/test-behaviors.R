@@ -289,3 +289,33 @@ test_that("bs_popover leaves an existing data-API trigger untouched", {
     "data-bootstrict-tip=\"popover\""
   )
 })
+
+test_that("tooltips and popovers are not registered as Shiny input bindings", {
+  # A binding on the decorated element would claim it: Shiny binds at most one
+  # input per element and later registrations win, so a tooltipped
+  # bs_button() would stop reporting clicks.
+  js <- paste(
+    readLines(
+      system.file(
+        "assets/js/binding-behaviors.js",
+        package = "bootstrict"
+      )
+    ),
+    collapse = "\n"
+  )
+  expect_no_match(
+    js,
+    "bootstrict.tooltip",
+    fixed = TRUE
+  )
+  expect_no_match(
+    js,
+    "bootstrict.popover",
+    fixed = TRUE
+  )
+  expect_match(
+    js,
+    "MutationObserver",
+    fixed = TRUE
+  )
+})

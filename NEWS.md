@@ -77,6 +77,15 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* `bs_tooltip()` / `bs_popover()` no longer disable the Shiny input they
+  decorate. Both were initialised through a `Shiny.InputBinding`, and since
+  Shiny binds at most one input per element and later registrations take
+  precedence, the bootstrict binding claimed the element and the real one never
+  bound: `bs_tooltip(bs_button("save", "Save"), "Ctrl+S")` left `input$save`
+  permanently `NULL`. Tooltips and popovers are now initialised from the DOM
+  (an initial sweep plus a `MutationObserver`, so `renderUI()` / `insertUI()`
+  content is still covered) and disposed when their element is removed.
+
 * `bs_tooltip()` / `bs_popover()` no longer break the tag they decorate when it
   is already a data-API trigger (`bs_modal_trigger()`, `bs_offcanvas_trigger()`,
   `bs_collapse_trigger()`, a dropdown toggle…). They used to append a second

@@ -1,79 +1,79 @@
 /* bootstrict tooltip / popover / scrollspy initialisers ---------------------
  *
  * Tooltips, popovers and (for dynamically inserted UI) scrollspy are not
- * auto-initialised by Bootstrap. The tooltip/popover bindings are not real
- * Shiny inputs (getValue returns null); they exist so each decorated element
- * gets a Bootstrap instance created on bind and disposed on unbind. The
- * scrollspy binding also reports the href of the active nav link as input$id.
+ * auto-initialised by Bootstrap.
+ *
+ * Tooltips and popovers decorate a tag that usually belongs to something else
+ * (an action button, an output). They are therefore driven by the DOM, not by
+ * a Shiny input binding: Shiny binds at most one input per element and later
+ * registrations take precedence, so a binding here would claim the element and
+ * its real input would never bind (a tooltipped bs_button() would stop
+ * reporting clicks). Scrollspy is a bootstrict widget of its own and does
+ * report input$id, so it stays a real binding.
  * ------------------------------------------------------------------------- */
 (function (window) {
   "use strict";
   var bootstrict = window.bootstrict;
   if (!bootstrict) return;
 
-  // Unique fallback ids for elements without one. A counter (persisted on the
-  // element) — not a timestamp: several tooltips bind within the same
-  // millisecond, and rebinds must keep their id stable.
-  var tipCounter = 0;
-  function tipId(el, prefix) {
-    if (el.id) return el.id;
-    if (!el.getAttribute("data-bootstrict-tip-id")) {
-      tipCounter += 1;
-      el.setAttribute("data-bootstrict-tip-id", prefix + "-" + tipCounter);
-    }
-    return el.getAttribute("data-bootstrict-tip-id");
+  // --- tooltips & popovers -----------------------------------------------
+
+  var TIP_SELECTOR = "[data-bootstrict-tip]";
+
+  function tipComponent(el) {
+    return el.getAttribute("data-bootstrict-tip") === "popover"
+      ? "Popover"
+      : "Tooltip";
   }
 
-  function disposer(component) {
-    return function (el) {
-      if (window.bootstrap && window.bootstrap[component]) {
-        var inst = window.bootstrap[component].getInstance(el);
-        // Dispose removes the floating .tooltip/.popover element, which would
-        // otherwise be orphaned when dynamic UI removes its trigger while
-        // open.
-        if (inst) inst.dispose();
-      }
-    };
+  // Apply fn to `root` and to every decorated descendant. Works on detached
+  // nodes, so removals can be cleaned up after the fact.
+  function eachTip(root, fn) {
+    if (!root || root.nodeType !== 1) return;
+    if (root.matches(TIP_SELECTOR)) fn(root);
+    var found = root.querySelectorAll(TIP_SELECTOR);
+    for (var i = 0; i < found.length; i++) fn(found[i]);
   }
 
-  var tooltipBinding = bootstrict.eventBinding({
-    name: "bootstrict.tooltip",
-    selector: "[data-bootstrict-tip='tooltip']",
-    events: [],
-    initialize: function (el) {
-      bootstrict.bs("Tooltip", el);
-    },
-    getValue: function () {
-      return null;
-    },
-    unsubscribe: disposer("Tooltip")
-  });
-  if (tooltipBinding) {
-    tooltipBinding.getId = function (el) {
-      return tipId(el, "bstip");
-    };
+  function initTip(el) {
+    bootstrict.bs(tipComponent(el), el);
   }
 
-  var popoverBinding = bootstrict.eventBinding({
-    name: "bootstrict.popover",
-    selector: "[data-bootstrict-tip='popover']",
-    events: [],
-    initialize: function (el) {
-      bootstrict.bs("Popover", el);
-    },
-    getValue: function () {
-      return null;
-    },
-    unsubscribe: disposer("Popover")
-  });
-  if (popoverBinding) {
-    popoverBinding.getId = function (el) {
-      return tipId(el, "bspop");
-    };
+  function disposeTip(el) {
+    var component = window.bootstrap && window.bootstrap[tipComponent(el)];
+    if (!component) return;
+    var inst = component.getInstance(el);
+    // Dispose removes the floating .tooltip/.popover element, which would
+    // otherwise be orphaned when dynamic UI removes its trigger while open.
+    if (inst) inst.dispose();
   }
 
-  // Scrollspy: Bootstrap only scans [data-bs-spy] once, on window.load, so a
-  // scrollspy inserted via renderUI would otherwise never initialise.
+  function watchTips() {
+    eachTip(document.body, initTip);
+    if (!window.MutationObserver) return;
+    // Covers renderUI / insertUI / modal bodies: anything Shiny swaps in.
+    new window.MutationObserver(function (records) {
+      records.forEach(function (record) {
+        Array.prototype.forEach.call(record.removedNodes, function (node) {
+          eachTip(node, disposeTip);
+        });
+        Array.prototype.forEach.call(record.addedNodes, function (node) {
+          eachTip(node, initTip);
+        });
+      });
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", watchTips);
+  } else {
+    watchTips();
+  }
+
+  // --- scrollspy ----------------------------------------------------------
+
+  // Bootstrap only scans [data-bs-spy] once, on window.load, so a scrollspy
+  // inserted via renderUI would otherwise never initialise.
   bootstrict.eventBinding({
     name: "bootstrict.scrollspy",
     selector: "[data-bootstrict='scrollspy']",
@@ -89,6 +89,11 @@
       var active = nav.querySelector(".nav-link.active, .list-group-item.active");
       return active ? active.getAttribute("href") : null;
     },
-    unsubscribe: disposer("ScrollSpy")
+    unsubscribe: function (el) {
+      if (window.bootstrap && window.bootstrap.ScrollSpy) {
+        var inst = window.bootstrap.ScrollSpy.getInstance(el);
+        if (inst) inst.dispose();
+      }
+    }
   });
 })(window);
