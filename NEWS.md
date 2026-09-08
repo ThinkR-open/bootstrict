@@ -2,6 +2,14 @@
 
 ## New widgets
 
+* `bs_radio_button_input()` and `bs_checkbox_button_input()` render Bootstrap's
+  segmented control (`.btn-check`), which had no equivalent: its input is a
+  *sibling* of its label, with `autocomplete="off"` and no wrapper, so it
+  cannot come out of shiny's `generateOptions()`. They are native controls,
+  driven by `update_bs_toggle_buttons()`. A checkbox group reports a character
+  vector, `character(0)` when nothing is picked.
+
+
 * `bs_nav(id =)` reports the `value` of its active link as `input$id` and
   takes one from the server with `update_bs_nav()`; `bs_nav_link()` gains a
   `value` (defaulting to its text). Clicking a link activates it without

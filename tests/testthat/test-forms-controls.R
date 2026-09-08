@@ -348,3 +348,227 @@ test_that("choice groups are marked so the client can repair shiny's updates", {
     fixed = TRUE
   )
 })
+
+test_that("toggle buttons emit the reference .btn-check markup", {
+  out <- as.character(bs_radio_button_input(
+    "size",
+    "Size",
+    c(
+      Small = "s",
+      Large = "l"
+    )
+  ))
+  # The input is a *sibling* of its label -- the CSS is `.btn-check:checked +
+  # .btn` -- with no wrapper between them, and autocomplete="off" is required.
+  expect_match(
+    out,
+    paste0(
+      "<input type=\"radio\" class=\"btn-check\" name=\"size\" id=\"size-1\" ",
+      "value=\"s\" autocomplete=\"off\" checked/>",
+      "\\s*<label class=\"btn btn-outline-primary\" for=\"size-1\">Small</label>"
+    )
+  )
+  expect_match(
+    out,
+    "<div class=\"btn-group\" role=\"group\""
+  )
+  expect_no_match(
+    out,
+    "form-check",
+    fixed = TRUE
+  )
+  # Names label the buttons, values are what gets reported.
+  expect_match(
+    out,
+    ">Large</label>"
+  )
+  expect_match(
+    out,
+    "value=\"l\""
+  )
+})
+
+test_that("toggle button options and defaults behave", {
+  # A radio group selects its first choice by default; a checkbox group none.
+  expect_match(
+    as.character(bs_radio_button_input(
+      "r",
+      NULL,
+      c(
+        "a",
+        "b"
+      )
+    )),
+    "value=\"a\" autocomplete=\"off\" checked"
+  )
+  expect_no_match(
+    as.character(bs_checkbox_button_input(
+      "c",
+      NULL,
+      c(
+        "a",
+        "b"
+      )
+    )),
+    "checked",
+    fixed = TRUE
+  )
+  expect_match(
+    as.character(bs_radio_button_input(
+      "r",
+      NULL,
+      c(
+        "a",
+        "b"
+      ),
+      outline = FALSE,
+      size = "sm",
+      vertical = TRUE
+    )),
+    "btn-group-vertical"
+  )
+  expect_match(
+    as.character(bs_radio_button_input(
+      "r",
+      NULL,
+      c(
+        "a",
+        "b"
+      ),
+      outline = FALSE,
+      color = "danger"
+    )),
+    "class=\"btn btn-danger\""
+  )
+  # Unlabelled groups still get an accessible name.
+  expect_match(
+    as.character(bs_radio_button_input(
+      "r",
+      NULL,
+      c(
+        "a"
+      )
+    )),
+    "aria-label=\"Toggle buttons\""
+  )
+  expect_match(
+    as.character(bs_radio_button_input(
+      "r",
+      "Pick",
+      c(
+        "a"
+      )
+    )),
+    "aria-labelledby=\"r-label\""
+  )
+})
+
+test_that("toggle buttons validate their arguments", {
+  expect_error(
+    bs_radio_button_input(
+      "r",
+      NULL,
+      c(
+        "a"
+      ),
+      selected = "z"
+    ),
+    "must be one of the `choices`"
+  )
+  expect_error(
+    bs_radio_button_input(
+      "r",
+      NULL,
+      character()
+    ),
+    "at least one"
+  )
+  expect_error(
+    bs_radio_button_input(
+      NULL,
+      NULL,
+      c(
+        "a"
+      )
+    ),
+    "non-empty string"
+  )
+  expect_error(
+    bs_radio_button_input(
+      "r",
+      NULL,
+      c(
+        "a"
+      ),
+      color = "bogus"
+    ),
+    "color"
+  )
+})
+
+test_that("update_bs_toggle_buttons distinguishes absent from empty", {
+  store <- NULL
+  session <- list(
+    sendCustomMessage = function(
+      type,
+      message
+    ) {
+      store <<- message
+      invisible()
+    },
+    ns = function(
+      x
+    )
+      paste0(
+        "mod-",
+        x
+      )
+  )
+  update_bs_toggle_buttons(
+    "tb",
+    selected = c(
+      "a",
+      "b"
+    ),
+    session = session
+  )
+  expect_equal(
+    store$method,
+    "togglebuttons.update"
+  )
+  expect_equal(
+    store$id,
+    "mod-tb"
+  )
+  expect_equal(
+    store$selected,
+    c(
+      "a",
+      "b"
+    )
+  )
+  expect_false(
+    "clear" %in%
+      names(
+        store
+      )
+  )
+
+  # character(0) must survive as an explicit clear rather than being dropped.
+  update_bs_toggle_buttons(
+    "tb",
+    selected = character(
+      0
+    ),
+    session = session
+  )
+  expect_true(
+    store$clear
+  )
+  expect_false(
+    "selected" %in%
+      names(
+        store
+      )
+  )
+})

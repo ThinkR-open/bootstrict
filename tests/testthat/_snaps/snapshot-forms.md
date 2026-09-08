@@ -136,6 +136,35 @@
         </div>
       </div> 
 
+# toggle button markup is stable
+
+    Code
+      snap(bs_radio_button_input("size", "Size", c(Small = "s", Large = "l")))
+    Output
+      <div id="size" class="form-group shiny-input-container" data-bootstrict="toggle-buttons" data-bootstrict-type="radio">
+        <label class="form-label" id="size-label">Size</label>
+        <div class="btn-group" role="group" aria-labelledby="size-label">
+          <input type="radio" class="btn-check" name="size" id="size-1" value="s" autocomplete="off" checked/>
+          <label class="btn btn-outline-primary" for="size-1">Small</label>
+          <input type="radio" class="btn-check" name="size" id="size-2" value="l" autocomplete="off"/>
+          <label class="btn btn-outline-primary" for="size-2">Large</label>
+        </div>
+      </div> 
+
+---
+
+    Code
+      snap(bs_checkbox_button_input("opts", NULL, c("a", "b")))
+    Output
+      <div id="opts" class="form-group shiny-input-container" data-bootstrict="toggle-buttons" data-bootstrict-type="checkbox">
+        <div class="btn-group" role="group" aria-label="Toggle buttons">
+          <input type="checkbox" class="btn-check" name="opts" id="opts-1" value="a" autocomplete="off"/>
+          <label class="btn btn-outline-primary" for="opts-1">a</label>
+          <input type="checkbox" class="btn-check" name="opts" id="opts-2" value="b" autocomplete="off"/>
+          <label class="btn btn-outline-primary" for="opts-2">b</label>
+        </div>
+      </div> 
+
 # native control markup is stable
 
     Code

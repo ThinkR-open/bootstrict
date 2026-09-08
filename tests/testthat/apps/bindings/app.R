@@ -62,7 +62,13 @@ ui <- bs_page(
 
     bs_button("validate", "Validate"),
     bs_button("swap", "Re-render"),
+    verbatimTextOutput("tbc_type"),
     uiOutput("dyn"),
+
+    bs_radio_button_input("tbr", "Size", c(Small = "s", Large = "l")),
+    bs_checkbox_button_input("tbc", "Options", c("a", "b")),
+    bs_button("pick_l", "Pick large"),
+    bs_button("clear_tbc", "Clear options"),
 
     bs_radio_input("rad", "Size", c("S", "M"), inline = TRUE),
     bs_checkbox_group_input("cgrp", "Pick", c("a", "b")),
@@ -91,6 +97,10 @@ ui <- bs_page(
 )
 
 server <- function(input, output, session) {
+  # What the checkbox toggle group actually looks like on the R side.
+  output$tbc_type <- renderText({
+    paste0(class(input$tbc), "/", length(input$tbc))
+  })
   # Overlays inside dynamic UI: re-rendering one while open must not leave the
   # page scroll-locked.
   output$dyn <- renderUI({
@@ -103,6 +113,8 @@ server <- function(input, output, session) {
   observeEvent(input$close_alert, close_bs_alert("al"))
   observeEvent(input$open_dd, show_bs_dropdown("dd"))
   observeEvent(input$goto3, update_bs_pagination("pg", selected = "3"))
+  observeEvent(input$pick_l, update_bs_toggle_buttons("tbr", selected = "l"))
+  observeEvent(input$clear_tbc, update_bs_toggle_buttons("tbc", selected = character(0)))
   observeEvent(input$regen, {
     # shiny's own updaters, exactly as the vignette promises they can be used.
     updateRadioButtons(session, "rad", choices = c("L", "XL"), inline = TRUE)

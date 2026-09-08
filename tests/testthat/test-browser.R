@@ -369,6 +369,132 @@ test_that("a navbar dropdown is valid markup and opens", {
   ))
 })
 
+test_that("toggle button groups report their selection", {
+  # .btn-check markup: the input is a sibling of its label, so clicking the
+  # label is what a user actually does.
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "tbr"
+      ),
+      '=== "s"'
+    )
+  ))
+  expect_true(wait_until(
+    app,
+    paste0(
+      "JSON.stringify(",
+      shiny_value(
+        "tbc"
+      ),
+      ") === '[]'"
+    )
+  ))
+
+  js(
+    app,
+    'document.querySelector("label[for=\'tbr-2\']").click()'
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "tbr"
+      ),
+      '=== "l"'
+    )
+  ))
+  # A radio group keeps exactly one checked input.
+  expect_equal(
+    js(
+      app,
+      'document.querySelectorAll("#tbr .btn-check:checked").length'
+    ),
+    1
+  )
+
+  js(
+    app,
+    'document.querySelector("label[for=\'tbc-1\']").click()'
+  )
+  js(
+    app,
+    'document.querySelector("label[for=\'tbc-2\']").click()'
+  )
+  expect_true(wait_until(
+    app,
+    paste0(
+      "JSON.stringify(",
+      shiny_value(
+        "tbc"
+      ),
+      ") === '[\"a\",\"b\"]'"
+    )
+  ))
+})
+
+test_that("toggle button groups take a selection from the server", {
+  js(
+    app,
+    'document.querySelector("label[for=\'tbr-1\']").click()'
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "tbr"
+      ),
+      '=== "s"'
+    )
+  ))
+  click(
+    app,
+    "pick_l"
+  )
+  expect_true(wait_until(
+    app,
+    paste(
+      shiny_value(
+        "tbr"
+      ),
+      '=== "l"'
+    )
+  ))
+  expect_true(js(
+    app,
+    'document.getElementById("tbr-2").checked'
+  ))
+
+  # character(0) clears a checkbox group rather than being dropped from the
+  # payload as an absent argument.
+  click(
+    app,
+    "clear_tbc"
+  )
+  expect_true(wait_until(
+    app,
+    paste0(
+      "JSON.stringify(",
+      shiny_value(
+        "tbc"
+      ),
+      ") === '[]'"
+    )
+  ))
+  expect_equal(
+    js(
+      app,
+      'document.querySelectorAll("#tbc .btn-check:checked").length'
+    ),
+    0
+  )
+  expect_true(wait_until(
+    app,
+    'document.getElementById("tbc_type").innerText.trim() === "character/0"'
+  ))
+})
+
 test_that("shiny's own choice-group updaters keep the Bootstrap 5 markup", {
   # shiny:::generateOptions() has no theme branch: it always regenerates the
   # options as <div class="radio"><label><input>, so without a repair the

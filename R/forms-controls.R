@@ -986,3 +986,376 @@ update_bs_color <- function(
   )
   invisible()
 }
+
+# Toggle buttons (.btn-check) -----------------------------------------------
+#
+# Bootstrap's segmented controls are not the `.form-check` markup with a
+# different skin: the `<input class="btn-check">` is a *sibling* of its
+# `<label class="btn">` (the CSS is `.btn-check:checked + .btn`), there is no
+# wrapper around the pair, and `autocomplete="off"` is required. That cannot
+# come out of shiny's generateOptions(), so these are native controls with
+# their own binding, like bs_range_input() and bs_color_input().
+
+#' Bootstrap toggle button groups
+#'
+#' The segmented control from the Bootstrap "Button group" page: a row of
+#' buttons backed by hidden radio or checkbox inputs (`.btn-check`).
+#' `bs_radio_button_input()` picks one value, `bs_checkbox_button_input()` picks
+#' any number.
+#'
+#' These are native controls, not restyled shiny inputs, so drive them with
+#' [update_bs_toggle_buttons()] rather than `shiny::updateRadioButtons()`.
+#'
+#' @param id Input id; the selection is available as `input$id` (a single
+#'   string for radio buttons, a character vector — possibly empty — for
+#'   checkboxes).
+#' @param label Label shown above the group, or `NULL` for none.
+#' @param choices Character vector of values. Names, when present, are used as
+#'   the button labels.
+#' @param selected Initially selected value(s). Defaults to the first choice
+#'   for radio buttons and to none for checkboxes.
+#' @param ... Named HTML attributes applied to the `.btn-group`.
+#' @param color Button theme colour.
+#' @param outline If `TRUE` (the default, as in the Bootstrap examples),
+#'   outline buttons (`.btn-outline-*`).
+#' @param size Button size: `"sm"` or `"lg"`.
+#' @param vertical If `TRUE`, stack the buttons (`.btn-group-vertical`).
+#' @param class Extra classes for the `.btn-group`.
+#'
+#' @return A form control tag.
+#' @seealso [update_bs_toggle_buttons()], [bs_button_group()]
+#' @export
+#'
+#' @examples
+#' bs_radio_button_input("size", "Size", c(Small = "s", Large = "l"))
+#' bs_checkbox_button_input("opts", "Options", c("a", "b"))
+bs_radio_button_input <- function(
+  id,
+  label = NULL,
+  choices,
+  selected = NULL,
+  ...,
+  color = "primary",
+  outline = TRUE,
+  size = NULL,
+  vertical = FALSE,
+  class = NULL
+) {
+  toggle_buttons(
+    id = id,
+    label = label,
+    choices = choices,
+    selected = selected %||%
+      choices[[
+        1
+      ]],
+    type = "radio",
+    color = color,
+    outline = outline,
+    size = size,
+    vertical = vertical,
+    class = class,
+    ...
+  )
+}
+
+#' @rdname bs_radio_button_input
+#' @export
+bs_checkbox_button_input <- function(
+  id,
+  label = NULL,
+  choices,
+  selected = NULL,
+  ...,
+  color = "primary",
+  outline = TRUE,
+  size = NULL,
+  vertical = FALSE,
+  class = NULL
+) {
+  toggle_buttons(
+    id = id,
+    label = label,
+    choices = choices,
+    selected = selected,
+    type = "checkbox",
+    color = color,
+    outline = outline,
+    size = size,
+    vertical = vertical,
+    class = class,
+    ...
+  )
+}
+
+#' Build the shared `.btn-check` markup.
+#' @noRd
+toggle_buttons <- function(
+  id,
+  label,
+  choices,
+  selected,
+  type,
+  color,
+  outline,
+  size,
+  vertical,
+  class,
+  ...
+) {
+  if (
+    !is.character(
+      id
+    ) ||
+      length(
+        id
+      ) !=
+        1L ||
+      !nzchar(
+        id
+      )
+  ) {
+    rlang::abort(
+      "`id` must be a single non-empty string."
+    )
+  }
+  color <- check_color(
+    color,
+    arg_nm = "color"
+  )
+  size <- match_arg(
+    size,
+    c(
+      "sm",
+      "lg"
+    )
+  )
+  values <- as.character(
+    choices
+  )
+  labels <- names(
+    choices
+  ) %||%
+    values
+  labels[
+    !nzchar(
+      labels
+    )
+  ] <- values[
+    !nzchar(
+      labels
+    )
+  ]
+  if (
+    !length(
+      values
+    )
+  ) {
+    rlang::abort(
+      "`choices` must contain at least one value."
+    )
+  }
+  selected <- as.character(
+    selected %||%
+      character()
+  )
+  unknown <- setdiff(
+    selected,
+    values
+  )
+  if (
+    length(
+      unknown
+    )
+  ) {
+    rlang::abort(sprintf(
+      "`selected` must be one of the `choices`; %s is not.",
+      paste0(
+        "\"",
+        unknown[[
+          1
+        ]],
+        "\""
+      )
+    ))
+  }
+  if (
+    identical(
+      type,
+      "radio"
+    )
+  ) {
+    selected <- selected[seq_len(min(
+      1L,
+      length(
+        selected
+      )
+    ))]
+  }
+
+  variant <- if (
+    isTRUE(
+      outline
+    )
+  ) {
+    paste0(
+      "btn-outline-",
+      color
+    )
+  } else {
+    paste0(
+      "btn-",
+      color
+    )
+  }
+  label_id <- if (
+    !is.null(
+      label
+    )
+  )
+    paste0(
+      id,
+      "-label"
+    )
+
+  buttons <- lapply(
+    seq_along(
+      values
+    ),
+    function(
+      i
+    ) {
+      button_id <- paste0(
+        id,
+        "-",
+        i
+      )
+      list(
+        htmltools::tags$input(
+          type = type,
+          class = "btn-check",
+          name = id,
+          id = button_id,
+          value = values[[
+            i
+          ]],
+          # Required by Bootstrap: without it a browser can restore a stale
+          # checked state on reload and desynchronise the buttons.
+          autocomplete = "off",
+          checked = if (
+            values[[
+              i
+            ]] %in%
+              selected
+          )
+            NA
+        ),
+        htmltools::tags$label(
+          class = bs_classes(
+            "btn",
+            variant,
+            mod(
+              "btn",
+              size
+            )
+          ),
+          `for` = button_id,
+          labels[[
+            i
+          ]]
+        )
+      )
+    }
+  )
+
+  group <- htmltools::div(
+    class = bs_classes(
+      if (
+        isTRUE(
+          vertical
+        )
+      )
+        "btn-group-vertical" else
+        "btn-group",
+      class
+    ),
+    role = "group",
+    `aria-labelledby` = label_id,
+    `aria-label` = if (
+      is.null(
+        label_id
+      )
+    )
+      "Toggle buttons",
+    ...,
+    buttons
+  )
+
+  attach_deps(htmltools::div(
+    id = id,
+    class = "form-group shiny-input-container",
+    `data-bootstrict` = "toggle-buttons",
+    `data-bootstrict-type` = type,
+    if (
+      !is.null(
+        label
+      )
+    ) {
+      htmltools::tags$label(
+        class = "form-label",
+        id = label_id,
+        label
+      )
+    },
+    group
+  ))
+}
+
+#' Set the selection of a toggle button group from the server
+#'
+#' Drives a [bs_radio_button_input()] or [bs_checkbox_button_input()]. Pass
+#' `character(0)` to clear a checkbox group.
+#'
+#' @param id Input id.
+#' @param selected Value(s) to select. A radio group keeps only the first.
+#' @param session The Shiny session.
+#'
+#' @return Nothing, called for its side effect.
+#' @seealso [bs_radio_button_input()]
+#' @export
+#'
+#' @examples
+#' if (interactive()) update_bs_toggle_buttons("size", selected = "l")
+update_bs_toggle_buttons <- function(
+  id,
+  selected = NULL,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  bs_send(
+    "togglebuttons.update",
+    id = bs_ns(
+      id,
+      session
+    ),
+    # An empty selection has to survive as [] rather than vanish from the
+    # payload, so it is sent as an explicit flag.
+    selected = if (
+      length(
+        selected
+      )
+    )
+      as.character(
+        selected
+      ),
+    clear = if (
+      !is.null(
+        selected
+      ) &&
+        !length(
+          selected
+        )
+    )
+      TRUE,
+    session = session
+  )
+}

@@ -209,6 +209,23 @@ The lower-level pieces are available when you hand-build a control:
   `bs_invalid_feedback("Please choose a username.")` — inline validation
   messages that Bootstrap shows when the control is marked valid/invalid.
 
+## Toggle buttons
+
+Bootstrap's segmented control is a row of buttons backed by hidden
+`.btn-check` inputs. Its markup is not the `.form-check` one with a different
+skin -- the input is a *sibling* of its label -- so these are native controls
+with their own constructors, driven by `update_bs_toggle_buttons()` rather than
+`shiny::updateRadioButtons()`.
+
+```{r}
+bs_radio_button_input("size", "Size", c(Small = "s", Large = "l"))
+bs_checkbox_button_input("opts", "Options", c("a", "b"))
+```
+
+`input$size` is a single string; `input$opts` is a character vector, empty when
+nothing is picked. `outline = FALSE`, `color`, `size` and `vertical` cover the
+Bootstrap variants.
+
 ## Validation
 
 Bootstrap only displays a feedback message when it is a *following sibling* of

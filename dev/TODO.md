@@ -27,12 +27,6 @@ C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
 
 ## Ensuite
 
-### 18. `.btn-check` absent
-
-Les groupes de boutons à cocher / radio (contrôles segmentés) n'existent nulle part :
-`grep -rn "btn-check" R/ inst/ vignettes/` ne renvoie rien. Non constructibles à partir
-des inputs existants, qui passent tous par `form_check_enhance()`.
-
 ### 19. `bs_file_input()` rend du Bootstrap 3
 
 `R/forms-controls.R:535-720` — motif « bouton Browse » (`span.btn-file` +

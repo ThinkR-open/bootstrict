@@ -88,6 +88,8 @@ reference:
   - bs_checkbox_input
   - bs_radio_input
   - bs_checkbox_group_input
+  - bs_radio_button_input
+  - update_bs_toggle_buttons
   - bs_range_input
   - bs_color_input
   - bs_date_input
