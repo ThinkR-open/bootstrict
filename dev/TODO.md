@@ -9,19 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 6. Composer une modal à la main imbrique le header dans le body
-
-`R/modal.R:130`, contredit le roxygen `R/modal.R:9-11`
-
-`bs_modal()` emballe inconditionnellement tous les enfants non nommés dans
-`bs_modal_body()`, alors que sa propre doc invite à composer avec `bs_modal_header()` /
-`bs_modal_body()` / `bs_modal_footer()`. Résultat :
-`.modal-content > .modal-body > (.modal-header, .modal-body)`. Casse le header collant et
-le body défilable.
-
-À faire : n'emballer que si aucun enfant ne porte déjà `.modal-header` / `.modal-body` /
-`.modal-footer`.
-
 ### 7. Le bouton de fermeture d'un offcanvas responsive ne fait rien
 
 `R/offcanvas.R:112-115`
@@ -209,6 +196,9 @@ monde fera. Idem `bs_modal()`.
   onglet masqué (vérifié en navigateur sur l'app de démo).
 - `bs_nav_link(disabled = TRUE)` garde `href="#"` sans `tabindex="-1"` : le lien reste
   activable au clavier.
+- Une modal composée à la main n'a pas de nom accessible : `aria-labelledby`
+  n'est posé que par le raccourci `title=`. Refléter l'id d'un
+  `bs_modal_title()` présent dans les enfants.
 - `bs_table(align=)` n'est pas validé : n'importe quelle chaîne devient une classe
   `align-*` inexistante.
 - `bs_img()` et `bs_card_img()` émettent un `<img>` sans attribut `alt` du tout quand
