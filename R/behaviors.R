@@ -21,8 +21,8 @@
 #' @param tag A UI element (a `shiny.tag`) to attach the tooltip to.
 #' @param title Tooltip text (or HTML, when `html = TRUE`).
 #' @param ... Extra named attributes applied to `tag`.
-#' @param placement Tooltip placement: one of `"top"`, `"right"`, `"bottom"`,
-#'   `"left"`.
+#' @param placement Tooltip placement: `"auto"`, `"top"`, `"right"`,
+#'   `"bottom"` or `"left"`.
 #' @param html If `TRUE`, allow HTML content in the tooltip (`data-bs-html`).
 #' @param trigger How the tooltip is triggered (e.g. `"hover focus"`,
 #'   `"click"`, `"manual"`); `NULL` uses the Bootstrap default.
@@ -43,6 +43,7 @@ bs_tooltip <- function(
   placement <- match_arg(
     placement,
     c(
+      "auto",
       "top",
       "right",
       "bottom",
@@ -97,8 +98,8 @@ bs_tooltip <- function(
 #' @param content Popover body content (or HTML, when `html = TRUE`).
 #' @param ... Extra named attributes applied to `tag`.
 #' @param title Optional popover header.
-#' @param placement Popover placement: one of `"top"`, `"right"`, `"bottom"`,
-#'   `"left"`.
+#' @param placement Popover placement: `"auto"`, `"top"`, `"right"`,
+#'   `"bottom"` or `"left"`.
 #' @param trigger How the popover is triggered (e.g. `"click"`, `"hover"`,
 #'   `"focus"`, `"manual"`).
 #' @param html If `TRUE`, allow HTML content in the popover (`data-bs-html`).
@@ -120,6 +121,7 @@ bs_popover <- function(
   placement <- match_arg(
     placement,
     c(
+      "auto",
       "top",
       "right",
       "bottom",
@@ -167,7 +169,12 @@ bs_popover <- function(
 #'   is required for bootstrict to initialise scrollspy, including inside
 #'   `renderUI()` — Bootstrap only auto-initialises on full page load).
 #' @param offset Pixels from the top to offset link activation
-#'   (`data-bs-offset`).
+#'   (`data-bs-offset`). Deprecated in Bootstrap 5.3, which drives scrollspy
+#'   with an `IntersectionObserver`: use `root_margin` instead.
+#' @param root_margin The observer's root margin (`data-bs-root-margin`),
+#'   Bootstrap's replacement for `offset`. Defaults to `"0px 0px -25%"`.
+#' @param threshold Visibility ratios at which a section becomes active
+#'   (`data-bs-threshold`), e.g. `c(0, 0.5, 1)`.
 #' @param smooth If `TRUE`, enable smooth scrolling (`data-bs-smooth-scroll`).
 #' @param class Extra classes.
 #'
@@ -181,6 +188,8 @@ bs_scrollspy <- function(
   ...,
   id = NULL,
   offset = NULL,
+  root_margin = NULL,
+  threshold = NULL,
   smooth = TRUE,
   class = NULL
 ) {
@@ -200,6 +209,17 @@ bs_scrollspy <- function(
       target
     ),
     `data-bs-offset` = offset,
+    `data-bs-root-margin` = root_margin,
+    `data-bs-threshold` = if (
+      !is.null(
+        threshold
+      )
+    ) {
+      paste(
+        threshold,
+        collapse = ","
+      )
+    },
     `data-bs-smooth-scroll` = if (
       isTRUE(
         smooth

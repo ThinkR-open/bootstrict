@@ -13,11 +13,16 @@
 #' @param controls If `TRUE`, render the previous / next control buttons.
 #' @param fade If `TRUE`, crossfade between slides instead of sliding
 #'   (`.carousel-fade`).
-#' @param autoplay If `TRUE` (default), start cycling on load
-#'   (`data-bs-ride="carousel"`). When `FALSE`, the attribute is omitted so the
-#'   carousel only ever advances on user interaction (Bootstrap's
-#'   `data-bs-ride="true"` would resume autoplay after the first interaction).
+#' @param autoplay `TRUE` (default) starts cycling on load
+#'   (`data-bs-ride="carousel"`); `FALSE` omits the attribute so the carousel
+#'   only ever advances on user interaction; `"resume"` is Bootstrap's
+#'   `data-bs-ride="true"`, which starts cycling after the first interaction.
 #' @param interval Cycling interval in milliseconds (sets `data-bs-interval`).
+#' @param wrap If `FALSE`, stop at the last slide instead of cycling round.
+#' @param keyboard If `FALSE`, ignore the arrow keys.
+#' @param pause `"hover"` (Bootstrap's default) pauses on mouseover; `FALSE`
+#'   never pauses.
+#' @param touch If `FALSE`, disable swipe gestures on touch screens.
 #' @param dark If `TRUE`, the dark variant via `data-bs-theme="dark"` (the
 #'   Bootstrap 5.3 idiom; `.carousel-dark` is deprecated).
 #' @param class Extra classes.
@@ -39,6 +44,10 @@ bs_carousel <- function(
   fade = FALSE,
   autoplay = TRUE,
   interval = NULL,
+  wrap = TRUE,
+  keyboard = TRUE,
+  pause = "hover",
+  touch = TRUE,
   dark = FALSE,
   class = NULL
 ) {
@@ -269,8 +278,40 @@ bs_carousel <- function(
       isTRUE(
         autoplay
       )
+    ) {
+      "carousel"
+    } else if (
+      identical(
+        autoplay,
+        "resume"
+      )
+    ) {
+      "true"
+    },
+    `data-bs-wrap` = if (
+      isFALSE(
+        wrap
+      )
     )
-      "carousel",
+      "false",
+    `data-bs-keyboard` = if (
+      isFALSE(
+        keyboard
+      )
+    )
+      "false",
+    `data-bs-pause` = if (
+      isFALSE(
+        pause
+      )
+    )
+      "false",
+    `data-bs-touch` = if (
+      isFALSE(
+        touch
+      )
+    )
+      "false",
     `data-bs-interval` = if (
       !is.null(
         interval
@@ -351,6 +392,7 @@ bs_carousel_item <- function(
 #' @param to 0-based index of the slide to cycle to. Takes precedence over
 #'   `slide` when both are supplied.
 #' @param slide Direction to advance: `"next"` or `"prev"`.
+#' @param action `"pause"` stops cycling, `"cycle"` resumes it.
 #' @param session The Shiny session.
 #'
 #' @return Invisibly `NULL`, called for its side effect.
@@ -365,6 +407,7 @@ update_bs_carousel <- function(
   id,
   to = NULL,
   slide = NULL,
+  action = NULL,
   session = shiny::getDefaultReactiveDomain()
 ) {
   slide <- match_arg(
@@ -372,6 +415,13 @@ update_bs_carousel <- function(
     c(
       "next",
       "prev"
+    )
+  )
+  action <- match_arg(
+    action,
+    c(
+      "pause",
+      "cycle"
     )
   )
   bs_send(
@@ -389,6 +439,7 @@ update_bs_carousel <- function(
         to
       ),
     slide = slide,
+    action = action,
     session = session
   )
 }

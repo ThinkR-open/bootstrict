@@ -47,15 +47,18 @@ avant de le faire.
 
 ## Plus tard
 
-### 25. Options JS non exposées
+### 25. Contrôle serveur des tooltips et popovers
 
-- tooltip / popover : 3 options sur ~17 (ni `delay`, `offset`, `container`,
-  `customClass`, `sanitize`, ni placement `auto`), aucune des 11 méthodes, et aucun
-  contrôle serveur.
-- dropdown : `auto-close`, `offset`, `reference`.
-- carousel : `touch`, `pause`, `wrap`, `keyboard`, `ride="true"`, méthodes `pause` / `cycle`.
-- scrollspy : seul le `offset` déprécié est exposé, sans `rootMargin` ni `threshold` ni
-  `refresh()`. Remonte le lien parent sur les navs imbriquées.
+Bootstrap expose `show` / `hide` / `enable` / `disable` / `setContent` sur
+Tooltip et Popover ; rien de tout ca n'est atteignable depuis le serveur. Les
+options passent maintenant par `...` (`data-bs-delay`, `data-bs-container`,
+`data-bs-custom-class`...) et `placement = "auto"` est accepte, donc il ne
+reste que les methodes.
+
+A trancher : un tooltip decore un tag qui a souvent deja un id, donc
+`update_bs_tooltip("save", title = "...")` serait faisable. Mais rien
+n'oblige la cible a avoir un id, et en inventer un casserait le contrat
+"minimum de deviation".
 
 ### 26. Modes couleur incomplets
 

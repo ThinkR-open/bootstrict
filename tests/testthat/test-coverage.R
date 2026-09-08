@@ -1499,3 +1499,176 @@ test_that("close_bs_alert dispatches a namespaced message", {
     "mod-a"
   )
 })
+
+test_that("dropdown options reach the toggle, where Bootstrap reads them", {
+  # They used to land on the wrapper, which Bootstrap never looks at.
+  out <- render(bs_dropdown(
+    "M",
+    auto_close = "outside",
+    offset = "10,20",
+    reference = "parent"
+  ))
+  expect_match(
+    out,
+    "dropdown-toggle\"[^>]*data-bs-auto-close=\"outside\""
+  )
+  expect_match(
+    out,
+    "data-bs-offset=\"10,20\""
+  )
+  expect_match(
+    out,
+    "data-bs-reference=\"parent\""
+  )
+  expect_match(
+    render(bs_dropdown(
+      "M",
+      auto_close = FALSE
+    )),
+    "data-bs-auto-close=\"false\""
+  )
+  # The default is Bootstrap's, so nothing is emitted.
+  expect_no_match(
+    render(bs_dropdown(
+      "M"
+    )),
+    "auto-close",
+    fixed = TRUE
+  )
+  expect_error(
+    bs_dropdown(
+      "M",
+      auto_close = "bogus"
+    ),
+    "auto_close"
+  )
+})
+
+test_that("carousel options are arguments and do not duplicate data-bs-ride", {
+  out <- render(bs_carousel(
+    "c",
+    bs_carousel_item(
+      "a"
+    ),
+    autoplay = "resume",
+    wrap = FALSE,
+    keyboard = FALSE,
+    pause = FALSE,
+    touch = FALSE
+  ))
+  # Passing data-bs-ride through `...` produced "carousel true".
+  expect_match(
+    out,
+    "data-bs-ride=\"true\""
+  )
+  expect_no_match(
+    out,
+    "carousel true",
+    fixed = TRUE
+  )
+  expect_match(
+    out,
+    "data-bs-wrap=\"false\""
+  )
+  expect_match(
+    out,
+    "data-bs-keyboard=\"false\""
+  )
+  expect_match(
+    out,
+    "data-bs-pause=\"false\""
+  )
+  expect_match(
+    out,
+    "data-bs-touch=\"false\""
+  )
+  # Defaults are Bootstrap's, so they stay out of the markup.
+  expect_no_match(
+    render(bs_carousel(
+      "c",
+      bs_carousel_item(
+        "a"
+      )
+    )),
+    "data-bs-wrap",
+    fixed = TRUE
+  )
+})
+
+test_that("update_bs_carousel can pause and cycle", {
+  s <- mock_session()
+  update_bs_carousel(
+    "c",
+    action = "pause",
+    session = s
+  )
+  expect_equal(
+    last_custom(
+      s
+    )$message$action,
+    "pause"
+  )
+  update_bs_carousel(
+    "c",
+    action = "cycle",
+    session = s
+  )
+  expect_equal(
+    last_custom(
+      s
+    )$message$action,
+    "cycle"
+  )
+  expect_error(
+    update_bs_carousel(
+      "c",
+      action = "bogus"
+    ),
+    "action"
+  )
+})
+
+test_that("scrollspy takes the Bootstrap 5.3 observer options", {
+  out <- render(bs_scrollspy(
+    "nav",
+    "x",
+    id = "s",
+    root_margin = "0px 0px -40%",
+    threshold = c(
+      0,
+      0.5,
+      1
+    )
+  ))
+  expect_match(
+    out,
+    "data-bs-root-margin=\"0px 0px -40%\""
+  )
+  expect_match(
+    out,
+    "data-bs-threshold=\"0,0.5,1\""
+  )
+})
+
+test_that("tooltips and popovers accept Bootstrap's auto placement", {
+  expect_match(
+    render(bs_tooltip(
+      htmltools::tags$button(
+        "b"
+      ),
+      "t",
+      placement = "auto"
+    )),
+    "data-bs-placement=\"auto\""
+  )
+  expect_match(
+    render(bs_popover(
+      htmltools::tags$button(
+        "b"
+      ),
+      "c",
+      placement = "auto"
+    )),
+    "data-bs-placement=\"auto\""
+  )
+})

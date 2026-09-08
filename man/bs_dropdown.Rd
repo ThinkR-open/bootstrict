@@ -19,6 +19,9 @@ bs_dropdown(
   direction = "down",
   dark = FALSE,
   align = NULL,
+  auto_close = TRUE,
+  offset = NULL,
+  reference = NULL,
   class = NULL
 )
 
@@ -65,6 +68,17 @@ wrapper (the Bootstrap 5.3 idiom; \code{.dropdown-menu-dark} is deprecated).}
 \item{align}{Menu alignment. \code{"end"} right-aligns the menu
 (\code{.dropdown-menu-end}); a named list such as \code{list(lg = "end")} produces a
 responsive alignment (\code{.dropdown-menu-lg-end}).}
+
+\item{auto_close}{When the menu closes on its own: \code{TRUE} (the default,
+inside or outside), \code{"inside"}, \code{"outside"}, or \code{FALSE} for manual only.}
+
+\item{offset}{Menu offset from its toggle, as \code{"x,y"} in pixels.}
+
+\item{reference}{What the menu is positioned against: \code{"toggle"} (the
+default), \code{"parent"}, or a CSS selector.
+
+Bootstrap reads all three from the \emph{toggle}, not from the wrapper, which
+is why they are arguments rather than something to pass through \code{...}.}
 
 \item{class}{Extra classes for the wrapper.}
 

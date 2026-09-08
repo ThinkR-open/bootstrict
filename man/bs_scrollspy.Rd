@@ -9,6 +9,8 @@ bs_scrollspy(
   ...,
   id = NULL,
   offset = NULL,
+  root_margin = NULL,
+  threshold = NULL,
   smooth = TRUE,
   class = NULL
 )
@@ -24,7 +26,14 @@ is required for bootstrict to initialise scrollspy, including inside
 \code{renderUI()} — Bootstrap only auto-initialises on full page load).}
 
 \item{offset}{Pixels from the top to offset link activation
-(\code{data-bs-offset}).}
+(\code{data-bs-offset}). Deprecated in Bootstrap 5.3, which drives scrollspy
+with an \code{IntersectionObserver}: use \code{root_margin} instead.}
+
+\item{root_margin}{The observer's root margin (\code{data-bs-root-margin}),
+Bootstrap's replacement for \code{offset}. Defaults to \code{"0px 0px -25\%"}.}
+
+\item{threshold}{Visibility ratios at which a section becomes active
+(\code{data-bs-threshold}), e.g. \code{c(0, 0.5, 1)}.}
 
 \item{smooth}{If \code{TRUE}, enable smooth scrolling (\code{data-bs-smooth-scroll}).}
 

@@ -23,8 +23,8 @@ bs_popover(
 
 \item{title}{Optional popover header.}
 
-\item{placement}{Popover placement: one of \code{"top"}, \code{"right"}, \code{"bottom"},
-\code{"left"}.}
+\item{placement}{Popover placement: \code{"auto"}, \code{"top"}, \code{"right"},
+\code{"bottom"} or \code{"left"}.}
 
 \item{trigger}{How the popover is triggered (e.g. \code{"click"}, \code{"hover"},
 \code{"focus"}, \code{"manual"}).}

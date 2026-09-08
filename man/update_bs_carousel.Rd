@@ -8,6 +8,7 @@ update_bs_carousel(
   id,
   to = NULL,
   slide = NULL,
+  action = NULL,
   session = shiny::getDefaultReactiveDomain()
 )
 }
@@ -18,6 +19,8 @@ update_bs_carousel(
 \code{slide} when both are supplied.}
 
 \item{slide}{Direction to advance: \code{"next"} or \code{"prev"}.}
+
+\item{action}{\code{"pause"} stops cycling, \code{"cycle"} resumes it.}
 
 \item{session}{The Shiny session.}
 }

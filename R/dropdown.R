@@ -34,6 +34,14 @@
 #' @param align Menu alignment. `"end"` right-aligns the menu
 #'   (`.dropdown-menu-end`); a named list such as `list(lg = "end")` produces a
 #'   responsive alignment (`.dropdown-menu-lg-end`).
+#' @param auto_close When the menu closes on its own: `TRUE` (the default,
+#'   inside or outside), `"inside"`, `"outside"`, or `FALSE` for manual only.
+#' @param offset Menu offset from its toggle, as `"x,y"` in pixels.
+#' @param reference What the menu is positioned against: `"toggle"` (the
+#'   default), `"parent"`, or a CSS selector.
+#'
+#'   Bootstrap reads all three from the *toggle*, not from the wrapper, which
+#'   is why they are arguments rather than something to pass through `...`.
 #' @param class Extra classes for the wrapper.
 #'
 #' @return A dropdown tag.
@@ -60,6 +68,9 @@ bs_dropdown <- function(
   direction = "down",
   dark = FALSE,
   align = NULL,
+  auto_close = TRUE,
+  offset = NULL,
+  reference = NULL,
   class = NULL
 ) {
   color <- match_arg(
@@ -141,6 +152,12 @@ bs_dropdown <- function(
       responsive_align
     )
       "static",
+    # Bootstrap reads a dropdown's options from its toggle.
+    `data-bs-auto-close` = dropdown_auto_close(
+      auto_close
+    ),
+    `data-bs-offset` = offset,
+    `data-bs-reference` = reference,
     `aria-expanded` = "false",
     if (
       isTRUE(
@@ -599,5 +616,38 @@ toggle_bs_dropdown <- function(
       session
     ),
     session = session
+  )
+}
+
+#' `data-bs-auto-close` for a dropdown toggle.
+#' @noRd
+dropdown_auto_close <- function(
+  auto_close
+) {
+  if (
+    isTRUE(
+      auto_close
+    )
+  ) {
+    return(
+      NULL
+    )
+  }
+  if (
+    isFALSE(
+      auto_close
+    )
+  ) {
+    return(
+      "false"
+    )
+  }
+  match_arg(
+    auto_close,
+    c(
+      "inside",
+      "outside"
+    ),
+    arg_nm = "auto_close"
   )
 }

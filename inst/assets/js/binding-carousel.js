@@ -39,6 +39,9 @@
     var carousel = bootstrict.bs("Carousel", el);
     if (!carousel) return;
 
+    if (msg.action === "pause" || msg.action === "cycle") {
+      carousel[msg.action]();
+    }
     if (msg.to !== undefined && msg.to !== null) {
       carousel.to(msg.to);
     } else if (msg.slide === "next") {

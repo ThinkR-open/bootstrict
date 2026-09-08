@@ -13,6 +13,10 @@ bs_carousel(
   fade = FALSE,
   autoplay = TRUE,
   interval = NULL,
+  wrap = TRUE,
+  keyboard = TRUE,
+  pause = "hover",
+  touch = TRUE,
   dark = FALSE,
   class = NULL
 )
@@ -37,12 +41,21 @@ bs_carousel_item(
 \item{fade}{If \code{TRUE}, crossfade between slides instead of sliding
 (\code{.carousel-fade}).}
 
-\item{autoplay}{If \code{TRUE} (default), start cycling on load
-(\code{data-bs-ride="carousel"}). When \code{FALSE}, the attribute is omitted so the
-carousel only ever advances on user interaction (Bootstrap's
-\code{data-bs-ride="true"} would resume autoplay after the first interaction).}
+\item{autoplay}{\code{TRUE} (default) starts cycling on load
+(\code{data-bs-ride="carousel"}); \code{FALSE} omits the attribute so the carousel
+only ever advances on user interaction; \code{"resume"} is Bootstrap's
+\code{data-bs-ride="true"}, which starts cycling after the first interaction.}
 
 \item{interval}{Cycling interval in milliseconds (sets \code{data-bs-interval}).}
+
+\item{wrap}{If \code{FALSE}, stop at the last slide instead of cycling round.}
+
+\item{keyboard}{If \code{FALSE}, ignore the arrow keys.}
+
+\item{pause}{\code{"hover"} (Bootstrap's default) pauses on mouseover; \code{FALSE}
+never pauses.}
+
+\item{touch}{If \code{FALSE}, disable swipe gestures on touch screens.}
 
 \item{dark}{If \code{TRUE}, the dark variant via \code{data-bs-theme="dark"} (the
 Bootstrap 5.3 idiom; \code{.carousel-dark} is deprecated).}

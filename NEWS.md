@@ -2,6 +2,15 @@
 
 ## New widgets
 
+* `update_bs_carousel(action =)` pauses and resumes cycling.
+
+* `bs_scrollspy()` takes Bootstrap 5.3's observer options, `root_margin` and
+  `threshold`; `offset` is deprecated upstream, which the documentation now
+  says.
+
+* `bs_tooltip()` and `bs_popover()` accept `placement = "auto"`.
+
+
 * `bs_table()` covers the rest of the Bootstrap tables page: `striped` now
   takes `"columns"` as well as `TRUE`/`"rows"` (`.table-striped-columns`),
   and `head_variant`, `group_divider`, `row_variant` and `caption_top` give
@@ -176,6 +185,17 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
   or `[object Object]`), and its `...` must be empty.
 
 ## Bug fixes
+
+* Dropdown options now reach the element Bootstrap reads them from. Passing
+  `data-bs-auto-close` through `...` put it on the `.dropdown` wrapper, while
+  Bootstrap only ever looks at the toggle, so it did nothing. `auto_close`,
+  `offset` and `reference` are arguments and land on the toggle.
+
+* `bs_carousel()` no longer emits a duplicated `data-bs-ride`. Passing it
+  through `...` produced `data-bs-ride="carousel true"`, which is not a value.
+  `autoplay = "resume"` is Bootstrap's `"true"`, and `wrap`, `keyboard`,
+  `pause` and `touch` are arguments.
+
 
 * A batch of small markup defects:
   - `bs_tab_panel()` and `bs_accordion_panel()` applied their *named* `...` as

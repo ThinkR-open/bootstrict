@@ -13,8 +13,8 @@ bs_tooltip(tag, title, ..., placement = "top", html = FALSE, trigger = NULL)
 
 \item{...}{Extra named attributes applied to \code{tag}.}
 
-\item{placement}{Tooltip placement: one of \code{"top"}, \code{"right"}, \code{"bottom"},
-\code{"left"}.}
+\item{placement}{Tooltip placement: \code{"auto"}, \code{"top"}, \code{"right"},
+\code{"bottom"} or \code{"left"}.}
 
 \item{html}{If \code{TRUE}, allow HTML content in the tooltip (\code{data-bs-html}).}
 
