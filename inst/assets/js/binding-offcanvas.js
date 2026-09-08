@@ -17,19 +17,7 @@
       if (el.classList.contains("show")) return true;
       return window.getComputedStyle(el).position !== "fixed";
     },
-    unsubscribe: function (el) {
-      if (window.bootstrap && window.bootstrap.Offcanvas) {
-        var inst = window.bootstrap.Offcanvas.getInstance(el);
-        if (inst) {
-          try {
-            inst.hide();
-            inst.dispose();
-          } catch (e) {
-            /* mid-transition disposal is best-effort */
-          }
-        }
-      }
-    }
+    unsubscribe: bootstrict.disposeOnHidden("Offcanvas", "hidden.bs.offcanvas")
   });
 
   // Server -> client: show / hide / toggle.

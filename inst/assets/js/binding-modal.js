@@ -12,21 +12,7 @@
     getValue: function (el) {
       return el.classList.contains("show");
     },
-    unsubscribe: function (el) {
-      // When dynamic UI tears down a bound modal, hide + dispose so the
-      // backdrop element and body.modal-open padding do not leak.
-      if (window.bootstrap && window.bootstrap.Modal) {
-        var inst = window.bootstrap.Modal.getInstance(el);
-        if (inst) {
-          try {
-            inst.hide();
-            inst.dispose();
-          } catch (e) {
-            /* mid-transition disposal is best-effort */
-          }
-        }
-      }
-    }
+    unsubscribe: bootstrict.disposeOnHidden("Modal", "hidden.bs.modal")
   });
 
   // Server -> client: show / hide / toggle.

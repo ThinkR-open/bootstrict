@@ -42,6 +42,50 @@
     );
   };
 
+  // --- Overlay teardown ---------------------------------------------------
+  // Returns an `unsubscribe` handler for a Modal/Offcanvas: Shiny is taking
+  // the widget away (a renderUI re-render, an insertUI removal), so the
+  // Bootstrap instance has to go with it.
+  //
+  // hide() is transition based, so disposing in the same tick aborts the
+  // teardown: the backdrop node is removed but `body.modal-open` and the
+  // inline scroll-lock style stay behind, and the page can never be scrolled
+  // again. Wait for the hidden event -- Bootstrap fires it on a timeout even
+  // when the element is already detached -- and dispose then.
+  bootstrict.disposeOnHidden = function (component, hiddenEvent) {
+    return function (el) {
+      if (!window.bootstrap || !window.bootstrap[component]) return;
+      var inst = window.bootstrap[component].getInstance(el);
+      if (!inst) return;
+      var finish = function () {
+        try {
+          inst.dispose();
+        } catch (e) {
+          /* already disposed */
+        }
+        bootstrict.releaseScrollLock();
+      };
+      if (!el.classList.contains("show")) {
+        finish();
+        return;
+      }
+      el.addEventListener(hiddenEvent, finish, { once: true });
+      inst.hide();
+    };
+  };
+
+  // Safety net: once nothing is shown any more, drop a scroll lock Bootstrap
+  // may have left on the body.
+  bootstrict.releaseScrollLock = function () {
+    var shown = document.querySelector(
+      ".modal.show, .offcanvas.show, [data-bootstrict='offcanvas'].show"
+    );
+    if (shown) return;
+    document.body.classList.remove("modal-open");
+    document.body.style.removeProperty("overflow");
+    document.body.style.removeProperty("padding-right");
+  };
+
   // --- Input binding factory ---------------------------------------------
   // opts: {
   //   name:        unique binding name (required)

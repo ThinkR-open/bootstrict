@@ -90,6 +90,18 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* Re-rendering a `bs_modal()` or `bs_offcanvas()` while it is open no longer
+  leaves the page permanently unscrollable. Both bindings tore the widget down
+  with `inst.hide(); inst.dispose();` in the same tick, but `hide()` is
+  transition based: the synchronous `dispose()` aborted Bootstrap's teardown,
+  so the backdrop node was removed while `body.modal-open` and the inline
+  `overflow: hidden; padding-right: …` scroll lock stayed behind. Any overlay
+  living inside a `renderUI()` froze the page as soon as it was re-rendered
+  while shown. Disposal now waits for `hidden.bs.modal` /
+  `hidden.bs.offcanvas` (Bootstrap fires it on a timeout even for a detached
+  element), and a safety net drops the body scroll lock once nothing is shown.
+
+
 * `bootstrict_theme()` now puts each value in the Sass layer that can compile
   it, instead of handing everything to `bslib::bs_theme()` as a named
   argument. Two forms used to fail outright: a theme colour defined from

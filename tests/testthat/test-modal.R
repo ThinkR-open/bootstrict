@@ -310,3 +310,55 @@ test_that("the bootstrict dependency travels with the modal", {
       names
   )
 })
+
+test_that("modal and offcanvas dispose after the hide transition, not during it", {
+  # hide() is transition based: disposing in the same tick aborts Bootstrap's
+  # teardown, so the backdrop goes but body.modal-open and the inline
+  # scroll-lock style stay and the page can never be scrolled again.
+  js <- function(
+    file
+  ) {
+    paste(
+      readLines(system.file(
+        file.path(
+          "assets/js",
+          file
+        ),
+        package = "bootstrict"
+      )),
+      collapse = "\n"
+    )
+  }
+  for (binding in c(
+    "binding-modal.js",
+    "binding-offcanvas.js"
+  )) {
+    src <- js(
+      binding
+    )
+    expect_match(
+      src,
+      "disposeOnHidden",
+      fixed = TRUE
+    )
+    # Teardown is delegated, so neither binding disposes on its own any more.
+    expect_no_match(
+      src,
+      "dispose(",
+      fixed = TRUE
+    )
+  }
+  core <- js(
+    "bootstrict-core.js"
+  )
+  expect_match(
+    core,
+    "hiddenEvent, finish, { once: true }",
+    fixed = TRUE
+  )
+  expect_match(
+    core,
+    "releaseScrollLock",
+    fixed = TRUE
+  )
+})

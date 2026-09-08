@@ -9,19 +9,6 @@ Une tâche traitée se supprime d'ici. Le code fait foi.
 
 ## Avant de publier
 
-### 5. Rejouer une modal ou un offcanvas ouvert fige la page
-
-`inst/assets/js/binding-modal.js:15-29`, `inst/assets/js/binding-offcanvas.js:20-32`
-
-`unsubscribe()` appelle `inst.hide(); inst.dispose();` dans le même tick. Le `hide()` de
-Bootstrap est basé sur les transitions : le `dispose()` synchrone avorte le nettoyage. Le
-backdrop part, mais `body.modal-open` et le style inline `overflow:hidden; padding-right:0px`
-restent. La page devient non défilable jusqu'au rechargement.
-
-À faire : si l'élément porte `.show`, écouter une fois `hidden.bs.modal` /
-`hidden.bs.offcanvas` puis `dispose()` ; sinon détruire directement. En filet, retirer
-`modal-open` et le style inline du `body`.
-
 ### 6. Composer une modal à la main imbrique le header dans le body
 
 `R/modal.R:130`, contredit le roxygen `R/modal.R:9-11`
