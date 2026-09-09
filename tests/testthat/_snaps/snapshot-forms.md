@@ -141,7 +141,7 @@
     Code
       snap(bs_radio_button_input("size", "Size", c(Small = "s", Large = "l")))
     Output
-      <div id="size" class="form-group shiny-input-container" data-bootstrict="toggle-buttons" data-bootstrict-type="radio">
+      <div id="size" data-bootstrict="toggle-buttons" data-bootstrict-type="radio">
         <label class="form-label" id="size-label">Size</label>
         <div class="btn-group" role="group" aria-labelledby="size-label">
           <input type="radio" class="btn-check" name="size" id="size-1" value="s" autocomplete="off" checked/>
@@ -156,7 +156,7 @@
     Code
       snap(bs_checkbox_button_input("opts", NULL, c("a", "b")))
     Output
-      <div id="opts" class="form-group shiny-input-container" data-bootstrict="toggle-buttons" data-bootstrict-type="checkbox">
+      <div id="opts" data-bootstrict="toggle-buttons" data-bootstrict-type="checkbox">
         <div class="btn-group" role="group" aria-label="Toggle buttons">
           <input type="checkbox" class="btn-check" name="opts" id="opts-1" value="a" autocomplete="off"/>
           <label class="btn btn-outline-primary" for="opts-1">a</label>
@@ -170,7 +170,7 @@
     Code
       snap(bs_range_input("rng", "Range", value = 5, min = 0, max = 10))
     Output
-      <div class="shiny-input-container form-group">
+      <div>
         <label class="form-label" for="rng" id="rng-label">Range</label>
         <input id="rng" type="range" class="form-range" min="0" max="10" value="5" data-bootstrict="range"/>
       </div> 
@@ -180,7 +180,7 @@
     Code
       snap(bs_color_input("col", "Colour", value = "#ff6600"))
     Output
-      <div class="shiny-input-container form-group">
+      <div>
         <label class="form-label" for="col" id="col-label">Colour</label>
         <input id="col" type="color" class="form-control form-control-color" value="#ff6600" data-bootstrict="color"/>
       </div> 
@@ -263,7 +263,7 @@
     Code
       snap(bs_file_input("f", "Upload"))
     Output
-      <div class="form-group shiny-input-container">
+      <div class="form-group">
         <label class="form-label" for="f" id="f-label">Upload</label>
         <input class="shiny-input-file form-control" id="f" name="f" type="file"/>
         <div id="f_progress" class="progress active shiny-file-input-progress">
@@ -276,7 +276,7 @@
     Code
       snap(bs_date_input("d", "Date"))
     Output
-      <div id="d" class="form-group" data-bootstrict="date">
+      <div id="d" data-bootstrict="date">
         <label class="form-label" for="d-field" id="d-label">Date</label>
         <input id="d-field" type="date" class="form-control"/>
       </div> 
@@ -286,7 +286,7 @@
     Code
       snap(bs_date_range_input("dr", "Range"))
     Output
-      <div id="dr" class="form-group" data-bootstrict="date-range">
+      <div id="dr" data-bootstrict="date-range">
         <label class="form-label" id="dr-label">Range</label>
         <div class="input-group">
           <input id="dr-start" type="date" class="form-control" aria-label="Start date"/>

@@ -139,9 +139,12 @@ test_that("bs_range_input renders a native form-range input", {
     html,
     "class=\"form-label\""
   )
-  expect_match(
+  # No shiny wrapper: its CSS caps .shiny-input-container at 300px, and
+  # Bootstrap's .form-range is block-level and full width.
+  expect_no_match(
     html,
-    "shiny-input-container"
+    "shiny-input-container",
+    fixed = TRUE
   )
 })
 
@@ -730,7 +733,7 @@ test_that("date inputs are native and ship no third-party library", {
   # derived one so the label can point at it without duplicating an id.
   expect_match(
     out,
-    "id=\"d\" class=\"form-group\" data-bootstrict=\"date\""
+    "id=\"d\" data-bootstrict=\"date\""
   )
   expect_match(
     out,
@@ -935,4 +938,262 @@ test_that("browser date strings become Dates, empty ones NA", {
   expect_null(bootstrict:::parse_date_value(
     NULL
   ))
+})
+
+test_that("no input pulls in a third-party library", {
+  # bootstrap-datepicker was the only one, and it is gone. Nothing may come
+  # back: a library outside Bootstrap is markup a designer cannot draw and a
+  # SASS sheet cannot reach.
+  controls <- list(
+    bs_text_input(
+      "i",
+      "L"
+    ),
+    bs_textarea_input(
+      "i",
+      "L"
+    ),
+    bs_numeric_input(
+      "i",
+      "L",
+      1
+    ),
+    bs_password_input(
+      "i",
+      "L"
+    ),
+    bs_select_input(
+      "i",
+      "L",
+      c(
+        "a",
+        "b"
+      )
+    ),
+    bs_checkbox_input(
+      "i",
+      "L"
+    ),
+    bs_switch_input(
+      "i",
+      "L"
+    ),
+    bs_radio_input(
+      "i",
+      "L",
+      c(
+        "a",
+        "b"
+      )
+    ),
+    bs_checkbox_group_input(
+      "i",
+      "L",
+      c(
+        "a",
+        "b"
+      )
+    ),
+    bs_range_input(
+      "i",
+      "L",
+      5,
+      0,
+      10
+    ),
+    bs_color_input(
+      "i",
+      "L"
+    ),
+    bs_file_input(
+      "i",
+      "L"
+    ),
+    bs_date_input(
+      "i",
+      "L"
+    ),
+    bs_date_range_input(
+      "i",
+      "L"
+    ),
+    bs_radio_button_input(
+      "i",
+      "L",
+      c(
+        "a",
+        "b"
+      )
+    ),
+    bs_checkbox_button_input(
+      "i",
+      "L",
+      c(
+        "a",
+        "b"
+      )
+    )
+  )
+  deps <- unlist(lapply(
+    controls,
+    function(
+      x
+    ) {
+      vapply(
+        htmltools::findDependencies(
+          x
+        ),
+        function(
+          d
+        )
+          d$name,
+        character(
+          1
+        )
+      )
+    }
+  ))
+  expect_equal(
+    unique(
+      deps
+    ),
+    "bootstrict"
+  )
+})
+
+test_that("the natively built controls carry no shiny classes", {
+  # .shiny-input-container is a CSS hook shiny's JS never reads, and its
+  # stylesheet caps it at 300px -- visible, non-Bootstrap styling on controls
+  # bootstrict builds itself. .form-group is a dead Bootstrap 3 class.
+  native <- list(
+    range = bs_range_input(
+      "i",
+      "L",
+      5,
+      0,
+      10
+    ),
+    color = bs_color_input(
+      "i",
+      "L"
+    ),
+    date = bs_date_input(
+      "i",
+      "L"
+    ),
+    daterange = bs_date_range_input(
+      "i",
+      "L"
+    ),
+    radiobuttons = bs_radio_button_input(
+      "i",
+      "L",
+      c(
+        "a"
+      )
+    ),
+    checkboxbuttons = bs_checkbox_button_input(
+      "i",
+      "L",
+      c(
+        "a"
+      )
+    )
+  )
+  for (nm in names(
+    native
+  )) {
+    out <- as.character(native[[
+      nm
+    ]])
+    expect_no_match(
+      out,
+      "shiny-input-container",
+      fixed = TRUE,
+      info = nm
+    )
+    expect_no_match(
+      out,
+      "form-group",
+      fixed = TRUE,
+      info = nm
+    )
+    expect_no_match(
+      out,
+      "control-label",
+      fixed = TRUE,
+      info = nm
+    )
+  }
+
+  # The file input keeps `.form-group`, and only that: shiny's binding finds
+  # the progress bar with closest("div.form-group").
+  file <- as.character(bs_file_input(
+    "f",
+    "Upload"
+  ))
+  expect_match(
+    file,
+    "class=\"form-group\""
+  )
+  expect_no_match(
+    file,
+    "shiny-input-container",
+    fixed = TRUE
+  )
+})
+
+test_that("input groups still refuse the controls they cannot unwrap", {
+  # The predicate moved; every case it covered must still be covered.
+  for (ctrl in list(
+    quote(bs_file_input(
+      "f",
+      "F"
+    )),
+    quote(bs_date_input(
+      "d",
+      "D"
+    )),
+    quote(bs_date_range_input(
+      "r",
+      "R"
+    )),
+    quote(bs_radio_input(
+      "r2",
+      "R",
+      c(
+        "a"
+      )
+    )),
+    quote(bs_checkbox_group_input(
+      "g",
+      "G",
+      c(
+        "a"
+      )
+    ))
+  )) {
+    expect_error(
+      bs_input_group(eval(
+        ctrl
+      )),
+      "cannot extract",
+      info = deparse(
+        ctrl
+      )
+    )
+  }
+  # And the ones it can are still unwrapped.
+  expect_match(
+    as.character(bs_input_group(
+      bs_input_group_text(
+        "@"
+      ),
+      bs_text_input(
+        "u",
+        NULL
+      )
+    )),
+    "input-group-text\">@</span>\\s*<input"
+  )
 })

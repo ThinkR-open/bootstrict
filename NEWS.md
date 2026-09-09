@@ -215,6 +215,19 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Bug fixes
 
+* The natively built controls no longer carry shiny's classes.
+  `bs_range_input()`, `bs_color_input()`, `bs_date_input()`,
+  `bs_date_range_input()` and the two toggle-button controls emitted
+  `.shiny-input-container` and `.form-group` although they build their own
+  markup and their own binding. Neither is read by shiny's JavaScript, but
+  shiny's *stylesheet* caps `.shiny-input-container` at `width: 300px` — so a
+  segmented button group was clipped to 300px by CSS that is not Bootstrap's,
+  and `.form-range` was not the full-width control Bootstrap draws.
+  `.form-group` is a dead Bootstrap 3 class besides. `bs_file_input()` keeps
+  `.form-group` alone: shiny's binding finds the upload progress bar with
+  `closest("div.form-group")`.
+
+
 * `data-bs-theme` is now set on the document root rather than the `<body>`.
   Bootstrap's `color-scheme` declaration is what tells the browser to paint
   scrollbars and native controls dark, and it only reaches them from `<html>`.

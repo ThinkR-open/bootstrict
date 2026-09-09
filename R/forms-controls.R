@@ -417,7 +417,6 @@ bs_range_input <- function(
     ...
   )
   ctrl <- htmltools::div(
-    class = "shiny-input-container form-group",
     style = if (
       !is.null(
         width
@@ -496,7 +495,6 @@ bs_color_input <- function(
     ...
   )
   ctrl <- htmltools::div(
-    class = "shiny-input-container form-group",
     style = if (
       !is.null(
         width
@@ -662,7 +660,10 @@ bs_file_input <- function(
   )
 
   ctrl <- htmltools::div(
-    class = "form-group shiny-input-container",
+    # `.form-group` is load-bearing: shiny's binding finds the progress bar
+    # with closest("div.form-group"). `.shiny-input-container` is not -- its
+    # JS never looks for it, and its CSS would cap the control at 300px.
+    class = "form-group",
     style = if (
       !is.null(
         width
@@ -901,7 +902,6 @@ date_container <- function(
 ) {
   htmltools::div(
     id = id,
-    class = "form-group",
     `data-bootstrict` = marker,
     style = if (
       !is.null(
@@ -1483,7 +1483,6 @@ toggle_buttons <- function(
 
   attach_deps(htmltools::div(
     id = id,
-    class = "form-group shiny-input-container",
     `data-bootstrict` = "toggle-buttons",
     `data-bootstrict-type` = type,
     if (

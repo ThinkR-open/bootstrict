@@ -72,6 +72,55 @@ bs_input_group <- function(
   )
 }
 
+#' Is this the wrapper an input constructor returns?
+#'
+#' Shiny wraps every input in `.shiny-input-container`; bootstrict's date
+#' controls have their own marker instead. Finding one says there is an input
+#' here to consider -- not that its control can be hoisted out, which is what
+#' check_control_extractable() decides.
+#' @noRd
+is_input_wrapper <- function(
+  t
+) {
+  has_class(
+    t,
+    "shiny-input-container"
+  ) ||
+    htmltools::tagGetAttribute(
+      t,
+      "data-bootstrict"
+    ) %in%
+      c(
+        "date",
+        "date-range"
+      )
+}
+
+#' Does this tag tree hold an `<input type="file">`?
+#' @noRd
+holds_file_input <- function(
+  x
+) {
+  tag_contains(
+    x,
+    function(
+      t
+    ) {
+      identical(
+        t$name,
+        "input"
+      ) &&
+        identical(
+          htmltools::tagGetAttribute(
+            t,
+            "type"
+          ),
+          "file"
+        )
+    }
+  )
+}
+
 #' Unwrap a shiny-input-container to its bare Bootstrap control for input groups.
 #' @noRd
 ig_unwrap_control <- function(
@@ -103,22 +152,11 @@ ig_unwrap_control <- function(
   if (
     !tag_contains(
       x,
-      function(
-        t
+      is_input_wrapper
+    ) &&
+      !holds_file_input(
+        x
       )
-        has_class(
-          t,
-          "shiny-input-container"
-        ) ||
-          htmltools::tagGetAttribute(
-            t,
-            "data-bootstrict"
-          ) %in%
-            c(
-              "date",
-              "date-range"
-            )
-    )
   ) {
     return(
       x
@@ -776,13 +814,7 @@ check_control_extractable <- function(
 ) {
   container <- find_first_tag(
     x,
-    function(
-      t
-    )
-      has_class(
-        t,
-        "shiny-input-container"
-      )
+    is_input_wrapper
   )
   container_id <- if (
     !is.null(
@@ -796,46 +828,14 @@ check_control_extractable <- function(
   } else {
     NULL
   }
-  has_file_input <- tag_contains(
-    x,
-    function(
-      t
-    )
-      identical(
-        t$name,
-        "input"
-      ) &&
-        identical(
-          htmltools::tagGetAttribute(
-            t,
-            "type"
-          ),
-          "file"
-        )
-  )
-  # bootstrict's own date controls read their id from the container too: a
-  # range has two fields, so there is nowhere else to put it.
-  container_bound <- tag_contains(
-    x,
-    function(
-      t
-    ) {
-      htmltools::tagGetAttribute(
-        t,
-        "data-bootstrict"
-      ) %in%
-        c(
-          "date",
-          "date-range"
-        )
-    }
+  has_file_input <- holds_file_input(
+    x
   )
   if (
     !is.null(
       container_id
     ) ||
-      has_file_input ||
-      container_bound
+      has_file_input
   ) {
     rlang::abort(sprintf(
       paste0(
