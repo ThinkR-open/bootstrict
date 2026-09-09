@@ -140,6 +140,26 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 ## Breaking changes
 
+* `bs_date_input()` and `bs_date_range_input()` are native
+  `<input type="date">` fields and no longer delegate to `shiny::dateInput()`,
+  which loads `bootstrap-datepicker` — a third-party stylesheet whose calendar
+  markup (`.datepicker`, `.datepicker-days`, …) appears nowhere in the
+  Bootstrap documentation and which a designer's SASS sheet cannot reach. That
+  contradicted the one promise the package makes, so it is gone; the browser
+  now supplies the calendar, as the Bootstrap 5.3 forms page has it. No
+  third-party widget library is shipped any more, and a test enforces that.
+
+  What that costs: `format`, `language`, `weekstart` and `datesdisabled` are
+  gone, since the browser owns the presentation and Bootstrap offers no way to
+  ask it for another. `shiny::updateDateInput()` no longer reaches these
+  controls — use `update_bs_date_input()` / `update_bs_date_range_input()`,
+  which take `NA` to clear a field and `NULL` to leave it alone. `input$id` is
+  still a `Date`, `NA` while the field is empty, and a range is still a
+  length-2 `Date`. `bs_date_range_input()` gains `separator`, and the
+  container now carries the id while the field takes a derived one, so the
+  two no longer collide.
+
+
 * `bs_img()`, `bs_card_img()` and `bs_figure_img()` default `alt` to `""`
   rather than `NULL`. An `<img>` with no `alt` attribute at all is announced
   by its file name; an empty one marks the image decorative, which is the

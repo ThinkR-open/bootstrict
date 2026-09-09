@@ -242,9 +242,20 @@ test_that("bs_date_input enhances the date control to Bootstrap", {
     html,
     "form-control"
   )
+  # Native <input type="date">: no shiny wrapper, no datepicker.
   expect_match(
     html,
-    "input-daterange|shiny-date-input|datepicker"
+    "type=\"date\""
+  )
+  expect_no_match(
+    html,
+    "shiny-date-input",
+    fixed = TRUE
+  )
+  expect_no_match(
+    html,
+    "datepicker",
+    fixed = TRUE
   )
 })
 
@@ -265,9 +276,24 @@ test_that("bs_date_range_input enhances the range control", {
     html,
     "form-control"
   )
+  # Two native fields joined in an input group.
+  expect_equal(
+    length(gregexpr(
+      "type=\"date\"",
+      html
+    )[[
+      1
+    ]]),
+    2L
+  )
   expect_match(
     html,
-    "shiny-date-range-input"
+    "data-bootstrict=\"date-range\""
+  )
+  expect_no_match(
+    html,
+    "shiny-date-range-input",
+    fixed = TRUE
   )
 })
 
@@ -651,7 +677,7 @@ test_that("bs_date_range_input no longer forces a small group or a BS3 addon", {
   )
   expect_match(
     out,
-    "<span class=\"input-group-text\"> to </span>"
+    "<span class=\"input-group-text\">to</span>"
   )
 
   sized <- as.character(bs_date_range_input(
@@ -661,6 +687,252 @@ test_that("bs_date_range_input no longer forces a small group or a BS3 addon", {
   ))
   expect_match(
     sized,
-    "input-daterange input-group input-group-sm"
+    "input-group input-group-sm"
   )
+  expect_match(
+    sized,
+    "form-control form-control-sm"
+  )
+})
+
+test_that("date inputs are native and ship no third-party library", {
+  out <- as.character(bs_date_input(
+    "d",
+    "Date",
+    value = as.Date(
+      "2026-06-26"
+    ),
+    min = "2026-01-01",
+    max = "2026-12-31",
+    size = "sm"
+  ))
+  expect_match(
+    out,
+    "<input id=\"d-field\" type=\"date\""
+  )
+  expect_match(
+    out,
+    "class=\"form-control form-control-sm\""
+  )
+  expect_match(
+    out,
+    "value=\"2026-06-26\""
+  )
+  expect_match(
+    out,
+    "min=\"2026-01-01\""
+  )
+  expect_match(
+    out,
+    "max=\"2026-12-31\""
+  )
+  # The container carries the id the binding reports under; the field gets a
+  # derived one so the label can point at it without duplicating an id.
+  expect_match(
+    out,
+    "id=\"d\" class=\"form-group\" data-bootstrict=\"date\""
+  )
+  expect_match(
+    out,
+    "for=\"d-field\""
+  )
+  ids <- regmatches(
+    out,
+    gregexpr(
+      "id=\"[^\"]+\"",
+      out
+    )
+  )[[
+    1
+  ]]
+  expect_equal(
+    length(
+      ids
+    ),
+    length(unique(
+      ids
+    ))
+  )
+})
+
+test_that("a date range is two native fields in an input group", {
+  out <- as.character(bs_date_range_input(
+    "r",
+    "Period",
+    start = "2026-01-01",
+    end = "2026-03-01",
+    separator = "-"
+  ))
+  expect_equal(
+    length(gregexpr(
+      "type=\"date\"",
+      out
+    )[[
+      1
+    ]]),
+    2L
+  )
+  expect_match(
+    out,
+    "id=\"r-start\""
+  )
+  expect_match(
+    out,
+    "id=\"r-end\""
+  )
+  expect_match(
+    out,
+    "<span class=\"input-group-text\">-</span>"
+  )
+  # Each field needs its own accessible name: one label cannot serve both.
+  expect_match(
+    out,
+    "aria-label=\"Start date\""
+  )
+  expect_match(
+    out,
+    "aria-label=\"End date\""
+  )
+})
+
+test_that("date arguments are validated and formatted", {
+  expect_error(
+    bs_date_input(
+      "d",
+      value = "not a date"
+    ),
+    "single date"
+  )
+  expect_error(
+    bs_date_input(
+      "d",
+      min = c(
+        "2026-01-01",
+        "2026-02-01"
+      )
+    ),
+    "single date"
+  )
+  # A Date and a string give the same attribute.
+  expect_equal(
+    as.character(bs_date_input(
+      "d",
+      value = as.Date(
+        "2026-06-26"
+      )
+    )),
+    as.character(bs_date_input(
+      "d",
+      value = "2026-06-26"
+    ))
+  )
+})
+
+test_that("the date server helpers distinguish clearing from leaving alone", {
+  store <- NULL
+  session <- list(
+    sendCustomMessage = function(
+      type,
+      message
+    ) {
+      store <<- message
+      invisible()
+    },
+    ns = function(
+      x
+    )
+      paste0(
+        "mod-",
+        x
+      )
+  )
+  update_bs_date_input(
+    "d",
+    value = as.Date(
+      "2027-01-15"
+    ),
+    session = session
+  )
+  expect_equal(
+    store$method,
+    "date.update"
+  )
+  expect_equal(
+    store$id,
+    "mod-d"
+  )
+  expect_equal(
+    store$value,
+    "2027-01-15"
+  )
+
+  # NA clears the field; NULL is absent from the payload and leaves it alone.
+  update_bs_date_input(
+    "d",
+    value = NA,
+    session = session
+  )
+  expect_equal(
+    store$value,
+    ""
+  )
+  update_bs_date_input(
+    "d",
+    min = "2026-01-01",
+    session = session
+  )
+  expect_false(
+    "value" %in%
+      names(
+        store
+      )
+  )
+  expect_equal(
+    store$min,
+    "2026-01-01"
+  )
+
+  update_bs_date_range_input(
+    "r",
+    start = "2026-01-01",
+    end = NA,
+    session = session
+  )
+  expect_equal(
+    store$method,
+    "daterange.update"
+  )
+  expect_equal(
+    store$start,
+    "2026-01-01"
+  )
+  expect_equal(
+    store$end,
+    ""
+  )
+})
+
+test_that("browser date strings become Dates, empty ones NA", {
+  expect_equal(
+    bootstrict:::parse_date_value(
+      "2026-06-26"
+    ),
+    as.Date(
+      "2026-06-26"
+    )
+  )
+  # A range keeps both positions when only one end is set.
+  expect_equal(
+    bootstrict:::parse_date_value(c(
+      "2026-01-01",
+      ""
+    )),
+    as.Date(c(
+      "2026-01-01",
+      NA
+    ))
+  )
+  expect_null(bootstrict:::parse_date_value(
+    NULL
+  ))
 })

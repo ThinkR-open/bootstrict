@@ -703,15 +703,26 @@ bs_file_input <- function(
 
 #' Bootstrap date input
 #'
-#' Delegates to [shiny::dateInput()] and adds the Bootstrap `.form-label` /
-#' `.form-control` affordances.
+#' A native `<input type="date">` with the Bootstrap `.form-control` class, as
+#' the Bootstrap 5.3 forms reference has it: the browser supplies the calendar.
+#'
+#' This does **not** delegate to [shiny::dateInput()], which loads
+#' `bootstrap-datepicker` -- a third-party stylesheet whose calendar markup
+#' (`.datepicker`, `.datepicker-days`, ...) appears nowhere in the Bootstrap
+#' documentation and which a designer's SASS sheet cannot reach. The
+#' consequence is that `format`, `language`, `weekstart` and `datesdisabled`
+#' are gone: the browser owns the presentation, and there is no Bootstrap way
+#' to ask it for another. Use [update_bs_date_input()] rather than
+#' `shiny::updateDateInput()`.
 #'
 #' @inheritParams bs_radio_input
-#' @param value Initial date (a `Date` or `"yyyy-mm-dd"` string).
-#' @param min,max Minimum / maximum selectable date.
+#' @param value Initial date (a `Date` or `"yyyy-mm-dd"` string), or `NULL`
+#'   for an empty field.
+#' @param min,max Earliest / latest selectable date.
+#' @param size Control size: `"sm"` or `"lg"`.
 #'
 #' @return A form control tag.
-#' @seealso [shiny::dateInput()]
+#' @seealso [update_bs_date_input()], [bs_date_range_input()]
 #' @export
 #'
 #' @examples
@@ -723,50 +734,57 @@ bs_date_input <- function(
   ...,
   min = NULL,
   max = NULL,
+  size = NULL,
   help = NULL,
   width = NULL
 ) {
-  ctrl <- shiny::dateInput(
-    id,
-    label,
+  check_widget_id(
+    id
+  )
+  # The container carries `id` (the binding reads it there, as it must for a
+  # range's two fields), so the field itself gets a derived one for the label.
+  ctrl <- date_field(
+    id = paste0(
+      id,
+      "-field"
+    ),
     value = value,
     min = min,
     max = max,
-    width = width
-  )
-  ctrl <- enhance_form_control(
-    ctrl
-  )
-  ctrl <- add_control_attribs(
-    ctrl,
+    size = size,
     ...
   )
-  ctrl <- add_form_help(
-    ctrl,
+  attach_deps(add_form_help(
+    date_container(
+      id = id,
+      label = label,
+      width = width,
+      marker = "date",
+      ctrl
+    ),
     help,
     id = id
-  )
-  attach_deps(
-    ctrl
-  )
+  ))
 }
 
 #' Bootstrap date range input
 #'
-#' Delegates to [shiny::dateRangeInput()] and adds the Bootstrap `.form-label` /
-#' `.form-control` affordances.
+#' Two native date fields joined in an `.input-group`, with a separator
+#' between them. Bootstrap has no date-range component, so this is the
+#' assembly its docs prescribe; see [bs_date_input()] for why neither field
+#' delegates to shiny.
 #'
 #' @inheritParams bs_date_input
 #' @param start,end Initial start / end dates.
-#' @param size Control size: `"sm"` or `"lg"`. shiny hardcodes the small
-#'   variant on the group; this argument is what decides it.
+#' @param separator Text shown between the two fields, in an
+#'   `.input-group-text`.
 #'
-#' @return A form control tag.
-#' @seealso [shiny::dateRangeInput()]
+#' @return A form control tag. `input$id` is a length-2 `Date`.
+#' @seealso [update_bs_date_range_input()], [bs_date_input()]
 #' @export
 #'
 #' @examples
-#' bs_date_range_input("range", "Period", start = "2026-01-01", end = "2026-12-31")
+#' bs_date_range_input("range", "Period", start = "2026-01-01")
 bs_date_range_input <- function(
   id,
   label = NULL,
@@ -775,132 +793,310 @@ bs_date_range_input <- function(
   ...,
   min = NULL,
   max = NULL,
+  separator = "to",
   size = NULL,
   help = NULL,
   width = NULL
 ) {
-  ctrl <- shiny::dateRangeInput(
-    id,
-    label,
-    start = start,
-    end = end,
-    min = min,
-    max = max,
-    width = width
+  check_widget_id(
+    id
   )
-  ctrl <- enhance_form_control(
-    ctrl,
-    size = size
+  group <- htmltools::div(
+    class = bs_classes(
+      "input-group",
+      mod(
+        "input-group",
+        size
+      )
+    ),
+    date_field(
+      id = paste0(
+        id,
+        "-start"
+      ),
+      value = start,
+      min = min,
+      max = max,
+      size = size,
+      `aria-label` = "Start date",
+      ...
+    ),
+    htmltools::tags$span(
+      class = "input-group-text",
+      separator
+    ),
+    date_field(
+      id = paste0(
+        id,
+        "-end"
+      ),
+      value = end,
+      min = min,
+      max = max,
+      size = size,
+      `aria-label` = "End date",
+      ...
+    )
   )
-  ctrl <- date_range_repair(
-    ctrl,
-    size
-  )
-  ctrl <- add_control_attribs(
-    ctrl,
-    ...
-  )
-  ctrl <- add_form_help(
-    ctrl,
+  attach_deps(add_form_help(
+    date_container(
+      id = id,
+      label = label,
+      width = width,
+      marker = "date-range",
+      group
+    ),
     help,
     id = id
-  )
-  attach_deps(
-    ctrl
+  ))
+}
+
+#' One `<input type="date">`.
+#' @noRd
+date_field <- function(
+  id,
+  value,
+  min,
+  max,
+  size,
+  ...
+) {
+  htmltools::tags$input(
+    id = id,
+    type = "date",
+    class = bs_classes(
+      "form-control",
+      mod(
+        "form-control",
+        size
+      )
+    ),
+    value = date_attr(
+      value,
+      "value"
+    ),
+    min = date_attr(
+      min,
+      "min"
+    ),
+    max = date_attr(
+      max,
+      "max"
+    ),
+    ...
   )
 }
 
-#' Bring shiny's date-range group up to Bootstrap 5.
+#' The wrapper carrying the id the binding reports under.
 #'
-#' shiny hardcodes `.input-group-sm` on the group, so the control was always
-#' small whatever the caller asked for, and wraps the " to " separator in a
-#' Bootstrap 3 `<span class="input-group-addon input-group-prepend
-#' input-group-append">`. Add-ons must be *direct* children of `.input-group`
-#' under Bootstrap 5, or the corner rounding between the fields breaks.
+#' The `<input>` of a range cannot carry it (there are two), so the marker and
+#' the id live on the container for both, which keeps one binding.
 #' @noRd
-date_range_repair <- function(
-  tag,
-  size
+date_container <- function(
+  id,
+  label,
+  width,
+  marker,
+  ...
 ) {
-  tag <- tag_modify_where(
-    tag,
-    function(
-      t
-    )
-      has_class(
-        t,
-        "input-daterange"
-      ),
-    function(
-      t
-    ) {
-      keep <- setdiff(
-        unlist(strsplit(
-          paste(
-            unlist(
-              t$attribs$class
-            ),
-            collapse = " "
-          ),
-          "\\s+"
-        )),
-        c(
-          "input-group-sm",
-          "input-group-lg"
-        )
+  htmltools::div(
+    id = id,
+    class = "form-group",
+    `data-bootstrict` = marker,
+    style = if (
+      !is.null(
+        width
       )
-      t$attribs$class <- bs_classes(
-        keep,
-        mod(
-          "input-group",
-          size
-        )
-      )
-      t
-    }
-  )
-  tag_modify_where(
-    tag,
-    function(
-      t
     ) {
-      has_class(
-        t,
-        "input-group-addon"
-      ) ||
-        has_class(
-          t,
-          "input-group-prepend"
-        ) ||
-        has_class(
-          t,
-          "input-group-append"
-        )
+      paste0(
+        "width: ",
+        htmltools::validateCssUnit(
+          width
+        ),
+        ";"
+      )
     },
-    function(
-      t
+    if (
+      !is.null(
+        label
+      )
     ) {
-      inner <- Filter(
-        function(
-          ch
+      htmltools::tags$label(
+        class = "form-label",
+        `for` = if (
+          identical(
+            marker,
+            "date"
+          )
         )
-          inherits(
-            ch,
-            "shiny.tag"
+          paste0(
+            id,
+            "-field"
           ),
-        t$children
+        id = paste0(
+          id,
+          "-label"
+        ),
+        label
       )
-      if (
-        length(
-          inner
-        ) ==
-          1L
+    },
+    ...
+  )
+}
+
+#' Coerce a date argument to the `yyyy-mm-dd` an `<input type="date">` takes.
+#' @noRd
+date_attr <- function(
+  x,
+  arg_nm
+) {
+  if (
+    is.null(
+      x
+    )
+  ) {
+    return(
+      NULL
+    )
+  }
+  parsed <- tryCatch(
+    as.Date(
+      x
+    ),
+    error = function(
+      e
+    )
+      NA
+  )
+  if (
+    length(
+      parsed
+    ) !=
+      1L ||
+      is.na(
+        parsed
       )
-        inner[[
-          1
-        ]] else
-        t
-    }
+  ) {
+    rlang::abort(sprintf(
+      "`%s` must be a single date, as a `Date` or a \"yyyy-mm-dd\" string.",
+      arg_nm
+    ))
+  }
+  format(
+    parsed,
+    "%Y-%m-%d"
+  )
+}
+
+#' Set a date input from the server
+#'
+#' The native counterpart of `shiny::updateDateInput()`, which cannot reach
+#' these controls.
+#'
+#' @param id Input id.
+#' @param value New date, or `NA` to clear the field.
+#' @param min,max New bounds.
+#' @param session The Shiny session.
+#'
+#' @return Nothing, called for its side effect.
+#' @seealso [bs_date_input()]
+#' @export
+#'
+#' @examples
+#' if (interactive()) update_bs_date_input("day", value = Sys.Date())
+update_bs_date_input <- function(
+  id,
+  value = NULL,
+  min = NULL,
+  max = NULL,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  bs_send(
+    "date.update",
+    id = bs_ns(
+      id,
+      session
+    ),
+    value = date_message(
+      value
+    ),
+    min = date_attr(
+      min,
+      "min"
+    ),
+    max = date_attr(
+      max,
+      "max"
+    ),
+    session = session
+  )
+}
+
+#' @rdname update_bs_date_input
+#' @param start,end New start / end dates, or `NA` to clear either field.
+#' @export
+update_bs_date_range_input <- function(
+  id,
+  start = NULL,
+  end = NULL,
+  min = NULL,
+  max = NULL,
+  session = shiny::getDefaultReactiveDomain()
+) {
+  bs_send(
+    "daterange.update",
+    id = bs_ns(
+      id,
+      session
+    ),
+    start = date_message(
+      start
+    ),
+    end = date_message(
+      end
+    ),
+    min = date_attr(
+      min,
+      "min"
+    ),
+    max = date_attr(
+      max,
+      "max"
+    ),
+    session = session
+  )
+}
+
+#' A date for a server message: `NA` clears the field, `NULL` leaves it alone.
+#' @noRd
+date_message <- function(
+  x
+) {
+  if (
+    is.null(
+      x
+    )
+  ) {
+    return(
+      NULL
+    )
+  }
+  if (
+    length(
+      x
+    ) ==
+      1L &&
+      is.na(
+        x
+      )
+  ) {
+    return(
+      ""
+    )
+  }
+  date_attr(
+    x,
+    "value"
   )
 }
 

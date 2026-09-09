@@ -248,36 +248,73 @@ test_that("the file input is a plain .form-control and keeps its binding", {
 test_that("delegated inputs keep their html dependency (not rendered as text)", {
   # Regression: tag_modify_where() used to recurse into html_dependency objects
   # (which are lists), strip their class and render them as garbage text.
-  di <- bs_date_input(
-    "d",
-    "Date"
+  fi <- bs_file_input(
+    "f",
+    "Upload"
   )
   html <- render(
-    di
+    fi
   )
-  expect_false(grepl(
-    "datepicker|html_dependency",
-    html
-  ))
+  expect_no_match(
+    html,
+    "html_dependency",
+    fixed = TRUE
+  )
   expect_match(
     html,
     "form-control"
   )
-  deps <- vapply(
-    htmltools::findDependencies(
-      di
+  expect_true(
+    length(htmltools::findDependencies(
+      fi
+    )) >
+      0L
+  )
+})
+
+test_that("no third-party widget library is shipped", {
+  # bootstrap-datepicker is a stylesheet whose calendar markup (.datepicker,
+  # .datepicker-days, ...) appears nowhere in the Bootstrap documentation and
+  # which a designer's SASS sheet cannot reach. Nothing may pull it in.
+  deps <- unlist(lapply(
+    list(
+      bs_date_input(
+        "d",
+        "Date"
+      ),
+      bs_date_range_input(
+        "r",
+        "Range"
+      ),
+      bs_page(bs_container(bs_date_input(
+        "d2",
+        "Date"
+      )))
     ),
     function(
-      d
-    )
-      d$name,
-    character(
-      1
-    )
-  )
-  expect_true(
-    "bootstrap-datepicker-js" %in%
-      deps
+      x
+    ) {
+      vapply(
+        htmltools::findDependencies(
+          x
+        ),
+        function(
+          d
+        )
+          d$name,
+        character(
+          1
+        )
+      )
+    }
+  ))
+  expect_no_match(
+    paste(
+      deps,
+      collapse = " "
+    ),
+    "datepicker",
+    fixed = TRUE
   )
 })
 

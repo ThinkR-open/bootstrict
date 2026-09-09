@@ -26,7 +26,9 @@ The Bootstrap 5.3 runtime and SASS compilation are provided by [`bslib`](https:/
 
 Every widget mirrors the Bootstrap 5.3 HTML structure **one-to-one**, so a designer's mockup (for example in Figma) and exported SASS variables drop straight into a Shiny app. Interactive components report their state to the server and can be driven from the server with `update_*()` helpers.
 
-Two things fall short of that, both inherited from the Shiny inputs the package delegates to: every delegated input keeps Shiny's `div.form-group.shiny-input-container` wrapper, and the date inputs load `bootstrap-datepicker` for the calendar popup, which is not in the Bootstrap 5.3 docs. Everything else is the reference markup, and the test suite snapshots it.
+One thing falls short of that, inherited from the Shiny inputs the package delegates to: every delegated input keeps Shiny's `div.form-group.shiny-input-container` wrapper. Everything else is the reference markup, and the test suite snapshots it — no third-party widget library is shipped, and a test enforces that.
+
+The rule, when the two collide: if it is not in the Bootstrap documentation it is not in `bootstrict`, even where that loses a Shiny feature.
 
 The motivating workflow: a designer works in Figma, stays strictly within [the Bootstrap 5.3 docs](https://getbootstrap.com/docs/5.3/), and exports a `_variables.scss` sheet.
 
@@ -169,17 +171,17 @@ show_bs_modal("info")
 
 1. **Inputs that delegate to Shiny** — `bs_text_input()`, `bs_numeric_input()`,
    `bs_select_input()`, `bs_radio_input()`, `bs_checkbox_input()`,
-   `bs_checkbox_group_input()`, `bs_date_input()`, `bs_date_range_input()`,
-   `bs_file_input()`, `bs_textarea_input()`, `bs_password_input()`. They wrap the
-   matching `shiny::*Input()` and only restyle the markup, so `input$id` **and
-   Shiny's own `updateXxx()` keep working unchanged** — use
-   `shiny::updateTextInput()` etc. for these.
-2. **Native inputs with no Shiny equivalent** — `bs_range_input()`,
-   `bs_color_input()`, `bs_radio_button_input()` and
-   `bs_checkbox_button_input()`. They ship their own bindings, so drive them
-   with `update_bs_range()` / `update_bs_color()` /
-   `update_bs_toggle_buttons()` (Shiny's `updateSliderInput()` won't reach
-   them).
+   `bs_checkbox_group_input()`, `bs_file_input()`, `bs_textarea_input()`,
+   `bs_password_input()`. They wrap the matching `shiny::*Input()` and only
+   restyle the markup, so `input$id` **and Shiny's own `updateXxx()` keep
+   working unchanged** — use `shiny::updateTextInput()` etc. for these.
+2. **Native inputs** — `bs_range_input()`, `bs_color_input()`,
+   `bs_date_input()`, `bs_date_range_input()`, `bs_radio_button_input()` and
+   `bs_checkbox_button_input()`. Either Shiny has no equivalent, or its
+   equivalent is not Bootstrap markup. They ship their own bindings, so drive
+   them with `update_bs_range()` / `update_bs_color()` /
+   `update_bs_date_input()` / `update_bs_toggle_buttons()` (Shiny's
+   `updateSliderInput()` and `updateDateInput()` won't reach them).
 
 A few specifics worth knowing:
 
@@ -192,10 +194,12 @@ A few specifics worth knowing:
   type="file">`, so the browser draws the button and the file name — not
   Shiny's "Browse" button beside a readonly text box, which is Bootstrap 3
   markup.
-- `bs_date_input()` / `bs_date_range_input()` still delegate to Shiny, which
-  ships `bootstrap-datepicker` for the calendar popup. That popup is the one
-  thing in the package that is **not** in the Bootstrap 5.3 docs; the field
-  itself is a plain `.form-control`.
+- `bs_date_input()` / `bs_date_range_input()` are native
+  `<input type="date">` fields, so the **browser** supplies the calendar. They
+  do not delegate to Shiny, which would pull in `bootstrap-datepicker` — a
+  third-party stylesheet whose calendar is nowhere in the Bootstrap docs. The
+  cost is that `format`, `language`, `weekstart` and `datesdisabled` are gone;
+  drive them with `update_bs_date_input()`.
 - Validation feedback needs `bs_feedback()`: Bootstrap only shows a message
   that is a *sibling* of the marked control, and a bare
   `bs_invalid_feedback()` after an input is a sibling of Shiny's wrapper.

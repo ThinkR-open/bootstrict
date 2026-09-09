@@ -144,14 +144,15 @@ show_bs_modal("info")
 
 1. **Inputs that delegate to Shiny** — `bs_text_input()`, `bs_numeric_input()`,
    `bs_select_input()`, `bs_radio_input()`, `bs_checkbox_input()`,
-   `bs_checkbox_group_input()`, `bs_date_input()`, `bs_date_range_input()`,
-   `bs_file_input()`, `bs_textarea_input()`, `bs_password_input()`. They wrap the
-   matching `shiny::*Input()`, so `input$id` **and Shiny's own `updateXxx()`
-   keep working unchanged**.
-2. **Native inputs with no Shiny equivalent** — `bs_range_input()`,
-   `bs_color_input()` and the `.btn-check` segmented controls
-   (`bs_radio_button_input()`, `bs_checkbox_button_input()`). They ship their
-   own bindings, so drive them with `update_bs_range()` / `update_bs_color()` /
+   `bs_checkbox_group_input()`, `bs_file_input()`, `bs_textarea_input()`,
+   `bs_password_input()`. They wrap the matching `shiny::*Input()`, so
+   `input$id` **and Shiny's own `updateXxx()` keep working unchanged**.
+2. **Native inputs** — `bs_range_input()`, `bs_color_input()`,
+   `bs_date_input()`, `bs_date_range_input()` and the `.btn-check` segmented
+   controls (`bs_radio_button_input()`, `bs_checkbox_button_input()`). Either
+   Shiny has no equivalent, or its equivalent is not Bootstrap markup. They
+   ship their own bindings, so drive them with `update_bs_range()` /
+   `update_bs_color()` / `update_bs_date_input()` /
    `update_bs_toggle_buttons()`.
 
 ### `bs_button()` is an action button only when given an id

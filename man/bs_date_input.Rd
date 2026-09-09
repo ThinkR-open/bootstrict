@@ -11,6 +11,7 @@ bs_date_input(
   ...,
   min = NULL,
   max = NULL,
+  size = NULL,
   help = NULL,
   width = NULL
 )
@@ -20,11 +21,14 @@ bs_date_input(
 
 \item{label}{Input label.}
 
-\item{value}{Initial date (a \code{Date} or \code{"yyyy-mm-dd"} string).}
+\item{value}{Initial date (a \code{Date} or \code{"yyyy-mm-dd"} string), or \code{NULL}
+for an empty field.}
 
 \item{...}{Extra attributes applied to each radio \verb{<input>}.}
 
-\item{min, max}{Minimum / maximum selectable date.}
+\item{min, max}{Earliest / latest selectable date.}
+
+\item{size}{Control size: \code{"sm"} or \code{"lg"}.}
 
 \item{help}{Help text rendered below the control (\code{.form-text}).}
 
@@ -34,12 +38,22 @@ bs_date_input(
 A form control tag.
 }
 \description{
-Delegates to \code{\link[shiny:dateInput]{shiny::dateInput()}} and adds the Bootstrap \code{.form-label} /
-\code{.form-control} affordances.
+A native \verb{<input type="date">} with the Bootstrap \code{.form-control} class, as
+the Bootstrap 5.3 forms reference has it: the browser supplies the calendar.
+}
+\details{
+This does \strong{not} delegate to \code{\link[shiny:dateInput]{shiny::dateInput()}}, which loads
+\code{bootstrap-datepicker} -- a third-party stylesheet whose calendar markup
+(\code{.datepicker}, \code{.datepicker-days}, ...) appears nowhere in the Bootstrap
+documentation and which a designer's SASS sheet cannot reach. The
+consequence is that \code{format}, \code{language}, \code{weekstart} and \code{datesdisabled}
+are gone: the browser owns the presentation, and there is no Bootstrap way
+to ask it for another. Use \code{\link[=update_bs_date_input]{update_bs_date_input()}} rather than
+\code{shiny::updateDateInput()}.
 }
 \examples{
 bs_date_input("day", "Pick a day", value = "2026-06-26")
 }
 \seealso{
-\code{\link[shiny:dateInput]{shiny::dateInput()}}
+\code{\link[=update_bs_date_input]{update_bs_date_input()}}, \code{\link[=bs_date_range_input]{bs_date_range_input()}}
 }

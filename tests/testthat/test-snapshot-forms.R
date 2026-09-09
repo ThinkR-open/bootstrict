@@ -160,12 +160,11 @@ test_that("form layout markup is stable", {
   )))
 })
 
-test_that("the shiny-inherited controls are recorded as they stand", {
-  # These three still emit Bootstrap 3 structures, which is a known deviation:
-  # the file input renders the "Browse" compound widget instead of
-  # <input class="form-control" type="file">, and the date inputs ship
-  # bootstrap-datepicker, whose popup is not 5.3 markup. Snapshotting them
-  # records the deviation, so fixing it shows up as a diff.
+test_that("the file and date controls are stable", {
+  # These three used to emit Bootstrap 3 structures inherited from shiny: the
+  # "Browse" compound widget for the file input, and bootstrap-datepicker
+  # behind the date fields. All three are now the reference markup, and these
+  # snapshots are what keeps them that way.
   expect_snapshot(snap(bs_file_input(
     "f",
     "Upload"

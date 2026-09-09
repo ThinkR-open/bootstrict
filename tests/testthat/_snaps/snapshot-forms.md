@@ -258,7 +258,7 @@
     Output
       <div class="invalid-feedback">Please provide a value.</div> 
 
-# the shiny-inherited controls are recorded as they stand
+# the file and date controls are stable
 
     Code
       snap(bs_file_input("f", "Upload"))
@@ -276,9 +276,9 @@
     Code
       snap(bs_date_input("d", "Date"))
     Output
-      <div id="d" class="shiny-date-input form-group shiny-input-container">
-        <label class="control-label form-label" for="d" id="d-label">Date</label>
-        <input type="text" class="form-control" aria-labelledby="d-label" title="Date format: yyyy-mm-dd" data-date-language="en" data-date-week-start="0" data-date-format="yyyy-mm-dd" data-date-start-view="month" data-date-autoclose="true" data-date-dates-disabled="null" data-date-days-of-week-disabled="null"/>
+      <div id="d" class="form-group" data-bootstrict="date">
+        <label class="form-label" for="d-field" id="d-label">Date</label>
+        <input id="d-field" type="date" class="form-control"/>
       </div> 
 
 ---
@@ -286,12 +286,12 @@
     Code
       snap(bs_date_range_input("dr", "Range"))
     Output
-      <div id="dr" class="shiny-date-range-input form-group shiny-input-container">
-        <label class="control-label form-label" for="dr" id="dr-label">Range</label>
-        <div class="input-daterange input-group">
-          <input class="form-control" type="text" aria-labelledby="dr-label" title="Date format: yyyy-mm-dd" data-date-language="en" data-date-week-start="0" data-date-format="yyyy-mm-dd" data-date-start-view="month" data-date-autoclose="true"/>
-          <span class="input-group-text"> to </span>
-          <input class="form-control" type="text" aria-labelledby="dr-label" title="Date format: yyyy-mm-dd" data-date-language="en" data-date-week-start="0" data-date-format="yyyy-mm-dd" data-date-start-view="month" data-date-autoclose="true"/>
+      <div id="dr" class="form-group" data-bootstrict="date-range">
+        <label class="form-label" id="dr-label">Range</label>
+        <div class="input-group">
+          <input id="dr-start" type="date" class="form-control" aria-label="Start date"/>
+          <span class="input-group-text">to</span>
+          <input id="dr-end" type="date" class="form-control" aria-label="End date"/>
         </div>
       </div> 
 

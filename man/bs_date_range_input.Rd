@@ -12,6 +12,7 @@ bs_date_range_input(
   ...,
   min = NULL,
   max = NULL,
+  separator = "to",
   size = NULL,
   help = NULL,
   width = NULL
@@ -26,25 +27,29 @@ bs_date_range_input(
 
 \item{...}{Extra attributes applied to each radio \verb{<input>}.}
 
-\item{min, max}{Minimum / maximum selectable date.}
+\item{min, max}{Earliest / latest selectable date.}
 
-\item{size}{Control size: \code{"sm"} or \code{"lg"}. shiny hardcodes the small
-variant on the group; this argument is what decides it.}
+\item{separator}{Text shown between the two fields, in an
+\code{.input-group-text}.}
+
+\item{size}{Control size: \code{"sm"} or \code{"lg"}.}
 
 \item{help}{Help text rendered below the control (\code{.form-text}).}
 
 \item{width}{CSS width (e.g. \code{"100\%"}, \code{"200px"}).}
 }
 \value{
-A form control tag.
+A form control tag. \code{input$id} is a length-2 \code{Date}.
 }
 \description{
-Delegates to \code{\link[shiny:dateRangeInput]{shiny::dateRangeInput()}} and adds the Bootstrap \code{.form-label} /
-\code{.form-control} affordances.
+Two native date fields joined in an \code{.input-group}, with a separator
+between them. Bootstrap has no date-range component, so this is the
+assembly its docs prescribe; see \code{\link[=bs_date_input]{bs_date_input()}} for why neither field
+delegates to shiny.
 }
 \examples{
-bs_date_range_input("range", "Period", start = "2026-01-01", end = "2026-12-31")
+bs_date_range_input("range", "Period", start = "2026-01-01")
 }
 \seealso{
-\code{\link[shiny:dateRangeInput]{shiny::dateRangeInput()}}
+\code{\link[=update_bs_date_range_input]{update_bs_date_range_input()}}, \code{\link[=bs_date_input]{bs_date_input()}}
 }

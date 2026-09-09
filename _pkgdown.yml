@@ -94,6 +94,7 @@ reference:
   - bs_color_input
   - bs_date_input
   - bs_date_range_input
+  - update_bs_date_input
   - bs_file_input
   - update_bs_range
   - update_bs_color

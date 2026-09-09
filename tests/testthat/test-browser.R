@@ -776,6 +776,56 @@ test_that("a dropdown reports its open state and is driven from the server", {
   ))
 })
 
+test_that("native date inputs report Dates and take one from the server", {
+  # No bootstrap-datepicker: the field is <input type="date"> and the browser
+  # owns the calendar. The R side still gets a Date.
+  expect_equal(
+    js(
+      app,
+      'document.getElementById("day-field").type'
+    ),
+    "date"
+  )
+  expect_equal(
+    js(
+      app,
+      'document.querySelectorAll("#period input[type=\'date\']").length'
+    ),
+    2
+  )
+  expect_true(wait_until(
+    app,
+    'document.getElementById("dates").innerText.indexOf("Date/2026-06-26/2/") === 0'
+  ))
+
+  click(
+    app,
+    "set_day"
+  )
+  expect_true(wait_until(
+    app,
+    'document.getElementById("day-field").value === "2027-01-15"'
+  ))
+  expect_true(wait_until(
+    app,
+    'document.getElementById("dates").innerText.indexOf("2027-01-15") > 0'
+  ))
+
+  # An empty field is NA, so a range keeps both positions.
+  click(
+    app,
+    "clear_day"
+  )
+  expect_true(wait_until(
+    app,
+    'document.getElementById("day-field").value === ""'
+  ))
+  expect_true(wait_until(
+    app,
+    'document.getElementById("dates").innerText.indexOf("Date/NA/") === 0'
+  ))
+})
+
 test_that("the colour mode lives on the root and reports itself", {
   # The fixture asks for color_mode = "auto"; without an explicit mode nothing
   # is applied at all, which keeps Bootstrap's default for an app that never

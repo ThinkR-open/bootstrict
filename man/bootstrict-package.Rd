@@ -35,16 +35,12 @@ need \code{ns()} applied by the caller.
 
 \section{Known deviations}{
 
-Two things are not Bootstrap 5.3 markup, both inherited from the Shiny
-inputs the package delegates to:
-\itemize{
-\item every delegated input keeps Shiny's \code{div.form-group.shiny-input-container}
-wrapper, which is why validation feedback needs \code{\link[=bs_feedback]{bs_feedback()}} rather
-than a bare \code{\link[=bs_invalid_feedback]{bs_invalid_feedback()}} placed after the control;
-\item \code{\link[=bs_date_input]{bs_date_input()}} and \code{\link[=bs_date_range_input]{bs_date_range_input()}} load \code{bootstrap-datepicker}
-for the calendar popup, which is not in the Bootstrap 5.3 documentation.
-The field itself is a plain \code{.form-control}.
-}
+If it is not in the Bootstrap documentation it is not in \code{bootstrict}, even
+where that loses a Shiny feature. One thing falls short, inherited from the
+Shiny inputs the package delegates to: every delegated input keeps Shiny's
+\code{div.form-group.shiny-input-container} wrapper, which is why validation
+feedback needs \code{\link[=bs_feedback]{bs_feedback()}} rather than a bare \code{\link[=bs_invalid_feedback]{bs_invalid_feedback()}}
+placed after the control. No third-party widget library is shipped.
 }
 
 \seealso{

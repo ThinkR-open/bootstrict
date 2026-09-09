@@ -83,6 +83,12 @@ ui <- bs_page(
     verbatimTextOutput("tbc_type"),
     uiOutput("dyn"),
 
+    bs_date_input("day", "Day", value = "2026-06-26"),
+    bs_date_range_input("period", "Period", start = "2026-01-01", end = "2026-03-01"),
+    bs_button("set_day", "Set day"),
+    bs_button("clear_day", "Clear day"),
+    verbatimTextOutput("dates"),
+
     bs_button("mode_dark", "Dark"),
     bs_button("mode_auto", "Auto"),
     verbatimTextOutput("mode"),
@@ -138,6 +144,14 @@ server <- function(input, output, session) {
   observeEvent(input$open_dd, show_bs_dropdown("dd"))
   observeEvent(input$goto3, update_bs_pagination("pg", selected = "3"))
   output$mode <- renderText(input$bootstrict_color_mode %||% "(none)")
+  output$dates <- renderText({
+    paste0(
+      class(input$day), "/", format(input$day), "/",
+      length(input$period), "/", paste(format(input$period), collapse = "|")
+    )
+  })
+  observeEvent(input$set_day, update_bs_date_input("day", value = as.Date("2027-01-15")))
+  observeEvent(input$clear_day, update_bs_date_input("day", value = NA))
   observeEvent(input$mode_dark, set_bs_color_mode("dark"))
   observeEvent(input$mode_auto, set_bs_color_mode("auto"))
   observeEvent(input$pick_l, update_bs_toggle_buttons("tbr", selected = "l"))

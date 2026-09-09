@@ -30,8 +30,8 @@ already know. Two native inputs have no Shiny equivalent and get their own
 
 | Family | Constructors | Reactive value | Update from server |
 | --- | --- | --- | --- |
-| **Delegating** (wrap Shiny) | text, textarea, numeric, password, select, checkbox, switch, radio, checkbox-group, date, date-range, file | `input$id` | Shiny's `updateXxx()` |
-| **Native** (own binding) | `bs_range_input()`, `bs_color_input()` | `input$id` | `update_bs_range()` / `update_bs_color()` |
+| **Delegating** (wrap Shiny) | text, textarea, numeric, password, select, checkbox, switch, radio, checkbox-group, file | `input$id` | Shiny's `updateXxx()` |
+| **Native** (own binding) | `bs_range_input()`, `bs_color_input()`, `bs_date_input()`, `bs_date_range_input()`, `bs_radio_button_input()`, `bs_checkbox_button_input()` | `input$id` | `update_bs_range()`, `update_bs_color()`, `update_bs_date_input()`, `update_bs_toggle_buttons()` |
 
 Every input takes a leading `id`, an optional `label`, and — for delegating
 inputs — a `help` string that renders as `.form-text` below the control, plus a
@@ -208,6 +208,41 @@ The lower-level pieces are available when you hand-build a control:
 - `bs_valid_feedback("Looks good!")` and
   `bs_invalid_feedback("Please choose a username.")` — inline validation
   messages that Bootstrap shows when the control is marked valid/invalid.
+
+## Dates
+
+`bs_date_input()` is a native `<input type="date">` with the `.form-control`
+class, which is what the Bootstrap 5.3 forms page shows: the **browser**
+supplies the calendar.
+
+It deliberately does not delegate to `shiny::dateInput()`, which loads
+`bootstrap-datepicker` — a third-party stylesheet whose calendar markup
+(`.datepicker`, `.datepicker-days`, …) appears nowhere in the Bootstrap
+documentation and which a designer's SASS sheet cannot reach. The cost is
+real: `format`, `language`, `weekstart` and `datesdisabled` are gone, because
+the browser owns the presentation and Bootstrap offers no way to ask it for
+something else.
+
+```{r}
+bs_date_input("day", "Day", value = "2026-06-26", min = "2026-01-01")
+bs_date_range_input("period", "Period", start = "2026-01-01")
+```
+
+`input$day` is a `Date`, and `NA` while the field is empty. A range is a
+length-2 `Date`, so it keeps both positions when only one end is filled in.
+Drive them with `update_bs_date_input()` and
+`update_bs_date_range_input()` — `shiny::updateDateInput()` will not reach
+them. Pass `NA` to clear a field, and `NULL` (the default) to leave it alone.
+
+```{r}
+update_bs_date_input("day", value = Sys.Date())
+update_bs_date_range_input("period", start = "2026-02-01", end = NA)
+```
+
+Bootstrap has no date-range component, so `bs_date_range_input()` is the
+assembly its docs prescribe: two fields in an `.input-group` with an
+`.input-group-text` between them. Each field carries its own `aria-label`,
+since one label cannot name both.
 
 ## Toggle buttons
 

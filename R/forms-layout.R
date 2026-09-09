@@ -109,7 +109,15 @@ ig_unwrap_control <- function(
         has_class(
           t,
           "shiny-input-container"
-        )
+        ) ||
+          htmltools::tagGetAttribute(
+            t,
+            "data-bootstrict"
+          ) %in%
+            c(
+              "date",
+              "date-range"
+            )
     )
   ) {
     return(
@@ -805,16 +813,34 @@ check_control_extractable <- function(
           "file"
         )
   )
+  # bootstrict's own date controls read their id from the container too: a
+  # range has two fields, so there is nowhere else to put it.
+  container_bound <- tag_contains(
+    x,
+    function(
+      t
+    ) {
+      htmltools::tagGetAttribute(
+        t,
+        "data-bootstrict"
+      ) %in%
+        c(
+          "date",
+          "date-range"
+        )
+    }
+  )
   if (
     !is.null(
       container_id
     ) ||
-      has_file_input
+      has_file_input ||
+      container_bound
   ) {
     rlang::abort(sprintf(
       paste0(
-        "%s cannot extract this input's control: its Shiny binding lives on ",
-        "the input's container. This applies to bs_date_input(), ",
+        "%s cannot extract this input's control: its binding lives on the ",
+        "input's container. This applies to bs_date_input(), ",
         "bs_date_range_input(), bs_file_input(), bs_radio_input() and ",
         "bs_checkbox_group_input(). Place the input outside instead."
       ),
