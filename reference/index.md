@@ -8,9 +8,9 @@ switch Bootstrap 5.3 colour modes.
 - [`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
   [`bs_page_fluid()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
   [`bs_page_fillable()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
-  : A Bootstrap 5 page
+  : A Bootstrap 5.3 page
 - [`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
-  : Create a Bootstrap 5 theme for a bootstrict UI
+  : Create a Bootstrap 5.3 theme for a bootstrict UI
 - [`parse_scss_variables()`](https://thinkr-open.github.io/bootstrict/reference/parse_scss_variables.md)
   : Parse a SASS/SCSS variable sheet into a named list
 - [`set_bs_color_mode()`](https://thinkr-open.github.io/bootstrict/reference/set_bs_color_mode.md)
@@ -22,6 +22,10 @@ switch Bootstrap 5.3 colour modes.
 - [`bootstrict_dep()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_dep.md)
   : The bootstrict HTML dependency (Shiny input bindings + supporting
   CSS)
+- [`bootstrap_dep()`](https://thinkr-open.github.io/bootstrict/reference/bootstrap_dep.md)
+  : The Bootstrap HTML dependency for a theme
+- [`bootstrap_version()`](https://thinkr-open.github.io/bootstrict/reference/bootstrap_version.md)
+  : The Bootstrap version bootstrict ships
 
 ## Layout
 

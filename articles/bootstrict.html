@@ -93,9 +93,10 @@ reasons:</p>
 <p><code>bootstrict</code> closes that gap by giving you the whole
 Bootstrap 5 surface, and <strong>nothing more</strong> — so you can tell
 a designer: <em>“use anything from <a href="https://getbootstrap.com/docs/5.3/" class="external-link">the Bootstrap 5.3 docs</a>,
-but nothing else.”</em> The Bootstrap 5.3 runtime and SASS compilation
-come from <a href="https://rstudio.github.io/bslib/" class="external-link"><code>bslib</code></a>; there is
-nothing else to vendor.</p>
+but nothing else.”</em> Bootstrap 5.3 is vendored by the package itself
+and compiled with <a href="https://rstudio.github.io/sass/" class="external-link"><code>sass</code></a>, so the
+version reaching the browser is the one <code><a href="../reference/bootstrap_version.html">bootstrap_version()</a></code>
+reports.</p>
 </div>
 <div class="section level2">
 <h2 id="a-first-app">A first app<a class="anchor" aria-label="anchor" href="#a-first-app"></a>

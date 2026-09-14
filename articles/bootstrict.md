@@ -23,10 +23,12 @@ reasons:
 `bootstrict` closes that gap by giving you the whole Bootstrap 5
 surface, and **nothing more** — so you can tell a designer: *“use
 anything from [the Bootstrap 5.3
-docs](https://getbootstrap.com/docs/5.3/), but nothing else.”* The
-Bootstrap 5.3 runtime and SASS compilation come from
-[`bslib`](https://rstudio.github.io/bslib/); there is nothing else to
-vendor.
+docs](https://getbootstrap.com/docs/5.3/), but nothing else.”* Bootstrap
+5.3 is vendored by the package itself and compiled with
+[`sass`](https://rstudio.github.io/sass/), so the version reaching the
+browser is the one
+[`bootstrap_version()`](https://thinkr-open.github.io/bootstrict/reference/bootstrap_version.md)
+reports.
 
 ## A first app
 

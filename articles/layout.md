@@ -12,14 +12,13 @@ stacks for simpler one-dimensional arrangements.
 
 ## Pages
 
-Every app is wrapped in a page constructor. There are three, mirroring
-`bslib`:
+Every app is wrapped in a page constructor. There are three:
 
-| Constructor | Wraps | Use for |
-|----|----|----|
-| [`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | [`bslib::page()`](https://rstudio.github.io/bslib/reference/page.html) | the default fixed-width page |
-| [`bs_page_fluid()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | [`bslib::page_fluid()`](https://rstudio.github.io/bslib/reference/page.html) | a full-width page |
-| [`bs_page_fillable()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | [`bslib::page_fillable()`](https://rstudio.github.io/bslib/reference/page_fillable.html) | a page whose content fills the viewport height |
+| Constructor | Use for |
+|----|----|
+| [`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | the default fixed-width page |
+| [`bs_page_fluid()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | a full-width page |
+| [`bs_page_fillable()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | a page whose content fills the viewport height |
 
 All three share the same signature:
 
@@ -28,7 +27,7 @@ All three share the same signature:
 bs_page(
   ...,                          # page content (and named HTML attributes)
   title = NULL,                 # browser tab / document title
-  theme = bootstrict_theme(),   # a bootstrict_theme() / bslib::bs_theme()
+  theme = bootstrict_theme(),   # a bootstrict_theme()
   color_mode = NULL,            # "light" or "dark" — sets data-bs-theme
   lang = "en"
 )

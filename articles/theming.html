@@ -75,8 +75,11 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://shiny.posit.co/" class="external-link">shiny</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/thinkr-open/bootstrict" class="external-link">bootstrict</a></span><span class="op">)</span></span></code></pre></div>
-<p>Theming in <code>bootstrict</code> is delegated entirely to <a href="https://rstudio.github.io/bslib/" class="external-link"><code>bslib</code></a>, which
-ships the Bootstrap 5.3 runtime and compiles SASS. Because the markup
+<p><code>bootstrict</code> vendors Bootstrap 5.3 itself —
+<code><a href="../reference/bootstrap_version.html">bootstrap_version()</a></code> reports the exact release — and
+compiles it with <a href="https://rstudio.github.io/sass/" class="external-link"><code>sass</code></a>, so the
+stylesheet reaching the browser is pinned by this package rather than by
+whichever theming package happens to be installed. Because the markup
 <code>bootstrict</code> emits is <em>exactly</em> the markup Bootstrap
 5.3 documents, a designer’s SASS variables restyle every widget with no
 per-component work. This article covers the whole theming story:
@@ -106,9 +109,9 @@ app. That is the <em>entire</em> theming step.</li>
 <h2 id="bootstrict_theme">
 <code>bootstrict_theme()</code><a class="anchor" aria-label="anchor" href="#bootstrict_theme"></a>
 </h2>
-<p><code><a href="../reference/bootstrict_theme.html">bootstrict_theme()</a></code> is a thin wrapper over
-<code><a href="https://rstudio.github.io/bslib/reference/bs_theme.html" class="external-link">bslib::bs_theme()</a></code>, pinned to Bootstrap 5. It merges, in
-order of increasing priority:</p>
+<p><code><a href="../reference/bootstrict_theme.html">bootstrict_theme()</a></code> collects the SASS variable overrides
+to compile the vendored Bootstrap tree with. It merges, in order of
+increasing priority:</p>
 <ul>
 <li>a designer’s exported SASS variable sheet
 (<code>variables=</code>),</li>
@@ -116,10 +119,8 @@ order of increasing priority:</p>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/bootstrict_theme.html">bootstrict_theme</a></span><span class="op">(</span></span>
-<span>  <span class="va">...</span>,           <span class="co"># Sass variables forwarded to bslib::bs_theme(), e.g. primary =</span></span>
-<span>  variables <span class="op">=</span> <span class="cn">NULL</span>,   <span class="co"># path to a .scss sheet, or a named list</span></span>
-<span>  bootswatch <span class="op">=</span> <span class="cn">NULL</span>,  <span class="co"># optional Bootswatch theme name</span></span>
-<span>  preset <span class="op">=</span> <span class="cn">NULL</span>       <span class="co"># optional bslib preset name</span></span>
+<span>  <span class="va">...</span>,              <span class="co"># Sass variables, e.g. primary = "#ff6600"</span></span>
+<span>  variables <span class="op">=</span> <span class="cn">NULL</span>  <span class="co"># path to a .scss sheet, or a named list</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Inline <code>...</code> variables <strong>win over the file</strong>
 on a name clash — handy for overriding a single token without editing
@@ -129,9 +130,9 @@ the designer’s sheet:</p>
 <span>  variables <span class="op">=</span> <span class="st">"_variables.scss"</span>,</span>
 <span>  primary <span class="op">=</span> <span class="st">"#ff6600"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Any Sass variable <code><a href="https://rstudio.github.io/bslib/reference/bs_theme.html" class="external-link">bslib::bs_theme()</a></code> understands works
-here. Note that some variable names are not valid R names, so quote
-them:</p>
+<p>Any Bootstrap SASS variable works here, named without its
+<code>$</code>. Note that some of those names are not valid R names, so
+quote them:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/bootstrict_theme.html">bootstrict_theme</a></span><span class="op">(</span>primary <span class="op">=</span> <span class="st">"#ff6600"</span>, <span class="st">"font-size-base"</span> <span class="op">=</span> <span class="st">"1rem"</span><span class="op">)</span></span></code></pre></div>
 <p>Pass the resulting theme to any page constructor:</p>
@@ -153,7 +154,7 @@ designer exports, and it drops in unchanged.</p>
 <h3 id="inspecting-a-sheet-with-parse_scss_variables">Inspecting a sheet with <code>parse_scss_variables()</code><a class="anchor" aria-label="anchor" href="#inspecting-a-sheet-with-parse_scss_variables"></a>
 </h3>
 <p><code><a href="../reference/parse_scss_variables.html">parse_scss_variables()</a></code> turns a sheet’s top-level
-declarations into the named list <code>bslib</code> expects.
+declarations into a named list.
 <code>bootstrict_theme(variables=)</code> calls it for you, but it is
 useful on its own — for example to echo the active theme back in an
 app.</p>

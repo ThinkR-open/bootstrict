@@ -6,10 +6,13 @@ library(shiny)
 library(bootstrict)
 ```
 
-Theming in `bootstrict` is delegated entirely to
-[`bslib`](https://rstudio.github.io/bslib/), which ships the Bootstrap
-5.3 runtime and compiles SASS. Because the markup `bootstrict` emits is
-*exactly* the markup Bootstrap 5.3 documents, a designer’s SASS
+`bootstrict` vendors Bootstrap 5.3 itself —
+[`bootstrap_version()`](https://thinkr-open.github.io/bootstrict/reference/bootstrap_version.md)
+reports the exact release — and compiles it with
+[`sass`](https://rstudio.github.io/sass/), so the stylesheet reaching
+the browser is pinned by this package rather than by whichever theming
+package happens to be installed. Because the markup `bootstrict` emits
+is *exactly* the markup Bootstrap 5.3 documents, a designer’s SASS
 variables restyle every widget with no per-component work. This article
 covers the whole theming story: building a theme, the designer hand-off
 via a `_variables.scss` sheet, and Bootstrap 5.3 colour modes.
@@ -38,9 +41,8 @@ ui <- bs_page(
 ## `bootstrict_theme()`
 
 [`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
-is a thin wrapper over
-[`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html),
-pinned to Bootstrap 5. It merges, in order of increasing priority:
+collects the SASS variable overrides to compile the vendored Bootstrap
+tree with. It merges, in order of increasing priority:
 
 - a designer’s exported SASS variable sheet (`variables=`),
 - inline variables passed through `...`.
@@ -48,10 +50,8 @@ pinned to Bootstrap 5. It merges, in order of increasing priority:
 ``` r
 
 bootstrict_theme(
-  ...,           # Sass variables forwarded to bslib::bs_theme(), e.g. primary =
-  variables = NULL,   # path to a .scss sheet, or a named list
-  bootswatch = NULL,  # optional Bootswatch theme name
-  preset = NULL       # optional bslib preset name
+  ...,              # Sass variables, e.g. primary = "#ff6600"
+  variables = NULL  # path to a .scss sheet, or a named list
 )
 ```
 
@@ -66,10 +66,8 @@ bootstrict_theme(
 )
 ```
 
-Any Sass variable
-[`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html)
-understands works here. Note that some variable names are not valid R
-names, so quote them:
+Any Bootstrap SASS variable works here, named without its `$`. Note that
+some of those names are not valid R names, so quote them:
 
 ``` r
 
@@ -100,9 +98,9 @@ $font-family-base: "Inter", sans-serif;
 ### Inspecting a sheet with `parse_scss_variables()`
 
 [`parse_scss_variables()`](https://thinkr-open.github.io/bootstrict/reference/parse_scss_variables.md)
-turns a sheet’s top-level declarations into the named list `bslib`
-expects. `bootstrict_theme(variables=)` calls it for you, but it is
-useful on its own — for example to echo the active theme back in an app.
+turns a sheet’s top-level declarations into a named list.
+`bootstrict_theme(variables=)` calls it for you, but it is useful on its
+own — for example to echo the active theme back in an app.
 
 ``` r
 

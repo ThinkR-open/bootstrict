@@ -152,9 +152,9 @@
 
 ### Bootstrap upgrade
 
-The package now targets **Bootstrap 5.3** (5.3.8, the runtime `bslib`
-actually ships) instead of 5.2, resolving the former 5.2-markup /
-5.3-runtime split.
+The package now targets **Bootstrap 5.3** (5.3.8, the release it
+vendors) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime
+split.
 
 - Colour modes:
   [`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
@@ -199,6 +199,34 @@ actually ships) instead of 5.2, resolving the former 5.2-markup /
   `aria-describedby`.
 
 ### Breaking changes
+
+- **Bootstrap is vendored.** The package no longer depends on `bslib`:
+  it ships Bootstrap 5.3.8 under `inst/lib/bootstrap` and compiles it
+  with `sass`, so the version reaching the browser is fixed here rather
+  than by whichever `bslib` happens to be installed.
+  `bslib::bs_theme(version = 5)` only ever meant “the Bootstrap 5 branch
+  bundled by this bslib”, which a future release could move to 5.4.
+  [`bootstrap_version()`](https://thinkr-open.github.io/bootstrict/reference/bootstrap_version.md)
+  reports the vendored release, and
+  [`bootstrap_dep()`](https://thinkr-open.github.io/bootstrict/reference/bootstrap_dep.md)
+  returns its HTML dependency for a UI built by hand.
+
+  Bootstrap’s own build runs autoprefixer after Sass and `sass` has no
+  such step, so the vendored `.scss` carries the prefixes, generated
+  with Bootstrap’s own browserslist targets (see
+  `dev/vendor-bootstrap.R`).
+
+- [`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
+  returns a `bootstrict_theme` rather than a
+  [`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html),
+  and takes only `...` and `variables=`. The arguments that were bslib’s
+  rather than SASS’s are gone: `bootswatch=` and `preset=` (Bootswatch
+  ships with `bslib`, not with Bootstrap), along with the shorthands
+  `bg`, `fg`, `base_font`, `code_font`, `heading_font`, `font_scale` and
+  `brand` — set the corresponding Bootstrap variables instead
+  (`"body-bg"`, `"body-color"`, `"font-family-base"`, …). A
+  [`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html)
+  passed to `bs_page(theme =)` is now rejected.
 
 - [`bs_date_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_date_input.md)
   and

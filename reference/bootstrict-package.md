@@ -2,10 +2,12 @@
 
 `bootstrict` re-implements the Bootstrap 5.3 layout, content, forms and
 component library as Shiny UI functions. Each widget mirrors the
-Bootstrap 5.3 HTML structure one-to-one, theming is delegated to `bslib`
-(which ships the Bootstrap 5.3 runtime, so a designer's SASS variable
-sheet drops straight in) and interactive components report their state
-to the server, with server-side `update_*()` controls.
+Bootstrap 5.3 HTML structure one-to-one, Bootstrap itself is vendored
+and compiled with `sass` (so a designer's SASS variable sheet drops
+straight in, against a Bootstrap version this package pins – see
+[`bootstrap_version()`](https://thinkr-open.github.io/bootstrict/reference/bootstrap_version.md))
+and interactive components report their state to the server, with
+server-side `update_*()` controls.
 
 ## Conventions
 

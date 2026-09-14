@@ -26,9 +26,12 @@ surface, and **nothing more**, meaning that you can tell a designer:
 pak::pak("thinkr-open/bootstrict")
 ```
 
-The Bootstrap 5.3 runtime and SASS compilation are provided by
-[`bslib`](https://rstudio.github.io/bslib/) — there is nothing else to
-vendor, and the markup bootstrict emits matches the runtime it runs on.
+Bootstrap 5.3 is vendored by bootstrict itself and compiled with
+[`sass`](https://rstudio.github.io/sass/), so the version reaching the
+browser is fixed by this package rather than by whichever theming
+package happens to be installed —
+[`bootstrap_version()`](https://thinkr-open.github.io/bootstrict/reference/bootstrap_version.md)
+reports it. The markup bootstrict emits matches the runtime it ships.
 
 ## The designer hand-off
 
@@ -106,12 +109,10 @@ shinyApp(ui, server)
 ```
 
 [`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
-is a thin wrapper over
-[`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html)
-pinned to Bootstrap 5;
+collects SASS variable overrides for the vendored Bootstrap tree;
 [`parse_scss_variables()`](https://thinkr-open.github.io/bootstrict/reference/parse_scss_variables.md)
-turns a `$name: value;` sheet into the named list `bslib` expects.
-Inline overrides win over the file:
+turns a `$name: value;` sheet into the named list it takes. Inline
+overrides win over the file:
 
 ``` r
 

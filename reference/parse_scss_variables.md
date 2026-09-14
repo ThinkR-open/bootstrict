@@ -3,9 +3,7 @@
 Reads a `_variables.scss` style file (the kind a designer exports) and
 extracts top-level `$name: value;` declarations into a named list
 suitable for passing to
-[`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
-or
-[`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html).
+[`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md).
 Trailing `!default` / `!global` flags and line/block comments are
 stripped. Values are returned verbatim as strings (Sass resolves them at
 compile time), so maps, functions and colour expressions all pass

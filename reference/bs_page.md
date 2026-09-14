@@ -1,10 +1,8 @@
-# A Bootstrap 5 page
+# A Bootstrap 5.3 page
 
-Thin wrappers over
-[`bslib::page()`](https://rstudio.github.io/bslib/reference/page.html) /
-[`bslib::page_fluid()`](https://rstudio.github.io/bslib/reference/page.html)
-pinned to Bootstrap 5 that wire in the bootstrict dependency and default
-theme. Use these as the outermost call of a Shiny UI.
+Shiny's page constructors wired to the Bootstrap bootstrict vendors, the
+bootstrict dependency and a theme. Use these as the outermost call of a
+Shiny UI.
 
 ## Usage
 
@@ -47,10 +45,8 @@ bs_page_fillable(
 - theme:
 
   A
-  [`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
-  /
-  [`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html)
-  object. Defaults to a stock Bootstrap 5 theme.
+  [`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md).
+  Defaults to stock Bootstrap.
 
 - color_mode:
 
