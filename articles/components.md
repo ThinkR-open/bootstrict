@@ -1,0 +1,371 @@
+# Components
+
+``` r
+
+library(shiny)
+library(bootstrict)
+```
+
+This article covers the Bootstrap component library: cards, alerts,
+badges, buttons, accordions, carousels, collapses, list groups, progress
+bars, spinners and placeholders. Navigation components (nav/tabs,
+navbar, breadcrumb, pagination, dropdown) have [their own
+article](https://thinkr-open.github.io/bootstrict/articles/navigation.md);
+overlays (modal, offcanvas, toast, tooltips) are in
+[Overlays](https://thinkr-open.github.io/bootstrict/articles/overlays.md).
+
+Some of these components are **interactive** — they report state as
+`input$id` and are driven from the server with an `update_bs_*()`
+helper. Those follow the same pattern throughout `bootstrict`; see
+[Overlays and server-driven
+interactivity](https://thinkr-open.github.io/bootstrict/articles/overlays.md)
+for the full story.
+
+## Buttons
+
+[`bs_button()`](https://thinkr-open.github.io/bootstrict/reference/bs_button.md)
+renders a Bootstrap button. It becomes a Shiny action button **only when
+given an `id`** — then `input$id` is the click count, exactly like
+[`shiny::actionButton()`](https://rdrr.io/pkg/shiny/man/actionButton.html).
+Without an `id` it is an inert, styled button.
+
+``` r
+
+bs_button(
+  id = NULL,
+  label = NULL,
+  ...,
+  color = "primary",   # a theme colour or "link"
+  outline = FALSE,     # .btn-outline-*
+  size = NULL,         # "sm" or "lg"
+  disabled = FALSE,
+  href = NULL,         # set to render an <a> styled as a button
+  type = "button",     # "button"/"submit"/"reset"
+  class = NULL
+)
+```
+
+``` r
+
+bs_button("go", "Go", color = "primary")
+bs_button(label = "Cancel", color = "secondary", outline = TRUE)
+```
+
+Group buttons with
+[`bs_button_group()`](https://thinkr-open.github.io/bootstrict/reference/bs_button_group.md)
+(add `vertical = TRUE` for a column), and group groups with
+[`bs_button_toolbar()`](https://thinkr-open.github.io/bootstrict/reference/bs_button_group.md):
+
+``` r
+
+bs_button_group(
+  bs_button(label = "Left"),
+  bs_button(label = "Right")
+)
+```
+
+The standalone Bootstrap close button (used inside dismissible
+components) is
+[`bs_close_button()`](https://thinkr-open.github.io/bootstrict/reference/bs_close_button.md).
+On a dark background use `white = TRUE`.
+
+### Download buttons
+
+[`bs_download_button()`](https://thinkr-open.github.io/bootstrict/reference/bs_download_button.md)
+and
+[`bs_download_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_download_link.md)
+wrap the Shiny originals. Shiny hardcodes the Bootstrap 3 class
+`.btn-default`, which has no Bootstrap 5 equivalent and leaves the
+button unstyled; these take `color` / `outline` / `size` like
+[`bs_button()`](https://thinkr-open.github.io/bootstrict/reference/bs_button.md)
+instead. The server side stays a plain
+[`shiny::downloadHandler()`](https://rdrr.io/pkg/shiny/man/downloadHandler.html).
+
+``` r
+
+ui <- bs_page(
+  bs_container(bs_download_button("save", "Download CSV", color = "success"))
+)
+
+server <- function(input, output, session) {
+  output$save <- downloadHandler(
+    filename = "data.csv",
+    content = function(file) write.csv(mtcars, file)
+  )
+}
+```
+
+`icon` defaults to `NULL` rather than Shiny’s Font Awesome icon, which
+is outside Bootstrap 5.
+
+## Cards
+
+Cards are built from composable pieces.
+[`bs_card()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+is the container; the rest
+([`bs_card_header()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md),
+[`bs_card_body()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md),
+[`bs_card_title()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md),
+[`bs_card_subtitle()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md),
+[`bs_card_text()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md),
+[`bs_card_footer()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md),
+[`bs_card_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md))
+map one-to-one to the Bootstrap card sub-elements.
+
+``` r
+
+bs_card(
+  bs_card_header("Featured"),
+  bs_card_body(
+    bs_card_title("Card title"),
+    bs_card_subtitle("A subtitle"),
+    bs_card_text("Some quick example text to build on the card title."),
+    bs_card_link("Read more", href = "#")
+  ),
+  bs_card_footer("Updated 3 mins ago")
+)
+```
+
+[`bs_card()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+accepts `color=` (a background theme colour, `.text-bg-*`) and `border=`
+(a border colour). For images,
+[`bs_card_img()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+places a picture at the `"top"`, `"bottom"` or as an `"overlay"`; pair
+the overlay with
+[`bs_card_img_overlay()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+to float text on top.
+[`bs_card_group()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+snaps several cards into an equal-width attached grid.
+
+``` r
+
+bs_card_group(
+  bs_card(bs_card_body("A")),
+  bs_card(bs_card_body("B"))
+)
+```
+
+## Alerts
+
+[`bs_alert()`](https://thinkr-open.github.io/bootstrict/reference/bs_alert.md)
+is a coloured message box. `dismissible = TRUE` adds a close button and
+fade-out.
+
+``` r
+
+bs_alert("Well done! You read this important message.", color = "success")
+bs_alert("Heads up — check your settings.", color = "warning", dismissible = TRUE)
+```
+
+Inside an alert,
+[`bs_alert_heading()`](https://thinkr-open.github.io/bootstrict/reference/bs_alert.md)
+gives a matched heading and
+[`bs_alert_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_alert.md)
+a colour-matched link:
+
+``` r
+
+bs_alert(
+  color = "danger",
+  bs_alert_heading("Something went wrong"),
+  "Read the ", bs_alert_link("full log", href = "#"), " for details."
+)
+```
+
+Give it an `id` and it becomes interactive: `input$id` is `TRUE` while
+the alert is on the page and `FALSE` once dismissed, and
+[`close_bs_alert()`](https://thinkr-open.github.io/bootstrict/reference/close_bs_alert.md)
+dismisses it from the server. Bootstrap removes the element, so an alert
+cannot be brought back — render it from a
+[`renderUI()`](https://rdrr.io/pkg/shiny/man/renderUI.html) if it has to
+come and go.
+
+``` r
+
+ui <- bs_page(
+  bs_container(
+    bs_alert("Saved.", id = "saved", color = "success", dismissible = TRUE),
+    bs_button("dismiss", "Dismiss")
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$dismiss, close_bs_alert("saved"))
+  observe(message("alert still shown: ", input$saved))
+}
+```
+
+## Badges
+
+Small count/label pills:
+
+``` r
+
+bs_badge("New", color = "success")
+bs_badge("42", color = "danger", pill = TRUE)
+```
+
+## Accordion (interactive)
+
+A vertically collapsing set of panels. The value(s) of the open panel(s)
+are reported as `input$id`, and you open/close them from the server with
+[`update_bs_accordion()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_accordion.md).
+
+``` r
+
+bs_accordion(
+  "acc",
+  bs_accordion_panel("First", "Panel one body", value = "one"),
+  bs_accordion_panel("Second", "Panel two body", value = "two"),
+  open = "one"
+)
+```
+
+- `open` accepts panel value(s), or `TRUE` (open all — only sensible
+  with `multiple = TRUE`), or `FALSE`/`NULL` (none).
+- `multiple = TRUE` lets panels stay open independently (“always open”).
+- `flush = TRUE` renders edge-to-edge.
+
+``` r
+
+server <- function(input, output, session) {
+  observe(print(input$acc))                          # value(s) of open panel(s)
+  observeEvent(input$go, update_bs_accordion("acc", open = "two"))
+}
+```
+
+## Carousel (interactive)
+
+A slideshow of
+[`bs_carousel_item()`](https://thinkr-open.github.io/bootstrict/reference/bs_carousel.md)s.
+The 0-based index of the active slide is reported as `input$id`; drive
+it with
+[`update_bs_carousel()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_carousel.md).
+
+``` r
+
+bs_carousel(
+  "demo",
+  bs_carousel_item(bs_img("1.jpg"), active = TRUE, caption = "First slide"),
+  bs_carousel_item(bs_img("2.jpg"))
+)
+```
+
+- `indicators` / `controls` toggle the clickable dots and prev/next
+  arrows.
+- `fade = TRUE` crossfades; `autoplay = TRUE` (default) auto-cycles;
+  `interval` sets the cycle time in ms.
+- Exactly one item is `active` (the first is defaulted if you set none).
+
+``` r
+
+update_bs_carousel("demo", to = 2)       # jump to a slide (0-based)
+update_bs_carousel("demo", slide = "next")
+```
+
+## Collapse (interactive)
+
+A container that shows/hides content. Its state is reported as
+`input$id` (`TRUE` when visible). Toggle it from the UI with
+[`bs_collapse_trigger()`](https://thinkr-open.github.io/bootstrict/reference/bs_collapse_trigger.md)
+(no server round trip) or from the server with
+[`update_bs_collapse()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_collapse.md).
+
+``` r
+
+tagList(
+  bs_collapse_trigger("more", "Toggle details"),
+  bs_collapse("more", "Hidden content revealed on toggle.")
+)
+```
+
+``` r
+
+update_bs_collapse("more", "show")   # "toggle" (default), "show" or "hide"
+```
+
+## List group (interactive)
+
+A flexible list that becomes **server-selectable** when you give it an
+`id`: the active item’s `value` is reported as `input$id`, and
+[`update_bs_list_group()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_list_group.md)
+activates an item by value.
+
+``` r
+
+bs_list_group(
+  "picker",
+  bs_list_group_item("An item", value = "a", action = TRUE),
+  bs_list_group_item("A second item", value = "b", action = TRUE)
+)
+```
+
+Items can be plain (`<li>`), actionable (`action = TRUE` → a
+`<button>`), or links (`href=` → an `<a>`). `flush = TRUE`,
+`numbered = TRUE` and `horizontal = TRUE` change the layout; `color=`
+gives an item a contextual colour.
+
+``` r
+
+update_bs_list_group("picker", selected = "b")
+```
+
+## Progress (interactive)
+
+[`bs_progress()`](https://thinkr-open.github.io/bootstrict/reference/bs_progress.md)
+is the track;
+[`bs_progress_bar()`](https://thinkr-open.github.io/bootstrict/reference/bs_progress.md)
+is a filled bar. Pass **two or more** bars to
+[`bs_progress()`](https://thinkr-open.github.io/bootstrict/reference/bs_progress.md)
+and it renders a Bootstrap 5.3 `.progress-stacked` group. Give a bar an
+`id` to update it from the server with
+[`update_bs_progress()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_progress.md).
+
+``` r
+
+bs_progress(bs_progress_bar(value = 25, id = "load", color = "success"))
+
+# stacked (5.3):
+bs_progress(
+  height = "1.5rem",
+  bs_progress_bar(value = 15, color = "success", label = "15%"),
+  bs_progress_bar(value = 30, color = "danger",  label = "30%")
+)
+```
+
+``` r
+
+update_bs_progress("load", value = 80, label = "80%")
+```
+
+A bar supports `striped`, `animated` (implies striped), `min`/`max`
+bounds, and an `aria_label` for accessibility.
+
+## Spinners and placeholders
+
+[`bs_spinner()`](https://thinkr-open.github.io/bootstrict/reference/bs_spinner.md)
+is a loading indicator — a spinning border or a pulsing dot:
+
+``` r
+
+bs_spinner(type = "border", color = "primary")
+bs_spinner(type = "grow", color = "secondary", size = "sm")
+```
+
+Placeholders are “skeleton” blocks shown while content loads.
+[`bs_placeholder()`](https://thinkr-open.github.io/bootstrict/reference/bs_placeholder.md)
+is one block (`width` is a 1–12 column count); wrap the whole skeleton
+in
+[`bs_placeholder_glow()`](https://thinkr-open.github.io/bootstrict/reference/bs_placeholder.md)
+or
+[`bs_placeholder_wave()`](https://thinkr-open.github.io/bootstrict/reference/bs_placeholder.md)
+to animate it:
+
+``` r
+
+bs_placeholder_glow(
+  bs_placeholder(width = 7),
+  bs_placeholder(width = 4),
+  bs_placeholder(width = 6)
+)
+```

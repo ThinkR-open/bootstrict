@@ -1,0 +1,307 @@
+# Theming and the designer hand-off
+
+``` r
+
+library(shiny)
+library(bootstrict)
+```
+
+Theming in `bootstrict` is delegated entirely to
+[`bslib`](https://rstudio.github.io/bslib/), which ships the Bootstrap
+5.3 runtime and compiles SASS. Because the markup `bootstrict` emits is
+*exactly* the markup Bootstrap 5.3 documents, a designer’s SASS
+variables restyle every widget with no per-component work. This article
+covers the whole theming story: building a theme, the designer hand-off
+via a `_variables.scss` sheet, and Bootstrap 5.3 colour modes.
+
+## The motivating workflow
+
+The workflow `bootstrict` is built around:
+
+1.  A designer works in Figma, staying strictly within the Bootstrap 5.3
+    docs.
+2.  They export a `_variables.scss` sheet — a list of `$name: value;`
+    overrides.
+3.  You receive the mockup and the sheet, and wire the sheet into the
+    app. That is the *entire* theming step.
+
+``` r
+
+ui <- bs_page(
+  theme = bootstrict_theme(variables = "_variables.scss"),
+  bs_container(
+    bs_card(bs_card_body("The whole visual identity comes from the sheet."))
+  )
+)
+```
+
+## `bootstrict_theme()`
+
+[`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
+is a thin wrapper over
+[`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html),
+pinned to Bootstrap 5. It merges, in order of increasing priority:
+
+- a designer’s exported SASS variable sheet (`variables=`),
+- inline variables passed through `...`.
+
+``` r
+
+bootstrict_theme(
+  ...,           # Sass variables forwarded to bslib::bs_theme(), e.g. primary =
+  variables = NULL,   # path to a .scss sheet, or a named list
+  bootswatch = NULL,  # optional Bootswatch theme name
+  preset = NULL       # optional bslib preset name
+)
+```
+
+Inline `...` variables **win over the file** on a name clash — handy for
+overriding a single token without editing the designer’s sheet:
+
+``` r
+
+bootstrict_theme(
+  variables = "_variables.scss",
+  primary = "#ff6600"
+)
+```
+
+Any Sass variable
+[`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html)
+understands works here. Note that some variable names are not valid R
+names, so quote them:
+
+``` r
+
+bootstrict_theme(primary = "#ff6600", "font-size-base" = "1rem")
+```
+
+Pass the resulting theme to any page constructor:
+
+``` r
+
+bs_page(theme = bootstrict_theme(primary = "#0d6efd"), ...)
+```
+
+## The `_variables.scss` sheet
+
+A `_variables.scss` sheet is plain SCSS: one `$name: value;` declaration
+per line. It is exactly what a designer exports, and it drops in
+unchanged.
+
+``` scss
+// _variables.scss
+$primary:       #ff6600;
+$secondary:     #6c757d;
+$border-radius: 0.5rem;
+$font-family-base: "Inter", sans-serif;
+```
+
+### Inspecting a sheet with `parse_scss_variables()`
+
+[`parse_scss_variables()`](https://thinkr-open.github.io/bootstrict/reference/parse_scss_variables.md)
+turns a sheet’s top-level declarations into the named list `bslib`
+expects. `bootstrict_theme(variables=)` calls it for you, but it is
+useful on its own — for example to echo the active theme back in an app.
+
+``` r
+
+tmp <- tempfile(fileext = ".scss")
+writeLines(
+  c("$primary: #ff6600;", "$border-radius: 0.5rem !default;"),
+  tmp
+)
+parse_scss_variables(tmp)
+#> $primary
+#> [1] "#ff6600"
+#>
+#> $`border-radius`
+#> [1] "0.5rem"
+```
+
+It strips `!default` / `!global` flags and comments. Note the parser
+reads the **SCSS** syntax (`$name: value;`, with semicolons) — the
+indented `.sass` syntax has no semicolons and cannot be parsed.
+
+## Colour modes (Bootstrap 5.3)
+
+Bootstrap 5.3 introduced native light/dark **colour modes** driven by
+the `data-bs-theme` attribute. `bootstrict` exposes them at three
+levels.
+
+### Set the initial mode on the page
+
+``` r
+
+bs_page(color_mode = "dark", ...)
+```
+
+### Flip the mode from the server
+
+[`set_bs_color_mode()`](https://thinkr-open.github.io/bootstrict/reference/set_bs_color_mode.md)
+toggles the whole page between `"light"` and `"dark"` at runtime:
+
+``` r
+
+server <- function(input, output, session) {
+  observeEvent(input$dark_switch, {
+    set_bs_color_mode(if (isTRUE(input$dark_switch)) "dark" else "light")
+  })
+}
+```
+
+A complete light/dark toggle is just a switch wired to
+[`set_bs_color_mode()`](https://thinkr-open.github.io/bootstrict/reference/set_bs_color_mode.md):
+
+``` r
+
+ui <- bs_page(
+  color_mode = "light",
+  bs_container(
+    bs_switch_input("dark", "Dark mode"),
+    bs_card(bs_card_body("This surface follows the colour mode."))
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$dark, {
+    set_bs_color_mode(if (isTRUE(input$dark)) "dark" else "light")
+  })
+}
+
+shinyApp(ui, server)
+```
+
+### Following the operating system
+
+`color_mode = "auto"` resolves the mode from the OS
+(`prefers-color-scheme`) before the page paints, so there is no flash of
+the wrong theme. A mode the user later chooses is remembered in the
+browser and wins over the initial value on the next visit;
+`set_bs_color_mode("auto")` forgets it and hands control back to the OS.
+
+Whatever the preference, the mode actually in force is reported as
+`input$bootstrict_color_mode`, always `"light"` or `"dark"` – never
+`"auto"` – so the server can render to match.
+
+``` r
+
+ui <- bs_page(
+  color_mode = "auto",
+  bs_container(
+    bs_radio_button_input(
+      "mode",
+      "Appearance",
+      c(Light = "light", Dark = "dark", Auto = "auto"),
+      selected = "auto"
+    ),
+    plotOutput("plot")
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$mode, set_bs_color_mode(input$mode))
+
+  output$plot <- renderPlot({
+    # Follows the resolved mode, not the preference.
+    bg <- if (identical(input$bootstrict_color_mode, "dark")) "black" else "white"
+    plot(1, bg = bg)
+  })
+}
+```
+
+An app that never mentions `color_mode` is left alone: it keeps
+Bootstrap’s default rather than quietly following the OS.
+
+### Scope a mode to one component
+
+Many components accept a component-level `dark = TRUE` (or
+`theme = "dark"`) argument, which emits `data-bs-theme` on just that
+element — the 5.3 idiom that replaces the deprecated `.navbar-dark` /
+`.dropdown-menu-dark` / `.carousel-dark` classes. For example a dark
+navbar on a light page:
+
+``` r
+
+bs_navbar(brand = bs_navbar_brand("Acme"), bg = "primary", theme = "dark")
+```
+
+## Utilities
+
+Bootstrap’s [utility
+classes](https://getbootstrap.com/docs/5.3/utilities/) – spacing,
+colour, display, flex, borders, text – are the other half of what a
+designer works with, and bootstrict deliberately exposes none of them as
+arguments. Every constructor takes a trailing `class` and forwards named
+`...` as HTML attributes, so a utility is written as itself:
+
+``` r
+
+bs_card(
+  bs_card_body("Padded, centred, muted."),
+  class = "p-4 text-center text-body-secondary"
+)
+bs_row(
+  bs_col("Left", md = 6),
+  bs_col("Right", md = 6),
+  class = "gy-3 align-items-center"
+)
+```
+
+That is the whole story: there is no `padding =` argument to learn, and
+the mockup’s class list transfers verbatim. It also means a utility that
+Bootstrap adds in a future release works here on the day it ships.
+
+The [Utility API](https://getbootstrap.com/docs/5.3/utilities/api/)
+belongs to the theme rather than to the markup: extend or disable
+utilities from the SASS sheet, alongside the variables.
+
+``` scss
+$utilities: map-merge(
+  $utilities,
+  ("cursor": (property: cursor, class: cursor, values: pointer grab))
+);
+```
+
+[`parse_scss_variables()`](https://thinkr-open.github.io/bootstrict/reference/parse_scss_variables.md)
+reads that map like any other declaration, so it reaches
+[`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
+with the rest of the sheet.
+
+## The golem hook
+
+If you scaffold Shiny apps with
+[`golem`](https://thinkr-open.github.io/golem/), `use_bootstrict_golem`
+is a `project_hook` that turns a fresh golem skeleton into a minimal
+`bootstrict` app: it rewrites `R/app_ui.R` to use
+[`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
+/
+[`bs_container()`](https://thinkr-open.github.io/bootstrict/reference/bs_container.md)
+and creates `inst/app/www/_variables.scss` for you.
+
+``` r
+
+golem::create_golem(
+  "my.app",
+  project_hook = bootstrict::use_bootstrict_golem
+)
+```
+
+## Attaching the dependency by hand
+
+Page constructors
+([`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
+and friends) wire in the `bootstrict` dependency automatically, and
+every top-level widget carries it too. If you build a UI without a
+[`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
+wrapper — for example inside a larger app shell — add the dependency
+once with
+[`use_bootstrict()`](https://thinkr-open.github.io/bootstrict/reference/use_bootstrict.md):
+
+``` r
+
+tagList(
+  use_bootstrict(),
+  bs_card(bs_card_body("..."))
+)
+```

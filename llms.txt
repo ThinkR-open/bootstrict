@@ -1,0 +1,762 @@
+# bootstrict
+
+> Strict, faithful Bootstrap 5.3 widgets for Shiny — with minimum
+> deviation from Shiny itself.
+
+`bootstrict` re-implements the **Bootstrap 5.3** layout, content, forms
+and component library as Shiny UI functions.
+
+## Why
+
+Working with an external designer that doesn’t know
+[shiny](https://shiny.posit.co/) can be complex because of two things:
+
+- some Shiny components are *not* plain Bootstrap;
+- some Bootstrap components are *missing* from Shiny.
+
+`bootstrict` tries to fix this gap by giving you the whole Bootstrap 5
+surface, and **nothing more**, meaning that you can tell a designer:
+“you can use anything from Bootstrap 5.3. But nothing more”.
+
+## Installation
+
+``` r
+
+# install.packages("pak")
+pak::pak("thinkr-open/bootstrict")
+```
+
+The Bootstrap 5.3 runtime and SASS compilation are provided by
+[`bslib`](https://rstudio.github.io/bslib/) — there is nothing else to
+vendor, and the markup bootstrict emits matches the runtime it runs on.
+
+## The designer hand-off
+
+Every widget mirrors the Bootstrap 5.3 HTML structure **one-to-one**, so
+a designer’s mockup (for example in Figma) and exported SASS variables
+drop straight into a Shiny app. Interactive components report their
+state to the server and can be driven from the server with `update_*()`
+helpers.
+
+One thing falls short of that, inherited from the Shiny inputs the
+package delegates to: every delegated input keeps Shiny’s
+`div.form-group.shiny-input-container` wrapper. Everything else is the
+reference markup, and the test suite snapshots it — no third-party
+widget library is shipped, and a test enforces that.
+
+The rule, when the two collide: if it is not in the Bootstrap
+documentation it is not in `bootstrict`, even where that loses a Shiny
+feature.
+
+The motivating workflow: a designer works in Figma, stays strictly
+within [the Bootstrap 5.3 docs](https://getbootstrap.com/docs/5.3/), and
+exports a `_variables.scss` sheet.
+
+You received a Figma mockup and the variables, and can implement this
+directly into shiny.
+
+``` r
+
+library(shiny)
+library(bootstrict)
+
+
+variables <- tempfile(fileext = ".scss")
+writeLines(
+  c(
+    "$primary: #ff6600;",
+    "$border-radius:5rem;"
+  ),
+  variables
+)
+
+ui <- bs_page(
+  theme = bootstrict_theme(
+    variables = variables
+  ),
+  bs_container(
+    bs_card(
+      bs_card_header("Sign in"),
+      bs_card_body(
+        bs_text_input("email", "Email", placeholder = "you@example.com"),
+        bs_password_input("pw", "Password"),
+        bs_button("go", "Sign in", color = "primary")
+      )
+    ),
+    # Declare the modal once, at the top level of the page (not inside the
+    # card): Bootstrap can clip or mis-position overlays nested in another
+    # element. The server then opens it by id (see below).
+    bs_modal(
+      "info",
+      "Modal body text.",
+      title = "Heads up"
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$go, {
+    print(input$email)
+    print(input$pw)
+    show_bs_modal("info")
+   })
+}
+
+shinyApp(ui, server)
+```
+
+[`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
+is a thin wrapper over
+[`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html)
+pinned to Bootstrap 5;
+[`parse_scss_variables()`](https://thinkr-open.github.io/bootstrict/reference/parse_scss_variables.md)
+turns a `$name: value;` sheet into the named list `bslib` expects.
+Inline overrides win over the file:
+
+``` r
+
+bootstrict_theme(
+  variables = "_variables.scss",
+  primary = "#ff6600"
+)
+```
+
+## Conventions (minimum deviation from Shiny)
+
+- Every constructor is `snake_case`, prefixed `bs_` (no masking of
+  Shiny).
+- `...` works exactly like Shiny/htmltools: **named** args become HTML
+  attributes, **unnamed** args become children.
+- Interactive widgets take a leading `id`; their value is `input$id`.
+- **Form inputs delegate to the matching `shiny::*Input()`**, so the
+  reactive value and every `updateXxx()` keep working identically —
+  `bootstrict` only layers Bootstrap 5 markup, sizing, help text,
+  switches, input groups and floating labels on top.
+
+## How bootstrict differs from Shiny
+
+`bootstrict` stays as close to Shiny as it can, but a handful of
+behaviours differ **on purpose** (to follow native Bootstrap). If you
+already know Shiny, these are the things to watch for.
+
+### Overlay widgets live in the UI — they aren’t built from the server
+
+Shiny builds modals and notifications on the server
+(`showModal(modalDialog(...))`, `showNotification(...)`). `bootstrict`
+follows the native Bootstrap pattern instead: the modal, toast or
+offcanvas is declared **once in the UI** with an `id`, and the server
+only **opens or closes it by id**.
+
+``` r
+
+ui <- bs_page(
+  bs_button(
+    "open",
+    "Open"
+  ),
+  # declared in the UI
+  bs_modal(
+    "info",
+    "Body text",
+    title = "Heads up"
+  )
+)
+server <- function(input, output, session) {
+  observeEvent(
+    input$open, {
+      # opened by id
+      show_bs_modal("info")
+    }
+   )
+}
+```
+
+| Task | Shiny | bootstrict |
+|----|----|----|
+| Open a modal | `showModal(modalDialog(...))` | declare `bs_modal("id", …)`, then `show_bs_modal("id")` |
+| Close a modal | [`removeModal()`](https://rdrr.io/pkg/shiny/man/showModal.html) | `hide_bs_modal("id")` |
+| Notification | `showNotification("…")` | `bs_notify_toast("…")` — the one server-built widget (builds + shows a transient toast) |
+| Offcanvas / drawer | *(not in Shiny)* | declare `bs_offcanvas("id", …)`, then `show_bs_offcanvas("id")` |
+
+Two consequences:
+
+- **Place overlay widgets at the top level of the page** (a direct child
+  of
+  [`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
+  /
+  [`bs_container()`](https://thinkr-open.github.io/bootstrict/reference/bs_container.md)),
+  *not* nested inside a
+  [`bs_card()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  or other positioned element — Bootstrap can otherwise clip or
+  mis-position them.
+- Every overlay reports its **open state** back as `input$id` (`TRUE`
+  when shown) — Shiny modals don’t. You can also open them with **no
+  server round trip** using the UI triggers
+  [`bs_modal_trigger()`](https://thinkr-open.github.io/bootstrict/reference/bs_modal_trigger.md),
+  [`bs_offcanvas_trigger()`](https://thinkr-open.github.io/bootstrict/reference/bs_offcanvas_trigger.md)
+  and
+  [`bs_collapse_trigger()`](https://thinkr-open.github.io/bootstrict/reference/bs_collapse_trigger.md).
+
+### Server helpers take `id` first and `session` last
+
+Shiny’s updaters take the session first:
+`updateTextInput(session, "id", …)`. Every `bootstrict` helper takes the
+**id first** and the **session last and optional** (it defaults to the
+current reactive domain), and ids are namespaced automatically inside
+modules:
+
+``` r
+
+update_bs_tabset("tabs", selected = "profile")   # no session argument needed
+show_bs_modal("info")
+```
+
+### Two kinds of inputs
+
+1.  **Inputs that delegate to Shiny** —
+    [`bs_text_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_text_input.md),
+    [`bs_numeric_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_numeric_input.md),
+    [`bs_select_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_select_input.md),
+    [`bs_radio_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_radio_input.md),
+    [`bs_checkbox_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_checkbox_input.md),
+    [`bs_checkbox_group_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_checkbox_group_input.md),
+    [`bs_file_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_file_input.md),
+    [`bs_textarea_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_textarea_input.md),
+    [`bs_password_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_password_input.md).
+    They wrap the matching `shiny::*Input()` and only restyle the
+    markup, so `input$id` **and Shiny’s own `updateXxx()` keep working
+    unchanged** — use
+    [`shiny::updateTextInput()`](https://rdrr.io/pkg/shiny/man/updateTextInput.html)
+    etc. for these.
+2.  **Native inputs** —
+    [`bs_range_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_range_input.md),
+    [`bs_color_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_color_input.md),
+    [`bs_date_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_date_input.md),
+    [`bs_date_range_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_date_range_input.md),
+    [`bs_radio_button_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_radio_button_input.md)
+    and
+    [`bs_checkbox_button_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_radio_button_input.md).
+    Either Shiny has no equivalent, or its equivalent is not Bootstrap
+    markup. They ship their own bindings, so drive them with
+    [`update_bs_range()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_range.md)
+    /
+    [`update_bs_color()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_color.md)
+    /
+    [`update_bs_date_input()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_date_input.md)
+    /
+    [`update_bs_toggle_buttons()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_toggle_buttons.md)
+    (Shiny’s
+    [`updateSliderInput()`](https://rdrr.io/pkg/shiny/man/updateSliderInput.html)
+    and
+    [`updateDateInput()`](https://rdrr.io/pkg/shiny/man/updateDateInput.html)
+    won’t reach them).
+
+A few specifics worth knowing:
+
+- [`bs_select_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_select_input.md)
+  renders a **plain Bootstrap `<select>`** — selectize is off, so there
+  is no search / tagging box that Shiny’s
+  [`selectInput()`](https://rdrr.io/pkg/shiny/man/selectInput.html) adds
+  by default.
+- [`bs_range_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_range_input.md)
+  is a native HTML `<input type="range">`, **not** Shiny’s
+  [`sliderInput()`](https://rdrr.io/pkg/shiny/man/sliderInput.html) (no
+  ticks, animation or ion.rangeSlider features).
+- [`bs_file_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_file_input.md)
+  is the Bootstrap 5.3 `<input class="form-control" type="file">`, so
+  the browser draws the button and the file name — not Shiny’s “Browse”
+  button beside a readonly text box, which is Bootstrap 3 markup.
+- [`bs_date_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_date_input.md)
+  /
+  [`bs_date_range_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_date_range_input.md)
+  are native `<input type="date">` fields, so the **browser** supplies
+  the calendar. They do not delegate to Shiny, which would pull in
+  `bootstrap-datepicker` — a third-party stylesheet whose calendar is
+  nowhere in the Bootstrap docs. The cost is that `format`, `language`,
+  `weekstart` and `datesdisabled` are gone; drive them with
+  [`update_bs_date_input()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_date_input.md).
+- Validation feedback needs
+  [`bs_feedback()`](https://thinkr-open.github.io/bootstrict/reference/bs_feedback.md):
+  Bootstrap only shows a message that is a *sibling* of the marked
+  control, and a bare
+  [`bs_invalid_feedback()`](https://thinkr-open.github.io/bootstrict/reference/bs_valid_feedback.md)
+  after an input is a sibling of Shiny’s wrapper.
+  [`set_bs_validation()`](https://thinkr-open.github.io/bootstrict/reference/set_bs_validation.md)
+  switches the state from the server.
+
+### `bs_button()` is an action button only when given an id
+
+`bs_button("go", "Go")` behaves exactly like
+[`shiny::actionButton()`](https://rdrr.io/pkg/shiny/man/actionButton.html)
+— `input$go` is the click count. Called **without** an `id` it is an
+inert, styled button; reactivity is opt-in.
+
+### Interactive components are driven by `update_bs_*()`
+
+Give a widget an `id` and it reports its state as `input$id` and takes
+instructions from a matching helper:
+
+| Widget | `input$id` | Server helper |
+|----|----|----|
+| [`bs_accordion()`](https://thinkr-open.github.io/bootstrict/reference/bs_accordion.md) | open panel value(s) | [`update_bs_accordion()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_accordion.md) |
+| [`bs_tabset()`](https://thinkr-open.github.io/bootstrict/reference/bs_tabset.md) | active tab | [`update_bs_tabset()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_tabset.md) |
+| [`bs_carousel()`](https://thinkr-open.github.io/bootstrict/reference/bs_carousel.md) | active slide | [`update_bs_carousel()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_carousel.md) |
+| [`bs_collapse()`](https://thinkr-open.github.io/bootstrict/reference/bs_collapse.md) | open / closed | [`update_bs_collapse()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_collapse.md) |
+| [`bs_list_group()`](https://thinkr-open.github.io/bootstrict/reference/bs_list_group.md) | selected item | [`update_bs_list_group()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_list_group.md) |
+| [`bs_nav()`](https://thinkr-open.github.io/bootstrict/reference/bs_nav.md), [`bs_navbar_nav()`](https://thinkr-open.github.io/bootstrict/reference/bs_navbar.md) | active link | [`update_bs_nav()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_nav.md) |
+| [`bs_pagination()`](https://thinkr-open.github.io/bootstrict/reference/bs_pagination.md) | active page | [`update_bs_pagination()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_pagination.md) |
+| [`bs_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/bs_dropdown.md), [`bs_nav_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/bs_nav_dropdown.md) | open / closed | [`show_bs_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_dropdown.md) … |
+| [`bs_alert()`](https://thinkr-open.github.io/bootstrict/reference/bs_alert.md) | still on the page | [`close_bs_alert()`](https://thinkr-open.github.io/bootstrict/reference/close_bs_alert.md) |
+| [`bs_progress()`](https://thinkr-open.github.io/bootstrict/reference/bs_progress.md) | — | [`update_bs_progress()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_progress.md) |
+
+Tabs in particular use
+[`bs_tabset()`](https://thinkr-open.github.io/bootstrict/reference/bs_tabset.md) +
+[`bs_tab_panel()`](https://thinkr-open.github.io/bootstrict/reference/bs_tabset.md)
+(an `id` is required and panels are validated) — not
+[`tabsetPanel()`](https://rdrr.io/pkg/shiny/man/tabsetPanel.html) /
+[`tabPanel()`](https://rdrr.io/pkg/shiny/man/tabPanel.html). For the
+other widgets the `id` is optional: without one they are static markup,
+which is what a decorative alert or a nav of plain links should be.
+
+### Tooltips & popovers decorate an existing tag
+
+`bs_tooltip(tag, "text")` and `bs_popover(tag, "content")` wrap a tag
+you already have (pipe-friendly) and are initialised client-side by
+`bootstrict` (Bootstrap does not auto-initialise them). They are UI-only
+— there is no server-side `update` / `toggle` for them.
+
+## Interactivity
+
+Interactive components report state and are controllable from the
+server:
+
+``` r
+
+ui <- bs_page(
+  bs_accordion("acc",
+    bs_accordion_panel("One", "...", value = "one"),
+    bs_accordion_panel("Two", "...", value = "two")),
+  bs_button("open_two", "Open panel two")
+)
+
+server <- function(input, output, session) {
+  observe( print(input$acc) )                         # open panel value(s)
+  observeEvent(input$open_two,
+               update_bs_accordion("acc", open = "two"))
+}
+```
+
+The same pattern covers tabs (`input$id` = active tab,
+[`update_bs_tabset()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_tabset.md)),
+the carousel (active slide,
+[`update_bs_carousel()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_carousel.md)),
+collapse, list-group selection, modals
+([`show_bs_modal()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_modal.md)
+/
+[`hide_bs_modal()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_modal.md)),
+offcanvas, toasts
+([`show_bs_toast()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_toast.md),
+[`bs_notify_toast()`](https://thinkr-open.github.io/bootstrict/reference/bs_notify_toast.md))
+and progress bars
+([`update_bs_progress()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_progress.md)).
+
+## Coverage
+
+**Layout** —
+[`bs_container()`](https://thinkr-open.github.io/bootstrict/reference/bs_container.md),
+[`bs_row()`](https://thinkr-open.github.io/bootstrict/reference/bs_row.md),
+[`bs_col()`](https://thinkr-open.github.io/bootstrict/reference/bs_col.md)
+(responsive spans, offsets, order, gutters, alignment),
+[`bs_hstack()`](https://thinkr-open.github.io/bootstrict/reference/bs_hstack.md)
+/
+[`bs_vstack()`](https://thinkr-open.github.io/bootstrict/reference/bs_hstack.md)
+stacks.
+
+**Content** —
+[`bs_table()`](https://thinkr-open.github.io/bootstrict/reference/bs_table.md)
+(data frame → Bootstrap table),
+[`bs_img()`](https://thinkr-open.github.io/bootstrict/reference/bs_img.md),
+[`bs_figure()`](https://thinkr-open.github.io/bootstrict/reference/bs_figure.md),
+[`bs_blockquote()`](https://thinkr-open.github.io/bootstrict/reference/bs_blockquote.md),
+[`bs_display_heading()`](https://thinkr-open.github.io/bootstrict/reference/bs_display_heading.md),
+[`bs_lead()`](https://thinkr-open.github.io/bootstrict/reference/bs_lead.md),
+lists.
+
+**Forms** — text / textarea / number / password / select / checkbox /
+switch / radio / checkbox-group / range / color / file / date /
+date-range inputs, the `.btn-check` segmented controls
+([`bs_radio_button_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_radio_button_input.md),
+[`bs_checkbox_button_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_radio_button_input.md)),
+plus
+[`bs_input_group()`](https://thinkr-open.github.io/bootstrict/reference/bs_input_group.md),
+[`bs_floating_label()`](https://thinkr-open.github.io/bootstrict/reference/bs_floating_label.md),
+[`bs_form()`](https://thinkr-open.github.io/bootstrict/reference/bs_form.md),
+working validation feedback
+([`bs_feedback()`](https://thinkr-open.github.io/bootstrict/reference/bs_feedback.md)
+/
+[`set_bs_validation()`](https://thinkr-open.github.io/bootstrict/reference/set_bs_validation.md)),
+and `.form-check-reverse` via `reverse = TRUE`.
+
+**Components** — accordion, alert, badge, breadcrumb, buttons & button
+groups, card, carousel, close button, collapse, dropdown (standalone and
+in a nav or navbar,
+[`bs_nav_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/bs_nav_dropdown.md)),
+list group, modal, nav & tabs (including `.nav-underline`, 5.3), navbar,
+offcanvas, pagination, placeholder, popover, progress (including
+`.progress-stacked`, 5.3), spinner, toast, tooltip, scrollspy, plus
+helpers
+([`bs_ratio()`](https://thinkr-open.github.io/bootstrict/reference/bs_ratio.md),
+[`bs_visually_hidden()`](https://thinkr-open.github.io/bootstrict/reference/bs_visually_hidden.md),
+[`bs_vr()`](https://thinkr-open.github.io/bootstrict/reference/bs_vr.md),
+[`bs_icon_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_icon_link.md)).
+
+**Colour modes (5.3)** — set the initial mode with
+`bs_page(color_mode = "dark")`, or `"auto"` to follow the operating
+system; switch it from the server with `set_bs_color_mode("light")` and
+read the mode in force as `input$bootstrict_color_mode`. A mode the user
+picks is remembered in the browser. Component-level `dark = TRUE` /
+`theme = "dark"` arguments emit `data-bs-theme` per the 5.3 idiom.
+
+**Utilities** — none are wrapped, deliberately. Every constructor takes
+a trailing `class` and forwards named `...` as attributes, so a mockup’s
+`class="p-4 text-center"` transfers verbatim and a utility Bootstrap
+adds later works the day it ships.
+
+See
+[`?bootstrict`](https://thinkr-open.github.io/bootstrict/reference/bootstrict-package.md)
+and run the demos:
+
+``` r
+
+# The catalogue: every widget, one card each.
+shiny::runApp(system.file("examples/demo", package = "bootstrict"))
+
+# The showcase: Quake Watch, a seismic monitor for the Fiji region built on
+# datasets::quakes — designer theme from a _variables.scss sheet, offcanvas
+# filter drawer, modal event records, colour modes, stacked progress.
+shiny::runApp(system.file("examples/quakewatch", package = "bootstrict"))
+```
+
+## License
+
+MIT © Colin Fay / ThinkR
+
+# Package index
+
+## Pages & theming
+
+Wrap an app in a page, build a theme from a designer’s SASS sheet, and
+switch Bootstrap 5.3 colour modes.
+
+- [`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
+  [`bs_page_fluid()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
+  [`bs_page_fillable()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md)
+  : A Bootstrap 5 page
+- [`bootstrict_theme()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_theme.md)
+  : Create a Bootstrap 5 theme for a bootstrict UI
+- [`parse_scss_variables()`](https://thinkr-open.github.io/bootstrict/reference/parse_scss_variables.md)
+  : Parse a SASS/SCSS variable sheet into a named list
+- [`set_bs_color_mode()`](https://thinkr-open.github.io/bootstrict/reference/set_bs_color_mode.md)
+  : Switch the Bootstrap colour mode from the server
+- [`use_bootstrict()`](https://thinkr-open.github.io/bootstrict/reference/use_bootstrict.md)
+  : Activate bootstrict inside a UI
+- [`use_bootstrict_golem()`](https://thinkr-open.github.io/bootstrict/reference/use_bootstrict_golem.md)
+  : Scaffold a bootstrict app as a golem project hook
+- [`bootstrict_dep()`](https://thinkr-open.github.io/bootstrict/reference/bootstrict_dep.md)
+  : The bootstrict HTML dependency (Shiny input bindings + supporting
+  CSS)
+
+## Layout
+
+Containers, the responsive 12-column grid, and flex stacks.
+
+- [`bs_container()`](https://thinkr-open.github.io/bootstrict/reference/bs_container.md)
+  : Bootstrap container
+- [`bs_row()`](https://thinkr-open.github.io/bootstrict/reference/bs_row.md)
+  : Bootstrap grid row
+- [`bs_col()`](https://thinkr-open.github.io/bootstrict/reference/bs_col.md)
+  : Bootstrap grid column
+- [`bs_hstack()`](https://thinkr-open.github.io/bootstrict/reference/bs_hstack.md)
+  [`bs_vstack()`](https://thinkr-open.github.io/bootstrict/reference/bs_hstack.md)
+  : Bootstrap stacks (horizontal / vertical flex layouts)
+
+## Content
+
+Tables, media, typography, lists and small helpers.
+
+- [`bs_table()`](https://thinkr-open.github.io/bootstrict/reference/bs_table.md)
+  : Bootstrap table
+- [`bs_img()`](https://thinkr-open.github.io/bootstrict/reference/bs_img.md)
+  : Bootstrap image
+- [`bs_figure()`](https://thinkr-open.github.io/bootstrict/reference/bs_figure.md)
+  [`bs_figure_img()`](https://thinkr-open.github.io/bootstrict/reference/bs_figure.md)
+  [`bs_figure_caption()`](https://thinkr-open.github.io/bootstrict/reference/bs_figure.md)
+  : Bootstrap figure
+- [`bs_blockquote()`](https://thinkr-open.github.io/bootstrict/reference/bs_blockquote.md)
+  : Bootstrap blockquote
+- [`bs_display_heading()`](https://thinkr-open.github.io/bootstrict/reference/bs_display_heading.md)
+  : Bootstrap display heading
+- [`bs_lead()`](https://thinkr-open.github.io/bootstrict/reference/bs_lead.md)
+  : Bootstrap lead paragraph
+- [`bs_list_unstyled()`](https://thinkr-open.github.io/bootstrict/reference/bs_list_unstyled.md)
+  [`bs_list_inline()`](https://thinkr-open.github.io/bootstrict/reference/bs_list_unstyled.md)
+  : Bootstrap unstyled / inline lists
+- [`bs_icon_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_icon_link.md)
+  : Bootstrap icon link
+- [`bs_ratio()`](https://thinkr-open.github.io/bootstrict/reference/bs_ratio.md)
+  : Fixed aspect-ratio container
+- [`bs_vr()`](https://thinkr-open.github.io/bootstrict/reference/bs_vr.md)
+  : Vertical rule
+- [`bs_visually_hidden()`](https://thinkr-open.github.io/bootstrict/reference/bs_visually_hidden.md)
+  : Visually hidden text
+
+## Forms — inputs
+
+Bootstrap 5 form controls. Most delegate to the matching
+shiny::*Input(); bs_range_input() and bs_color_input() are native and
+take update_bs\_*().
+
+- [`bs_text_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_text_input.md)
+  : Bootstrap text input
+- [`bs_textarea_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_textarea_input.md)
+  : Bootstrap textarea input
+- [`bs_numeric_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_numeric_input.md)
+  : Bootstrap numeric input
+- [`bs_password_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_password_input.md)
+  : Bootstrap password input
+- [`bs_select_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_select_input.md)
+  : Bootstrap select input
+- [`bs_checkbox_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_checkbox_input.md)
+  [`bs_switch_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_checkbox_input.md)
+  : Bootstrap checkbox input
+- [`bs_radio_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_radio_input.md)
+  : Bootstrap radio button group
+- [`bs_checkbox_group_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_checkbox_group_input.md)
+  : Bootstrap checkbox group
+- [`bs_radio_button_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_radio_button_input.md)
+  [`bs_checkbox_button_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_radio_button_input.md)
+  : Bootstrap toggle button groups
+- [`update_bs_toggle_buttons()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_toggle_buttons.md)
+  : Set the selection of a toggle button group from the server
+- [`bs_range_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_range_input.md)
+  : Bootstrap range (slider) input
+- [`bs_color_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_color_input.md)
+  : Bootstrap colour input
+- [`bs_date_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_date_input.md)
+  : Bootstrap date input
+- [`bs_date_range_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_date_range_input.md)
+  : Bootstrap date range input
+- [`update_bs_date_input()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_date_input.md)
+  [`update_bs_date_range_input()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_date_input.md)
+  : Set a date input from the server
+- [`bs_file_input()`](https://thinkr-open.github.io/bootstrict/reference/bs_file_input.md)
+  : Bootstrap file input
+- [`update_bs_range()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_range.md)
+  : Update a range input from the server
+- [`update_bs_color()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_color.md)
+  : Update a colour input from the server
+
+## Forms — layout & validation
+
+Group, float and validate controls.
+
+- [`bs_input_group()`](https://thinkr-open.github.io/bootstrict/reference/bs_input_group.md)
+  [`bs_input_group_text()`](https://thinkr-open.github.io/bootstrict/reference/bs_input_group.md)
+  : Bootstrap input group
+- [`bs_floating_label()`](https://thinkr-open.github.io/bootstrict/reference/bs_floating_label.md)
+  : Bootstrap floating label
+- [`bs_form()`](https://thinkr-open.github.io/bootstrict/reference/bs_form.md)
+  : Bootstrap form element
+- [`bs_form_label()`](https://thinkr-open.github.io/bootstrict/reference/bs_form_label.md)
+  : Bootstrap form label
+- [`bs_form_text()`](https://thinkr-open.github.io/bootstrict/reference/bs_form_text.md)
+  : Bootstrap form help text
+- [`bs_feedback()`](https://thinkr-open.github.io/bootstrict/reference/bs_feedback.md)
+  : Attach validation feedback to a form control
+- [`set_bs_validation()`](https://thinkr-open.github.io/bootstrict/reference/set_bs_validation.md)
+  : Set a control's validation state from the server
+- [`bs_valid_feedback()`](https://thinkr-open.github.io/bootstrict/reference/bs_valid_feedback.md)
+  [`bs_invalid_feedback()`](https://thinkr-open.github.io/bootstrict/reference/bs_valid_feedback.md)
+  : Bootstrap validation feedback
+
+## Components — buttons
+
+- [`bs_button()`](https://thinkr-open.github.io/bootstrict/reference/bs_button.md)
+  : Bootstrap button
+- [`bs_button_group()`](https://thinkr-open.github.io/bootstrict/reference/bs_button_group.md)
+  [`bs_button_toolbar()`](https://thinkr-open.github.io/bootstrict/reference/bs_button_group.md)
+  : Bootstrap button group / toolbar
+- [`bs_close_button()`](https://thinkr-open.github.io/bootstrict/reference/bs_close_button.md)
+  : Bootstrap close button
+- [`bs_download_button()`](https://thinkr-open.github.io/bootstrict/reference/bs_download_button.md)
+  : Bootstrap download button
+- [`bs_download_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_download_link.md)
+  : Bootstrap download link
+
+## Components — cards
+
+- [`bs_card()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_body()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_header()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_footer()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_title()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_subtitle()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_text()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_img()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_img_overlay()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  [`bs_card_group()`](https://thinkr-open.github.io/bootstrict/reference/bs_card.md)
+  : Bootstrap card
+
+## Components — feedback
+
+Alerts, badges, progress, spinners and loading placeholders.
+
+- [`bs_alert()`](https://thinkr-open.github.io/bootstrict/reference/bs_alert.md)
+  [`bs_alert_heading()`](https://thinkr-open.github.io/bootstrict/reference/bs_alert.md)
+  [`bs_alert_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_alert.md)
+  : Bootstrap alert
+- [`close_bs_alert()`](https://thinkr-open.github.io/bootstrict/reference/close_bs_alert.md)
+  : Close an alert from the server
+- [`bs_badge()`](https://thinkr-open.github.io/bootstrict/reference/bs_badge.md)
+  : Bootstrap badge
+- [`bs_progress()`](https://thinkr-open.github.io/bootstrict/reference/bs_progress.md)
+  [`bs_progress_bar()`](https://thinkr-open.github.io/bootstrict/reference/bs_progress.md)
+  : Bootstrap progress
+- [`update_bs_progress()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_progress.md)
+  : Update a progress bar from the server
+- [`bs_spinner()`](https://thinkr-open.github.io/bootstrict/reference/bs_spinner.md)
+  : Bootstrap spinner
+- [`bs_placeholder()`](https://thinkr-open.github.io/bootstrict/reference/bs_placeholder.md)
+  [`bs_placeholder_glow()`](https://thinkr-open.github.io/bootstrict/reference/bs_placeholder.md)
+  [`bs_placeholder_wave()`](https://thinkr-open.github.io/bootstrict/reference/bs_placeholder.md)
+  : Bootstrap placeholder
+
+## Components — interactive
+
+Accordion, carousel, collapse and list group report state as input\$id
+and are driven from the server with update_bs\_\*().
+
+- [`bs_accordion()`](https://thinkr-open.github.io/bootstrict/reference/bs_accordion.md)
+  [`bs_accordion_panel()`](https://thinkr-open.github.io/bootstrict/reference/bs_accordion.md)
+  : Bootstrap accordion
+- [`update_bs_accordion()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_accordion.md)
+  : Control an accordion from the server
+- [`bs_carousel()`](https://thinkr-open.github.io/bootstrict/reference/bs_carousel.md)
+  [`bs_carousel_item()`](https://thinkr-open.github.io/bootstrict/reference/bs_carousel.md)
+  : Bootstrap carousel
+- [`update_bs_carousel()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_carousel.md)
+  : Control a carousel from the server
+- [`bs_collapse()`](https://thinkr-open.github.io/bootstrict/reference/bs_collapse.md)
+  : Bootstrap collapse
+- [`bs_collapse_trigger()`](https://thinkr-open.github.io/bootstrict/reference/bs_collapse_trigger.md)
+  : Trigger a collapse from the UI
+- [`update_bs_collapse()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_collapse.md)
+  : Control a collapse from the server
+- [`bs_list_group()`](https://thinkr-open.github.io/bootstrict/reference/bs_list_group.md)
+  [`bs_list_group_item()`](https://thinkr-open.github.io/bootstrict/reference/bs_list_group.md)
+  : Bootstrap list group
+- [`update_bs_list_group()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_list_group.md)
+  : Control a list group selection from the server
+
+## Navigation
+
+Navs & tabsets, the navbar, breadcrumbs, pagination and dropdowns.
+
+- [`bs_nav()`](https://thinkr-open.github.io/bootstrict/reference/bs_nav.md)
+  [`bs_nav_item()`](https://thinkr-open.github.io/bootstrict/reference/bs_nav.md)
+  [`bs_nav_link()`](https://thinkr-open.github.io/bootstrict/reference/bs_nav.md)
+  : Bootstrap navigation list
+- [`update_bs_nav()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_nav.md)
+  : Set the active link of a nav from the server
+- [`bs_tabset()`](https://thinkr-open.github.io/bootstrict/reference/bs_tabset.md)
+  [`bs_tab_panel()`](https://thinkr-open.github.io/bootstrict/reference/bs_tabset.md)
+  : Bootstrap tabset
+- [`update_bs_tabset()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_tabset.md)
+  : Control a tabset from the server
+- [`bs_navbar()`](https://thinkr-open.github.io/bootstrict/reference/bs_navbar.md)
+  [`bs_navbar_brand()`](https://thinkr-open.github.io/bootstrict/reference/bs_navbar.md)
+  [`bs_navbar_nav()`](https://thinkr-open.github.io/bootstrict/reference/bs_navbar.md)
+  [`bs_navbar_text()`](https://thinkr-open.github.io/bootstrict/reference/bs_navbar.md)
+  : Bootstrap navbar
+- [`bs_breadcrumb()`](https://thinkr-open.github.io/bootstrict/reference/bs_breadcrumb.md)
+  [`bs_breadcrumb_item()`](https://thinkr-open.github.io/bootstrict/reference/bs_breadcrumb.md)
+  : Bootstrap breadcrumb
+- [`bs_pagination()`](https://thinkr-open.github.io/bootstrict/reference/bs_pagination.md)
+  : Bootstrap pagination
+- [`bs_page_item()`](https://thinkr-open.github.io/bootstrict/reference/bs_page_item.md)
+  : Bootstrap pagination item
+- [`bs_pagination_numbered()`](https://thinkr-open.github.io/bootstrict/reference/bs_pagination_numbered.md)
+  : Build a numbered pager
+- [`update_bs_pagination()`](https://thinkr-open.github.io/bootstrict/reference/update_bs_pagination.md)
+  : Set the active page of a pager from the server
+- [`bs_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/bs_dropdown.md)
+  [`bs_dropdown_item()`](https://thinkr-open.github.io/bootstrict/reference/bs_dropdown.md)
+  [`bs_dropdown_divider()`](https://thinkr-open.github.io/bootstrict/reference/bs_dropdown.md)
+  [`bs_dropdown_header()`](https://thinkr-open.github.io/bootstrict/reference/bs_dropdown.md)
+  [`bs_dropdown_text()`](https://thinkr-open.github.io/bootstrict/reference/bs_dropdown.md)
+  : Bootstrap dropdown
+- [`bs_nav_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/bs_nav_dropdown.md)
+  : Bootstrap dropdown inside a nav or a navbar
+- [`show_bs_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_dropdown.md)
+  [`hide_bs_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_dropdown.md)
+  [`toggle_bs_dropdown()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_dropdown.md)
+  : Open, close or toggle a dropdown from the server
+
+## Overlays
+
+Declared once in the UI, opened by id from the server. Modal, offcanvas
+and toast, plus tooltips, popovers and scrollspy.
+
+- [`bs_modal()`](https://thinkr-open.github.io/bootstrict/reference/bs_modal.md)
+  [`bs_modal_header()`](https://thinkr-open.github.io/bootstrict/reference/bs_modal.md)
+  [`bs_modal_title()`](https://thinkr-open.github.io/bootstrict/reference/bs_modal.md)
+  [`bs_modal_body()`](https://thinkr-open.github.io/bootstrict/reference/bs_modal.md)
+  [`bs_modal_footer()`](https://thinkr-open.github.io/bootstrict/reference/bs_modal.md)
+  : Bootstrap modal
+- [`show_bs_modal()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_modal.md)
+  [`hide_bs_modal()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_modal.md)
+  [`toggle_bs_modal()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_modal.md)
+  : Control a modal from the server
+- [`bs_modal_trigger()`](https://thinkr-open.github.io/bootstrict/reference/bs_modal_trigger.md)
+  : Trigger a modal from the UI
+- [`bs_offcanvas()`](https://thinkr-open.github.io/bootstrict/reference/bs_offcanvas.md)
+  : Bootstrap offcanvas
+- [`show_bs_offcanvas()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_offcanvas.md)
+  [`hide_bs_offcanvas()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_offcanvas.md)
+  [`toggle_bs_offcanvas()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_offcanvas.md)
+  : Control an offcanvas from the server
+- [`bs_offcanvas_trigger()`](https://thinkr-open.github.io/bootstrict/reference/bs_offcanvas_trigger.md)
+  : Trigger an offcanvas from the UI
+- [`bs_toast()`](https://thinkr-open.github.io/bootstrict/reference/bs_toast.md)
+  : Bootstrap toast
+- [`bs_toast_container()`](https://thinkr-open.github.io/bootstrict/reference/bs_toast_container.md)
+  : Position toasts on screen
+- [`bs_notify_toast()`](https://thinkr-open.github.io/bootstrict/reference/bs_notify_toast.md)
+  : Pop a transient toast notification from the server
+- [`show_bs_toast()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_toast.md)
+  [`hide_bs_toast()`](https://thinkr-open.github.io/bootstrict/reference/show_bs_toast.md)
+  : Control a toast from the server
+- [`bs_tooltip()`](https://thinkr-open.github.io/bootstrict/reference/bs_tooltip.md)
+  : Add a Bootstrap tooltip to a UI element
+- [`bs_popover()`](https://thinkr-open.github.io/bootstrict/reference/bs_popover.md)
+  : Add a Bootstrap popover to a UI element
+- [`bs_scrollspy()`](https://thinkr-open.github.io/bootstrict/reference/bs_scrollspy.md)
+  : Bootstrap scrollspy container
+
+# Articles
+
+### Guides
+
+- [Theming and the designer
+  hand-off](https://thinkr-open.github.io/bootstrict/articles/theming.md):
+- [Layout and the
+  grid](https://thinkr-open.github.io/bootstrict/articles/layout.md):
+- [Content: tables, media and
+  typography](https://thinkr-open.github.io/bootstrict/articles/content.md):
+- [Forms and
+  inputs](https://thinkr-open.github.io/bootstrict/articles/forms.md):
+- [Components](https://thinkr-open.github.io/bootstrict/articles/components.md):
+- [Navigation](https://thinkr-open.github.io/bootstrict/articles/navigation.md):
+- [Overlays and server-driven
+  interactivity](https://thinkr-open.github.io/bootstrict/articles/overlays.md):

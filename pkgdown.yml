@@ -1,0 +1,16 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  bootstrict: bootstrict.html
+  components: components.html
+  content: content.html
+  forms: forms.html
+  layout: layout.html
+  navigation: navigation.html
+  overlays: overlays.html
+  theming: theming.html
+last_built: 2026-09-14T08:47Z
+urls:
+  reference: https://thinkr-open.github.io/bootstrict/reference
+  article: https://thinkr-open.github.io/bootstrict/articles

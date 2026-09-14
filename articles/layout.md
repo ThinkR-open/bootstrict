@@ -1,0 +1,208 @@
+# Layout and the grid
+
+``` r
+
+library(shiny)
+library(bootstrict)
+```
+
+Layout in `bootstrict` is the Bootstrap 5 layout system, one-to-one: a
+page, an optional container, the responsive 12-column grid, and flex
+stacks for simpler one-dimensional arrangements.
+
+## Pages
+
+Every app is wrapped in a page constructor. There are three, mirroring
+`bslib`:
+
+| Constructor | Wraps | Use for |
+|----|----|----|
+| [`bs_page()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | [`bslib::page()`](https://rstudio.github.io/bslib/reference/page.html) | the default fixed-width page |
+| [`bs_page_fluid()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | [`bslib::page_fluid()`](https://rstudio.github.io/bslib/reference/page.html) | a full-width page |
+| [`bs_page_fillable()`](https://thinkr-open.github.io/bootstrict/reference/bs_page.md) | [`bslib::page_fillable()`](https://rstudio.github.io/bslib/reference/page_fillable.html) | a page whose content fills the viewport height |
+
+All three share the same signature:
+
+``` r
+
+bs_page(
+  ...,                          # page content (and named HTML attributes)
+  title = NULL,                 # browser tab / document title
+  theme = bootstrict_theme(),   # a bootstrict_theme() / bslib::bs_theme()
+  color_mode = NULL,            # "light" or "dark" — sets data-bs-theme
+  lang = "en"
+)
+```
+
+A page wires in the `bootstrict` dependency and the theme, so it is the
+only place you configure them:
+
+``` r
+
+bs_page(
+  title = "My app",
+  theme = bootstrict_theme(primary = "#ff6600"),
+  color_mode = "light",
+  bs_container(bs_card(bs_card_body("Hello")))
+)
+```
+
+See
+[Theming](https://thinkr-open.github.io/bootstrict/articles/theming.md)
+for `theme` and `color_mode`.
+
+## Containers
+
+[`bs_container()`](https://thinkr-open.github.io/bootstrict/reference/bs_container.md)
+centres and horizontally pads its content. By default it is fixed-width
+with a responsive max-width; `fluid = TRUE` makes it span the full
+width, and `breakpoint=` makes it fluid *until* a chosen breakpoint.
+
+``` r
+
+bs_container(
+  ...,
+  fluid = FALSE,       # TRUE for a full-width .container-fluid
+  breakpoint = NULL,   # "sm"/"md"/"lg"/"xl"/"xxl" for .container-{bp}
+  class = NULL
+)
+```
+
+``` r
+
+bs_container(bs_row(bs_col("a"), bs_col("b")))     # fixed width
+bs_container(fluid = TRUE, "full-width content")   # 100% wide
+bs_container(breakpoint = "lg", "fluid below lg")  # full width until lg
+```
+
+## The grid: rows and columns
+
+Bootstrap’s grid is a set of rows, each split into up to 12 columns.
+
+### `bs_row()`
+
+``` r
+
+bs_row(
+  ...,             # bs_col() children (and named attributes)
+  cols = NULL,     # equal-width columns per row: integer 1-6, or "auto"
+  gutters = NULL,  # gutter size 0-5 (both axes)
+  gx = NULL,       # horizontal gutter 0-5
+  gy = NULL,       # vertical gutter 0-5
+  justify = NULL,  # "start"/"center"/"end"/"around"/"between"/"evenly"
+  align = NULL,    # cross-axis: "start"/"center"/"end"
+  class = NULL
+)
+```
+
+### `bs_col()`
+
+``` r
+
+bs_col(
+  ...,               # column content
+  width = NULL,      # base span: 1-12, "auto", or TRUE (equal-width)
+  sm = NULL,         # span from the sm breakpoint up
+  md = NULL,         # ... md
+  lg = NULL,         # ... lg
+  xl = NULL,         # ... xl
+  xxl = NULL,        # ... xxl
+  offset = NULL,     # push right by 0-11 columns
+  order = NULL,      # 0-5, "first" or "last"
+  align_self = NULL, # "start"/"center"/"end"
+  class = NULL
+)
+```
+
+A column with no `width` is a bare `.col` and shares the row’s space
+equally with its siblings:
+
+``` r
+
+bs_row(bs_col("a"), bs_col("b"))   # two equal columns
+```
+
+### Responsive spans
+
+The breakpoint arguments (`width`, `sm`, `md`, …) let one column change
+width as the viewport grows. A common pattern — full width on phones, a
+third of the row from `md` up:
+
+``` r
+
+bs_container(
+  bs_row(
+    class = "g-3",
+    bs_col(md = 4, bs_card(bs_card_body("A"))),
+    bs_col(md = 4, bs_card(bs_card_body("B"))),
+    bs_col(md = 4, bs_card(bs_card_body("C")))
+  )
+)
+```
+
+Here `width` is unset, so each column is full-width (`.col-12`) below
+`md` and becomes `.col-md-4` from `md` up.
+
+### Gutters, alignment and order
+
+`gutters` (or the per-axis `gx` / `gy`) control the spacing between
+columns; `justify` and `align` position them within the row; `offset`
+and `order` push and reorder individual columns:
+
+``` r
+
+bs_row(
+  gutters = 3,
+  justify = "between",
+  bs_col(width = 4, "left"),
+  bs_col(width = 4, offset = 0, order = "last", "shown last")
+)
+```
+
+Several grid arguments also accept a **named per-breakpoint list** for
+responsive behaviour — for instance a wider gutter only on large
+screens, or a different equal-column count per breakpoint:
+
+``` r
+
+bs_row(cols = list(sm = 1, md = 2, lg = 3), bs_col("..."), bs_col("..."))
+bs_col(offset = list(md = 2), "offset by two columns from md up")
+```
+
+## Stacks
+
+For simple one-dimensional layouts, flex **stacks** are lighter than the
+grid.
+[`bs_hstack()`](https://thinkr-open.github.io/bootstrict/reference/bs_hstack.md)
+lays children out in a row,
+[`bs_vstack()`](https://thinkr-open.github.io/bootstrict/reference/bs_hstack.md)
+in a column; `gap=` (0-5) sets the spacing between them.
+
+``` r
+
+bs_hstack(
+  bs_button(label = "A"),
+  bs_button(label = "B"),
+  gap = 2
+)
+
+bs_vstack(
+  bs_alert("one"),
+  bs_alert("two"),
+  gap = 3
+)
+```
+
+Because stacks are plain flex containers, they combine naturally with
+Bootstrap utility classes passed through `class` — for example to
+right-align a toolbar:
+
+``` r
+
+bs_hstack(
+  gap = 3,
+  class = "justify-content-end align-items-center",
+  bs_switch_input("dark", "Dark mode", width = "auto"),
+  bs_button("open", "Filters", color = "primary")
+)
+```
