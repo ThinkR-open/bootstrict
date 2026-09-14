@@ -2,36 +2,33 @@
 % Please edit documentation in R/theme.R
 \name{bootstrict_theme}
 \alias{bootstrict_theme}
-\title{Create a Bootstrap 5 theme for a bootstrict UI}
+\title{Create a Bootstrap 5.3 theme for a bootstrict UI}
 \usage{
-bootstrict_theme(..., variables = NULL, bootswatch = NULL, preset = NULL)
+bootstrict_theme(..., variables = NULL)
 }
 \arguments{
-\item{...}{Sass variables / arguments forwarded to \code{\link[bslib:bs_theme]{bslib::bs_theme()}}.
-Named values like \code{primary = "#ff6600"} override Bootstrap defaults.}
+\item{...}{Named SASS variables, e.g. \code{primary = "#ff6600"}. Names use the
+Bootstrap convention without the leading \code{$}.}
 
 \item{variables}{Optional path to a \code{.scss} variable sheet, or a named list
 (as returned by \code{\link[=parse_scss_variables]{parse_scss_variables()}}).}
-
-\item{bootswatch, preset}{Optional Bootswatch / preset name (see
-\code{\link[bslib:bs_theme]{bslib::bs_theme()}}).}
 }
 \value{
-A \code{\link[bslib:bs_theme]{bslib::bs_theme()}} object.
+A \code{bootstrict_theme} object.
 }
 \description{
-A thin wrapper around \code{\link[bslib:bs_theme]{bslib::bs_theme()}} pinned to Bootstrap 5 that also
-accepts a designer's exported SASS variable sheet. Variables from
-\code{variables} are merged with (and overridden by) any variables passed through
-\code{...}, then handed to \code{bslib}.
+Collects SASS variable overrides -- from a designer's exported sheet, from
+\code{...}, or both -- for \code{\link[=bootstrap_dep]{bootstrap_dep()}} to compile against the Bootstrap
+tree bootstrict vendors. Variables from \code{variables} are merged with (and
+overridden by) any passed through \code{...}.
 }
 \details{
-Values are placed in the Sass layer that can actually compile them. A value
+Values are placed in the SASS layer that can actually compile them. A value
 built only from literals or from the sheet's own variables (\verb{$primary: #ff6600}, \verb{$link-color: $primary}) goes to the \emph{defaults} layer, where it is
 set before Bootstrap derives \verb{$theme-colors} and the rest from it. A value
 referring to one of Bootstrap's own variables (\verb{$link-hover-color: shade-color($primary, 20\%)}, with no \verb{$primary} in the sheet) cannot go
-there — Bootstrap's variables are not defined yet — so it goes to the
-\emph{declarations} layer, which \code{bslib} provides for exactly that.
+there -- Bootstrap's variables are not defined yet -- so it goes to the
+\emph{declarations} layer, after the configuration block.
 
 One consequence is worth knowing: a theme colour redefined from one of
 Bootstrap's own variables (\verb{$secondary: $gray-600}) lands in the
@@ -40,7 +37,5 @@ restyle \code{.btn-secondary}. Give the sheet its own literal (or define the
 variable it refers to) when that matters.
 }
 \examples{
-if (interactive()) {
-  bootstrict_theme(primary = "#ff6600", "font-size-base" = "1rem")
-}
+bootstrict_theme(primary = "#ff6600", "font-size-base" = "1rem")
 }

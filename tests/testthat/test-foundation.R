@@ -502,7 +502,7 @@ test_that("theme helpers parse SASS variables and build a bs5 theme", {
   )
   expect_s3_class(
     th,
-    "bs_theme"
+    "bootstrict_theme"
   )
 })
 

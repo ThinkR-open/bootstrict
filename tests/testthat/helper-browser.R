@@ -29,6 +29,34 @@ skip_if_no_browser <- function() {
       ),
     "no Chrome available"
   )
+  isolate_chrome_profile()
+}
+
+# chromote launches Chrome with no `--user-data-dir`, so it takes the running
+# user's own profile. On macOS the launched binary then defers to a Chrome
+# that is already open, and killing "our" process at the end of the session
+# closes their browser with it. Hand it a throwaway profile instead.
+isolate_chrome_profile <- function() {
+  args <- chromote::get_chrome_args()
+  if (
+    any(grepl(
+      "--user-data-dir",
+      args,
+      fixed = TRUE
+    ))
+  ) {
+    return(invisible())
+  }
+  chromote::set_chrome_args(c(
+    args,
+    paste0(
+      "--user-data-dir=",
+      tempfile(
+        "chrome-profile-"
+      )
+    )
+  ))
+  invisible()
 }
 
 # Start the fixture app in a background R process and return a handle. The app

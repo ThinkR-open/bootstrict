@@ -20,7 +20,7 @@ Working with an external designer that doesn't know `{shiny}` can be complex bec
 pak::pak("thinkr-open/bootstrict")
 ```
 
-The Bootstrap 5.3 runtime and SASS compilation are provided by [`bslib`](https://rstudio.github.io/bslib/) — there is nothing else to vendor, and the markup bootstrict emits matches the runtime it runs on.
+Bootstrap 5.3 is vendored by bootstrict itself and compiled with [`sass`](https://rstudio.github.io/sass/), so the version reaching the browser is fixed by this package rather than by whichever theming package happens to be installed — `bootstrap_version()` reports it. The markup bootstrict emits matches the runtime it ships.
 
 ## The designer hand-off
 
@@ -83,9 +83,9 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-`bootstrict_theme()` is a thin wrapper over `bslib::bs_theme()` pinned to
-Bootstrap 5; `parse_scss_variables()` turns a `$name: value;` sheet into the
-named list `bslib` expects. Inline overrides win over the file:
+`bootstrict_theme()` collects SASS variable overrides for the vendored
+Bootstrap tree; `parse_scss_variables()` turns a `$name: value;` sheet into the
+named list it takes. Inline overrides win over the file:
 
 ```r
 bootstrict_theme(

@@ -51,6 +51,8 @@ reference:
   - use_bootstrict
   - use_bootstrict_golem
   - bootstrict_dep
+  - bootstrap_dep
+  - bootstrap_version
 
 - title: Layout
   desc: Containers, the responsive 12-column grid, and flex stacks.

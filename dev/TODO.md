@@ -1,27 +1,9 @@
 # bootstrict — chantiers issus de l'audit
 
-Base : `main` à `6dedde1`, R 4.6.1, shiny 1.14.0, bslib 0.11.0 (Bootstrap 5.3.8).
+Base : `main` à `6dedde1`, R 4.6.1, shiny 1.14.0, Bootstrap 5.3.8 (vendoré).
 Rapport complet : https://claude.ai/code/artifact/3786fafd-4cbf-4914-8551-e2c56057a10a
 
 Une tâche traitée se supprime d'ici. Le code fait foi.
-
----
-
-## Avant de publier
-
-### 12. Le site pkgdown annonce dans DESCRIPTION renvoie 404
-
-Rien a corriger dans le depot : `.github/workflows/pkgdown.yaml` a ete ajoute
-au commit `6dedde1`, qui n'est pas sur le distant (`origin/main` est a
-`e5b205d`, soit 14 commits en arriere). Le workflow n'a donc jamais tourne et
-la branche `gh-pages` n'existe pas.
-
-A faire : pousser, verifier que le run pkgdown aboutit et que GitHub Pages est
-active sur `gh-pages`. Si le site n'est pas prevu, retirer l'URL de
-`DESCRIPTION` et de `man/bootstrict-package.Rd`.
-
-C'est la seule NOTE qui reste a `R CMD check --as-cran` (avec la mention
-« New submission » et la version de developpement).
 
 ---
 
@@ -52,8 +34,9 @@ n'expose ni `language` ni `format` ni `weekstart` : anglais et ISO en dur.
 ### 28. Aucun diagnostic hors Bootstrap 5
 
 `htmltools::renderTags(shiny::fluidPage(bs_card(bs_card_body("hi"))))` charge
-`bootstrap@3.4.1` sans un mot. Un message quand aucun thème bslib 5 n'est actif éviterait
-des heures de débogage.
+`bootstrap@3.4.1` sans un mot : hors `bs_page*()`, rien n'attache `bootstrap_dep()`.
+Un message quand Bootstrap 5 n'est pas dans les dépendances éviterait des heures de
+débogage.
 
 ### 29. Reste de la surface Bootstrap 5.3
 
@@ -82,8 +65,8 @@ des heures de débogage.
   pour retirer, pas d'action.
 - **bookmarking** : aucun widget n'est restaurable (pas de `restoreInput()` dans
   `bs_range_input()` / `bs_color_input()`, pas de `getState` dans les bindings).
-- **RTL** : pas d'argument `dir` sur `bs_page*()`, et bslib ne livre pas de
-  `bootstrap.rtl.css`. Le markup utilise déjà les classes logiques, il ne manque que la
+- **RTL** : pas d'argument `dir` sur `bs_page*()`, et la variante RTL de Bootstrap se
+  produit par postcss-rtlcss après Sass, hors de portée de `sass`. Le markup utilise déjà les classes logiques, il ne manque que la
   coquille.
 
 ---
@@ -99,7 +82,7 @@ avait raison.
   arguments documentés (`class=` et `...` nommés).
 - Le badge de notification positionné est un pur assemblage d'utilitaires, déjà faisable.
 - Les placeholders en forme de bouton : `bs_button(disabled = TRUE, class = "placeholder col-6")`.
-- Le markup `.form-check` est celui de shiny mais bslib le rattrape ; rendu
+- Le markup `.form-check` est celui de shiny mais Bootstrap 5 le rattrape ; rendu
   pixel-identique à la référence, vérifié en navigateur.
 - L'imbrication `aria-live` de `bs_notify_toast()` est exactement ce que fait la doc.
 - La région repliable de la navbar est bien pilotable par `update_bs_collapse()`.

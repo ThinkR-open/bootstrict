@@ -8,10 +8,11 @@
 \description{
 \code{bootstrict} re-implements the Bootstrap 5.3 layout, content, forms and
 component library as Shiny UI functions. Each widget mirrors the Bootstrap
-5.3 HTML structure one-to-one, theming is delegated to \code{bslib} (which ships
-the Bootstrap 5.3 runtime, so a designer's SASS variable sheet drops
-straight in) and interactive components report their state to the server,
-with server-side \verb{update_*()} controls.
+5.3 HTML structure one-to-one, Bootstrap itself is vendored and compiled
+with \code{sass} (so a designer's SASS variable sheet drops straight in, against
+a Bootstrap version this package pins -- see \code{\link[=bootstrap_version]{bootstrap_version()}}) and
+interactive components report their state to the server, with server-side
+\verb{update_*()} controls.
 }
 \section{Conventions}{
 

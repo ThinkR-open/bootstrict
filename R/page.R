@@ -1,15 +1,14 @@
 # Page constructors ---------------------------------------------------------
 
-#' A Bootstrap 5 page
+#' A Bootstrap 5.3 page
 #'
-#' Thin wrappers over [bslib::page()] / [bslib::page_fluid()] pinned to
-#' Bootstrap 5 that wire in the bootstrict dependency and default theme. Use
-#' these as the outermost call of a Shiny UI.
+#' Shiny's page constructors wired to the Bootstrap bootstrict vendors, the
+#' bootstrict dependency and a theme. Use these as the outermost call of a
+#' Shiny UI.
 #'
 #' @param ... UI elements, and named HTML attributes for the page body.
 #' @param title Page title (browser tab).
-#' @param theme A [bootstrict_theme()] / [bslib::bs_theme()] object. Defaults to
-#'   a stock Bootstrap 5 theme.
+#' @param theme A [bootstrict_theme()]. Defaults to stock Bootstrap.
 #' @param color_mode Initial Bootstrap colour mode: `"light"`, `"dark"`, or
 #'   `"auto"` to follow the operating system. A mode the user later chose is
 #'   remembered in the browser and wins over this initial value. Switch it
@@ -44,29 +43,31 @@ bs_page <- function(
       "auto"
     )
   )
-  attach_deps(
-    bslib::page(
-      ...,
-      `data-bs-theme` = if (
-        !identical(
+  attach_page_deps(
+    shiny::bootstrapPage(
+      htmltools::tags$body(
+        ...,
+        `data-bs-theme` = if (
+          !identical(
+            color_mode,
+            "auto"
+          )
+        )
           color_mode,
-          "auto"
-        )
-      )
-        color_mode,
-      if (
-        !is.null(
-          color_mode
-        )
-      ) {
-        color_mode_boot(
-          color_mode
-        )
-      },
+        if (
+          !is.null(
+            color_mode
+          )
+        ) {
+          color_mode_boot(
+            color_mode
+          )
+        }
+      ),
       title = title,
-      theme = theme,
       lang = lang
-    )
+    ),
+    theme
   )
 }
 
@@ -87,8 +88,8 @@ bs_page_fluid <- function(
       "auto"
     )
   )
-  attach_deps(
-    bslib::page_fluid(
+  attach_page_deps(
+    shiny::fluidPage(
       ...,
       `data-bs-theme` = if (
         !identical(
@@ -107,9 +108,9 @@ bs_page_fluid <- function(
         )
       },
       title = title,
-      theme = theme,
       lang = lang
-    )
+    ),
+    theme
   )
 }
 
@@ -122,37 +123,35 @@ bs_page_fillable <- function(
   color_mode = NULL,
   lang = "en"
 ) {
-  color_mode <- match_arg(
-    color_mode,
-    c(
-      "light",
-      "dark",
-      "auto"
-    )
+  bs_page(
+    ...,
+    class = "bootstrict-page-fill",
+    title = title,
+    theme = theme,
+    color_mode = color_mode,
+    lang = lang
   )
-  attach_deps(
-    bslib::page_fillable(
-      ...,
-      `data-bs-theme` = if (
-        !identical(
-          color_mode,
-          "auto"
-        )
-      )
-        color_mode,
-      if (
-        !is.null(
-          color_mode
-        )
-      ) {
-        color_mode_boot(
-          color_mode
-        )
-      },
-      title = title,
-      theme = theme,
-      lang = lang
-    )
+}
+
+#' Attach the Bootstrap stylesheet and the bootstrict bindings to a page.
+#'
+#' Appended rather than set, so Shiny's own dependencies survive; the
+#' Bootstrap 5 dependency shares its name with the Bootstrap 3 one
+#' `shiny::bootstrapPage()` attaches and supersedes it on version.
+#' @noRd
+attach_page_deps <- function(
+  x,
+  theme
+) {
+  htmltools::attachDependencies(
+    x,
+    list(
+      bootstrap_dep(
+        theme
+      ),
+      bootstrict_dep()
+    ),
+    append = TRUE
   )
 }
 

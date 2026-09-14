@@ -1035,22 +1035,11 @@ test_that("parse_scss_variables handles interpolation, rule blocks and a missing
 })
 
 test_that("parse_scss_variables reads Bootstrap's own variable sheet", {
-  sheet <- file.path(
-    system.file(
-      "lib/bs5/scss",
-      package = "bslib"
-    ),
+  vars <- parse_scss_variables(file.path(
+    bootstrict:::bootstrap_lib(),
+    "scss",
     "_variables.scss"
-  )
-  skip_if_not(
-    file.exists(
-      sheet
-    ),
-    "bslib scss sources not installed"
-  )
-  vars <- parse_scss_variables(
-    sheet
-  )
+  ))
   expect_true(all(
     c(
       "theme-colors",
@@ -1064,21 +1053,20 @@ test_that("parse_scss_variables reads Bootstrap's own variable sheet", {
   ))
 })
 
-test_that("bootstrict_theme accepts a value built from another Sass variable", {
-  # bslib validates its colour arguments as literal HTML colours, so passing
-  # them a reference -- the form Bootstrap ships its own defaults in --
-  # aborted with "Invalid HTML color strings".
-  expect_s3_class(
+test_that("bootstrict_theme routes a value built from another Sass variable", {
+  # A colour given as a reference -- the form Bootstrap ships its own defaults
+  # in -- has to reach the layer where that reference resolves.
+  expect_named(
     bootstrict_theme(
       secondary = "$gray-600"
-    ),
-    "bs_theme"
+    )$declarations,
+    "secondary"
   )
-  expect_s3_class(
+  expect_named(
     bootstrict_theme(
       "link-hover-color" = "shade-color($primary, 20%)"
-    ),
-    "bs_theme"
+    )$declarations,
+    "link-hover-color"
   )
 })
 
@@ -1087,28 +1075,19 @@ test_that("bootstrict_theme routes each value to a layer that compiles", {
   compiled <- function(
     theme
   ) {
-    deps <- bslib::bs_theme_dependencies(
+    dep <- bootstrap_dep(
       theme
     )
-    for (dep in deps) {
-      if (
-        !is.null(
+    paste(
+      readLines(
+        file.path(
+          dep$src$file,
           dep$stylesheet
-        )
-      ) {
-        return(paste(
-          readLines(
-            file.path(
-              dep$src$file,
-              dep$stylesheet
-            ),
-            warn = FALSE
-          ),
-          collapse = "\n"
-        ))
-      }
-    }
-    NA_character_
+        ),
+        warn = FALSE
+      ),
+      collapse = "\n"
+    )
   }
   var_of <- function(
     css,

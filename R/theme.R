@@ -4,7 +4,7 @@
 #'
 #' Reads a `_variables.scss` style file (the kind a designer exports) and
 #' extracts top-level `$name: value;` declarations into a named list suitable
-#' for passing to [bootstrict_theme()] or [bslib::bs_theme()]. Trailing
+#' for passing to [bootstrict_theme()]. Trailing
 #' `!default` / `!global` flags and line/block comments are stripped. Values
 #' are returned verbatim as strings (Sass resolves them at compile time), so
 #' maps, functions and colour expressions all pass straight through.
@@ -415,21 +415,21 @@ scss_statements <- function(
   statements
 }
 
-#' Create a Bootstrap 5 theme for a bootstrict UI
+#' Create a Bootstrap 5.3 theme for a bootstrict UI
 #'
-#' A thin wrapper around [bslib::bs_theme()] pinned to Bootstrap 5 that also
-#' accepts a designer's exported SASS variable sheet. Variables from
-#' `variables` are merged with (and overridden by) any variables passed through
-#' `...`, then handed to `bslib`.
+#' Collects SASS variable overrides -- from a designer's exported sheet, from
+#' `...`, or both -- for [bootstrap_dep()] to compile against the Bootstrap
+#' tree bootstrict vendors. Variables from `variables` are merged with (and
+#' overridden by) any passed through `...`.
 #'
-#' Values are placed in the Sass layer that can actually compile them. A value
+#' Values are placed in the SASS layer that can actually compile them. A value
 #' built only from literals or from the sheet's own variables (`$primary:
 #' #ff6600`, `$link-color: $primary`) goes to the *defaults* layer, where it is
 #' set before Bootstrap derives `$theme-colors` and the rest from it. A value
 #' referring to one of Bootstrap's own variables (`$link-hover-color:
 #' shade-color($primary, 20%)`, with no `$primary` in the sheet) cannot go
-#' there — Bootstrap's variables are not defined yet — so it goes to the
-#' *declarations* layer, which `bslib` provides for exactly that.
+#' there -- Bootstrap's variables are not defined yet -- so it goes to the
+#' *declarations* layer, after the configuration block.
 #'
 #' One consequence is worth knowing: a theme colour redefined from one of
 #' Bootstrap's own variables (`$secondary: $gray-600`) lands in the
@@ -437,25 +437,19 @@ scss_statements <- function(
 #' restyle `.btn-secondary`. Give the sheet its own literal (or define the
 #' variable it refers to) when that matters.
 #'
-#' @param ... Sass variables / arguments forwarded to [bslib::bs_theme()].
-#'   Named values like `primary = "#ff6600"` override Bootstrap defaults.
+#' @param ... Named SASS variables, e.g. `primary = "#ff6600"`. Names use the
+#'   Bootstrap convention without the leading `$`.
 #' @param variables Optional path to a `.scss` variable sheet, or a named list
 #'   (as returned by [parse_scss_variables()]).
-#' @param bootswatch,preset Optional Bootswatch / preset name (see
-#'   [bslib::bs_theme()]).
 #'
-#' @return A [bslib::bs_theme()] object.
+#' @return A `bootstrict_theme` object.
 #' @export
 #'
 #' @examples
-#' if (interactive()) {
-#'   bootstrict_theme(primary = "#ff6600", "font-size-base" = "1rem")
-#' }
+#' bootstrict_theme(primary = "#ff6600", "font-size-base" = "1rem")
 bootstrict_theme <- function(
   ...,
-  variables = NULL,
-  bootswatch = NULL,
-  preset = NULL
+  variables = NULL
 ) {
   dots <- rlang::list2(
     ...
@@ -501,78 +495,11 @@ bootstrict_theme <- function(
     dots
   )
 
-  # A handful of bs_theme() arguments are not Sass variables: they take R
-  # objects (font_google(), a preset name) or expand into several variables.
-  # Everything else is a plain Sass variable and goes through
-  # bs_add_variables(), which keeps the sheet's order -- bs_theme()'s own
-  # arguments are emitted *after* an added defaults block, so splitting them
-  # would break a sheet whose `$link-color: $primary` follows its `$primary`.
-  special <- intersect(
-    names(
-      merged
-    ),
-    intersect(
-      theme_only_args,
-      names(formals(
-        bslib::bs_theme
-      ))
-    )
-  )
-  vars <- merged[setdiff(
-    names(
-      merged
-    ),
-    special
-  )]
-
-  theme <- do.call(
-    bslib::bs_theme,
-    c(
-      list(
-        version = 5
-      ),
-      if (
-        !is.null(
-          bootswatch
-        )
-      )
-        list(
-          bootswatch = bootswatch
-        ),
-      if (
-        !is.null(
-          preset
-        )
-      )
-        list(
-          preset = preset
-        ),
-      merged[
-        special
-      ]
-    )
-  )
-
-  if (
-    !length(
-      vars
-    )
-  ) {
-    return(
-      theme
-    )
-  }
-
-  # A value that only refers to the sheet's own variables belongs in the
-  # defaults layer, where it is set before Bootstrap derives $theme-colors and
-  # friends from it. A value referring to one of Bootstrap's own variables
-  # cannot go there (they are not defined yet) and belongs in the declarations
-  # layer, which is exactly what bslib provides it for.
   own <- names(
-    vars
+    merged
   )
   derived <- vapply(
-    vars,
+    merged,
     function(
       value
     )
@@ -586,62 +513,19 @@ bootstrict_theme <- function(
       1
     )
   )
-  if (
-    any(
-      !derived
-    )
-  ) {
-    theme <- do.call(
-      bslib::bs_add_variables,
-      c(
-        list(
-          theme
-        ),
-        vars[
-          !derived
-        ],
-        list(
-          .where = "defaults"
-        )
-      )
-    )
-  }
-  if (
-    any(
-      derived
-    )
-  ) {
-    theme <- do.call(
-      bslib::bs_add_variables,
-      c(
-        list(
-          theme
-        ),
-        vars[
-          derived
-        ],
-        list(
-          .where = "declarations"
-        )
-      )
-    )
-  }
-  theme
-}
 
-# bs_theme() arguments that are not Sass variables.
-theme_only_args <- c(
-  "version",
-  "preset",
-  "bootswatch",
-  "brand",
-  "bg",
-  "fg",
-  "base_font",
-  "code_font",
-  "heading_font",
-  "font_scale"
-)
+  structure(
+    list(
+      defaults = merged[
+        !derived
+      ],
+      declarations = merged[
+        derived
+      ]
+    ),
+    class = "bootstrict_theme"
+  )
+}
 
 #' The Sass variables a value refers to, without their `$`.
 #' @noRd

@@ -17,7 +17,7 @@ convention without the leading \code{$} (e.g. \code{primary}, \code{font-family-
 \description{
 Reads a \verb{_variables.scss} style file (the kind a designer exports) and
 extracts top-level \verb{$name: value;} declarations into a named list suitable
-for passing to \code{\link[=bootstrict_theme]{bootstrict_theme()}} or \code{\link[bslib:bs_theme]{bslib::bs_theme()}}. Trailing
+for passing to \code{\link[=bootstrict_theme]{bootstrict_theme()}}. Trailing
 \code{!default} / \code{!global} flags and line/block comments are stripped. Values
 are returned verbatim as strings (Sass resolves them at compile time), so
 maps, functions and colour expressions all pass straight through.

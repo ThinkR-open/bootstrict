@@ -1138,7 +1138,7 @@ test_that("page constructors attach the bootstrict dependency", {
 
 # --- theme ----------------------------------------------------------------
 
-test_that("bootstrict_theme accepts a variable list, a bootswatch, and rejects junk", {
+test_that("bootstrict_theme accepts a variable list and rejects junk", {
   th <- bootstrict_theme(
     variables = list(
       primary = "#fff"
@@ -1146,19 +1146,7 @@ test_that("bootstrict_theme accepts a variable list, a bootswatch, and rejects j
   )
   expect_s3_class(
     th,
-    "bs_theme"
-  )
-  expect_s3_class(
-    bootstrict_theme(
-      bootswatch = "minty"
-    ),
-    "bs_theme"
-  )
-  expect_s3_class(
-    bootstrict_theme(
-      preset = "shiny"
-    ),
-    "bs_theme"
+    "bootstrict_theme"
   )
   expect_error(
     bootstrict_theme(

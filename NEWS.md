@@ -112,8 +112,8 @@
 
 ## Bootstrap upgrade
 
-The package now targets **Bootstrap 5.3** (5.3.8, the runtime `bslib` actually
-ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
+The package now targets **Bootstrap 5.3** (5.3.8, the release it vendors)
+instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
 
 * Colour modes: `bs_page()` / `bs_page_fluid()` / `bs_page_fillable()` gain
   `color_mode` (initial `data-bs-theme` on the page body) and the new
@@ -139,6 +139,28 @@ ships) instead of 5.2, resolving the former 5.2-markup / 5.3-runtime split.
   `help =` text is wired to its control via `aria-describedby`.
 
 ## Breaking changes
+
+* **Bootstrap is vendored.** The package no longer depends on `bslib`: it
+  ships Bootstrap 5.3.8 under `inst/lib/bootstrap` and compiles it with
+  `sass`, so the version reaching the browser is fixed here rather than by
+  whichever `bslib` happens to be installed. `bslib::bs_theme(version = 5)`
+  only ever meant "the Bootstrap 5 branch bundled by this bslib", which a
+  future release could move to 5.4. `bootstrap_version()` reports the
+  vendored release, and `bootstrap_dep()` returns its HTML dependency for a
+  UI built by hand.
+
+  Bootstrap's own build runs autoprefixer after Sass and `sass` has no such
+  step, so the vendored `.scss` carries the prefixes, generated with
+  Bootstrap's own browserslist targets (see `dev/vendor-bootstrap.R`).
+
+* `bootstrict_theme()` returns a `bootstrict_theme` rather than a
+  `bslib::bs_theme()`, and takes only `...` and `variables=`. The arguments
+  that were bslib's rather than SASS's are gone: `bootswatch=` and `preset=`
+  (Bootswatch ships with `bslib`, not with Bootstrap), along with the
+  shorthands `bg`, `fg`, `base_font`, `code_font`, `heading_font`,
+  `font_scale` and `brand` — set the corresponding Bootstrap variables
+  instead (`"body-bg"`, `"body-color"`, `"font-family-base"`, ...). A
+  `bslib::bs_theme()` passed to `bs_page(theme =)` is now rejected.
 
 * `bs_date_input()` and `bs_date_range_input()` are native
   `<input type="date">` fields and no longer delegate to `shiny::dateInput()`,

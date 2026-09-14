@@ -26,13 +26,13 @@ one-dimensional arrangements.
 
 ## Pages
 
-Every app is wrapped in a page constructor. There are three, mirroring `bslib`:
+Every app is wrapped in a page constructor. There are three:
 
-| Constructor | Wraps | Use for |
-| --- | --- | --- |
-| `bs_page()` | `bslib::page()` | the default fixed-width page |
-| `bs_page_fluid()` | `bslib::page_fluid()` | a full-width page |
-| `bs_page_fillable()` | `bslib::page_fillable()` | a page whose content fills the viewport height |
+| Constructor | Use for |
+| --- | --- |
+| `bs_page()` | the default fixed-width page |
+| `bs_page_fluid()` | a full-width page |
+| `bs_page_fillable()` | a page whose content fills the viewport height |
 
 All three share the same signature:
 
@@ -40,7 +40,7 @@ All three share the same signature:
 bs_page(
   ...,                          # page content (and named HTML attributes)
   title = NULL,                 # browser tab / document title
-  theme = bootstrict_theme(),   # a bootstrict_theme() / bslib::bs_theme()
+  theme = bootstrict_theme(),   # a bootstrict_theme()
   color_mode = NULL,            # "light" or "dark" — sets data-bs-theme
   lang = "en"
 )

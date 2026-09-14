@@ -4,7 +4,7 @@
 \alias{bs_page}
 \alias{bs_page_fluid}
 \alias{bs_page_fillable}
-\title{A Bootstrap 5 page}
+\title{A Bootstrap 5.3 page}
 \usage{
 bs_page(
   ...,
@@ -35,8 +35,7 @@ bs_page_fillable(
 
 \item{title}{Page title (browser tab).}
 
-\item{theme}{A \code{\link[=bootstrict_theme]{bootstrict_theme()}} / \code{\link[bslib:bs_theme]{bslib::bs_theme()}} object. Defaults to
-a stock Bootstrap 5 theme.}
+\item{theme}{A \code{\link[=bootstrict_theme]{bootstrict_theme()}}. Defaults to stock Bootstrap.}
 
 \item{color_mode}{Initial Bootstrap colour mode: \code{"light"}, \code{"dark"}, or
 \code{"auto"} to follow the operating system. A mode the user later chose is
@@ -50,9 +49,9 @@ from the server with \code{\link[=set_bs_color_mode]{set_bs_color_mode()}}, and 
 A UI definition.
 }
 \description{
-Thin wrappers over \code{\link[bslib:page]{bslib::page()}} / \code{\link[bslib:page_fluid]{bslib::page_fluid()}} pinned to
-Bootstrap 5 that wire in the bootstrict dependency and default theme. Use
-these as the outermost call of a Shiny UI.
+Shiny's page constructors wired to the Bootstrap bootstrict vendors, the
+bootstrict dependency and a theme. Use these as the outermost call of a
+Shiny UI.
 }
 \examples{
 if (interactive()) {

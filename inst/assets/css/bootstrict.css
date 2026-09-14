@@ -1,5 +1,5 @@
 /* bootstrict supporting styles -------------------------------------------
- * Bootstrap 5 (via bslib) already supplies the full stylesheet; this file
+ * The vendored Bootstrap already supplies the full stylesheet; this file
  * only carries small affordances bootstrict adds on top.
  * ----------------------------------------------------------------------- */
 
@@ -18,4 +18,15 @@
 .btn-file {
   position: relative;
   overflow: hidden;
+}
+
+/* bs_page_fillable(): a body that fills the viewport and stacks its children
+   in a column, so a child asking for height: 100% has one to fill. */
+.bootstrict-page-fill {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  gap: 0.5rem;
+  padding: 0.5rem;
 }

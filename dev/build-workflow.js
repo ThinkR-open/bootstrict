@@ -37,7 +37,7 @@ KEY RULES (also in CONVENTIONS.md):
     bootstrict.eventBinding({...}); server control via update_bs_<name>()/*_proxy() calling
     bs_send("<name>.<action>", id = bs_ns(id, session), ...) with a matching bootstrict.addHandler() in
     the same JS file. Reach the Bootstrap instance with bootstrict.bs("Modal", el) etc.
-  - Bootstrap 5.0 docs only (https://getbootstrap.com/docs/5.0). Runtime is Bootstrap 5.3.8 via bslib.
+  - Bootstrap 5.0 docs only (https://getbootstrap.com/docs/5.0). Runtime is the vendored Bootstrap 5.3.8.
 
 STEP 2 — write ONLY the files listed in your task below. Full roxygen on every exported
 function: @param for each arg, @return, @export, and a one-line runnable @examples. Add a
