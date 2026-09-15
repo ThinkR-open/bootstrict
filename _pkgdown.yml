@@ -1,6 +1,9 @@
 url: https://thinkr-open.github.io/bootstrict/
 
 template:
+  package: golemversetemplate
+
+template:
   bootstrap: 5
 
 navbar:
